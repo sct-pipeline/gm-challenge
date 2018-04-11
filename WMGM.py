@@ -74,19 +74,10 @@ def main():
     seg_sc_v1.wait()
     err(seg_sc_v1)
 
-    seg_sc_v2 = subprocess.Popen(
-        ["sct_deepseg_sc", "-i", os.path.join(volume_2 + '_reg' + '.' + ext), "-c", "t2s", "-qc", "./qc"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    seg_sc_v2.wait()
-    err(seg_sc_v2)
-
     # Segment gray matter
     seg_gm_v1 = subprocess.Popen(["sct_deepseg_gm", "-i", os.path.join(volume_1 + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     seg_gm_v1.wait()
     err(seg_gm_v1)
-
-    seg_gm_v2 = subprocess.Popen(["sct_deepseg_gm", "-i", os.path.join(volume_2 + '_reg' + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    seg_gm_v2.wait()
-    err(seg_gm_v2)
 
     # Generate white matter segmentation
     seg_wm_v1 = subprocess.Popen(["sct_maths", "-i", os.path.join(volume_1 + '_seg' + '.' + ext), "-sub",
@@ -94,12 +85,6 @@ def main():
                              os.path.join(volume_1 + '_wmseg' + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     seg_wm_v1.wait()
     err(seg_wm_v1)
-
-    seg_wm_v2 = subprocess.Popen(["sct_maths", "-i", os.path.join(volume_2 + '_reg' + '_seg' + '.' + ext), "-sub",
-                             os.path.join(volume_2 + '_reg' + '_gmseg' + '.' + ext), "-o",
-                             os.path.join(volume_2 + '_reg' + '_wmseg' + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    seg_wm_v2.wait()
-    err(seg_wm_v2)
 
     ########## Analysis: compute metrics
 
