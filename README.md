@@ -3,7 +3,7 @@ Spinal cord gray matter imaging challenge for the 5th Spinal Cord Workshop (June
 
 ### Getting started
 
-The objective for this challenge is to propose a protocol that will generate the best image quality. The script `WMGM.py` will execute commands for Spinal Cord Toolbox (SCT) to process the data and compute metrics for assessing the quality of the image.
+The objective for this challenge is to propose a protocol that will generate the best image quality. The script `WMGM.py` will execute commands for Spinal Cord Toolbox (SCT) to process the data and compute metrics for assessing the quality of the image. For more details, please see: https://goo.gl/2owcL7.
 
 Two NIfTI files are required: an initial scan and a re-scan without repositioning.
 
