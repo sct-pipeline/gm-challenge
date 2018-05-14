@@ -3,6 +3,8 @@
 # Generates a phantom from an atlas of tracts
 # Saves the phantom to a NIfTI image
 
+# To run: generate_wmgm_phantom.py <value_wm> <value_gm> <std_noise> <image>
+
 import os
 import argparse
 import glob
@@ -16,7 +18,7 @@ def get_parameters():
     parser.add_argument('value_wm', type=int)
     parser.add_argument('value_gm', type=int)
     parser.add_argument('std_noise', type=int)
-    parser.add_argument('scan')
+    parser.add_argument('image')
     args = parser.parse_args()
 
     return args
@@ -33,7 +35,7 @@ def get_tracts(tracts_folder):
     #Initialise tracts variable as object because there are 4 dimensions
     tracts = np.empty([len(fname_tract), 1], dtype=object)
     
-    #Load each partial volumes of each tracts
+    #Load each partial volume of each tract
     for label in range(0, len(fname_tract)):
        tracts[label, 0] = nib.load(fname_tract[label]).get_data()
     
@@ -120,7 +122,7 @@ def save_3D_nparray_nifti(np_matrix_3d, output_image):
 def main():
     # Generated phantom with and without noise
     phantom = 'phantom.nii.gz'
-    phantom_noise = 'phantom_noise_' + scan + '.nii.gz'
+    phantom_noise = 'phantom_noise_' + image + '.nii.gz'
     tracts_sum_img = 'tracts_sum.nii.gz'
 
     # Extract the tracts from the atlas folder
@@ -151,9 +153,9 @@ if __name__ == "__main__":
     value_wm = args.value_wm
     value_gm = args.value_gm
     std_noise = args.std_noise
-    scan = args.scan
+    image = args.image
     range_tract = 5
-    folder_out = os.path.join(os.getcwd(),"phantom_" + str(value_wm) + "_" + str(value_gm) + "_" + str(std_noise) + "_scan" + scan)
+    folder_out = os.path.join(os.getcwd(),"phantom_" + str(value_wm) + "_" + str(value_gm) + "_" + str(std_noise) + "_image" + image)
     folder_atlas = "data/final_results"
 
     if not os.path.exists(folder_out):
