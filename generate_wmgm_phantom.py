@@ -175,13 +175,14 @@ def main():
     # loop across gm_value and std_values and generate phantom
     for gm_value in gm_values:
         for std_noise in std_noises:
+            data_tracts_modif = data_tracts.copy()
             # Add values to each tract
-            data_tracts[:, :, ind_wm] *= wm_value
-            data_tracts[:, :, ind_gm] *= gm_value
+            data_tracts_modif[:, :, ind_wm] *= wm_value
+            data_tracts_modif[:, :, ind_gm] *= gm_value
             # sum across labels
-            data_phantom = np.sum(data_tracts, axis=2)
+            data_phantom = np.sum(data_tracts_modif, axis=2)
             # add noise
-            if not std_noise:
+            if std_noise:
                 data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny))
             # save as nifti file
             affine = np.diag([1, 1, 1, 1])
