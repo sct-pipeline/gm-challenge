@@ -3,14 +3,19 @@
 # Generates a synthetic phantom from the WM and GM atlas.
 # Saves the phantom to a NIfTI image
 #
+# USAGE:
 # The script should be launched using SCT's python:
-#
-#    cd $SCT_DIR
-#    source python/bin/activate
-#    python generate_wmgm_phantom.py <value_wm> <value_gm> <std_noise> <image>
+#   cd $SCT_DIR
+#   source python/bin/activate
+#   python generate_wmgm_phantom.py <value_wm> <value_gm> <std_noise> <output_image>
 #
 # Example of usage:
-#    python generate_wmgm_phantom.py 50 40 10 created_phantom.nii.gz
+#   python generate_wmgm_phantom.py -wm 50 -gm 40 -std 10
+#
+# OUTPUT:
+# The script generates a file with the name:
+#   phantom_WMxxx_GMyyy_STDzzz.nii.gz
+#   where xxx, yyy and zzz are the chose values.
 #
 # Authors: Stephanie Alley, Julien Cohen-Adad
 # License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
@@ -19,7 +24,7 @@
 import os
 import argparse
 import glob
-import sct_utils as sct
+# import sct_utils as sct
 import numpy as np
 import random
 import nibabel as nib
@@ -29,9 +34,7 @@ def get_parameters():
     parser.add_argument('value_wm', type=int)
     parser.add_argument('value_gm', type=int)
     parser.add_argument('std_noise', type=int)
-    parser.add_argument('image')
     args = parser.parse_args()
-
     return args
 
 #=======================================================================================================================
@@ -52,8 +55,8 @@ def get_tracts(tracts_folder):
     
     #Reshape tracts if it is the 2D image instead of 3D
     for label in range(0, len(fname_tract)):
-       if (tracts[label,0]).ndim == 2:
-           tracts[label,0] = tracts[label,0].reshape(int(np.size(tracts[label,0],0)), int(np.size(tracts[label,0],1)),1)
+       if (tracts[label, 0]).ndim == 2:
+           tracts[label, 0] = tracts[label, 0].reshape(int(np.size(tracts[label, 0], 0)), int(np.size(tracts[label, 0], 1)), 1)
     return tracts
 
 #=======================================================================================================================
@@ -130,11 +133,25 @@ def save_3D_nparray_nifti(np_matrix_3d, output_image):
     nib.save(np_matrix_3d_nii, os.path.join(folder_out,output_image))
     return None
 
+
 def main():
+    # parameters
+    args = get_parameters()
+    value_wm = args.value_wm
+    value_gm = args.value_gm
+    std_noise = args.std_noise
+    range_tract = 0  # we do not want heterogeneity within WM and within GM. All tracts should have the same value.
+    folder_out = os.path.join(os.getcwd(), "phantom_WM" + str(value_wm) + "_GM" + str(value_gm) + "_STD" + str(std_noise) + ".nii.gz")
+
+
+    # retrieve path to PAM50 atlas
+    path_sct = os.getenv('SCT_DIR')
+    folder_atlas = os.path.join(path_sct, "data/PAM50/atlas/")
+
     # Generated phantom with and without noise
-    phantom = 'phantom.nii.gz'
-    phantom_noise = 'phantom_noise_' + image + '.nii.gz'
-    tracts_sum_img = 'tracts_sum.nii.gz'
+    # phantom = 'phantom.nii.gz'
+    # phantom_noise = 'phantom_noise_' + image + '.nii.gz'
+    # tracts_sum_img = 'tracts_sum.nii.gz'
 
     # Extract the tracts from the atlas folder
     tracts = get_tracts(folder_atlas)
@@ -153,23 +170,12 @@ def main():
     
     # adjust geometry between saved images and tracts
     fname_tract = glob.glob(os.path.join(folder_atlas, "*.nii.gz"))
-    sct.run('fslcpgeom ' + fname_tract[0] + ' ' + os.path.join(folder_out,phantom))
-    sct.run('fslcpgeom ' + fname_tract[0] + ' ' + os.path.join(folder_out,phantom_noise))
-    sct.run('fslcpgeom ' + fname_tract[0] + ' ' + os.path.join(folder_out,tracts_sum_img))
+    # sct.run('fslcpgeom ' + fname_tract[0] + ' ' + os.path.join(folder_out,phantom))
+    # sct.run('fslcpgeom ' + fname_tract[0] + ' ' + os.path.join(folder_out,phantom_noise))
+    # sct.run('fslcpgeom ' + fname_tract[0] + ' ' + os.path.join(folder_out,tracts_sum_img))
 
 if __name__ == "__main__":
-    args = get_parameters()
-    
-    # Phantom parameters
-    value_wm = args.value_wm
-    value_gm = args.value_gm
-    std_noise = args.std_noise
-    image = args.image
-    range_tract = 5
-    folder_out = os.path.join(os.getcwd(),"phantom_" + str(value_wm) + "_" + str(value_gm) + "_" + str(std_noise) + "_image" + image)
-    folder_atlas = "data/final_results"
-
-    if not os.path.exists(folder_out):
-        os.makedirs(folder_out)
-    fname_phantom = os.path.join(folder_out, 'phantom_values.txt')
+    # if not os.path.exists(folder_out):
+    #     os.makedirs(folder_out)
+    # fname_phantom = os.path.join(folder_out, 'phantom_values.txt')
     main()
