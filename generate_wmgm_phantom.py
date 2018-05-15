@@ -7,15 +7,14 @@
 # The script should be launched using SCT's python:
 #   cd $SCT_DIR
 #   source python/bin/activate
-#   python generate_wmgm_phantom.py <value_wm> <value_gm> <std_noise> <output_image>
+#   python generate_wmgm_phantom.py
 #
-# Example of usage:
-#   python generate_wmgm_phantom.py -wm 50 -gm 40 -std 10
+# Ranges of GM and noise STD can be changed inside the code. They are hard-coded so that a specific version of the code
+# can be tagged, and will always produce the same results (whereas if we allow users to enter params, the output will
+# depends on the input params).
 #
 # OUTPUT:
-# The script generates a file with the name:
-#   phantom_WMxxx_GMyyy_STDzzz.nii.gz
-#   where xxx, yyy and zzz are the chose values.
+# The script generates a collection of files under local folder data_phantom/
 #
 # Authors: Stephanie Alley, Julien Cohen-Adad
 # License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
@@ -40,10 +39,8 @@ from spinalcordtoolbox.metadata import read_label_file, parse_id_group
 
 
 def get_parameters():
-    parser = argparse.ArgumentParser(description='Generate a phantom for measuring metric sensitivity')
-    parser.add_argument('value_wm', type=int)
-    parser.add_argument('value_gm', type=int)
-    parser.add_argument('std_noise', type=int)
+    parser = argparse.ArgumentParser(description='Generate a synthetic spinal cord phantom with various values of gray '
+                                                 'matter and Gaussian noise amplitude.')
     args = parser.parse_args()
     return args
 
