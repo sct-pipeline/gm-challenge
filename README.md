@@ -9,6 +9,7 @@ The objective for this challenge is to propose a protocol that will generate the
 please see: https://goo.gl/2owcL7.
 
 * [WMGM.py](./WMGM.py): Process data using SCT and compute image quality metrics. More details [here](#analysis).
+* [data/](./data): Example dataset to try WMGM.py on.
 * [generate_wmgm_phantom.py](./generate_wmgm_phantom.py): generate synthetic phantom of WM and GM to validate the present pipeline.
 
 ### Dependencies
