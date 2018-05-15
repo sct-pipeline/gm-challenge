@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #
-# Generates a synthetic phantom from the WM and GM atlas.
-# Saves the phantom to a NIfTI image
+# Generates synthetic phantoms from the WM and GM atlas.
 #
 # USAGE:
 # The script should be launched using SCT's python:
