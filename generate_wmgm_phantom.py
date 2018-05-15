@@ -7,14 +7,14 @@
 # The script should be launched using SCT's python:
 #   cd $SCT_DIR
 #   source python/bin/activate
-#   python generate_wmgm_phantom.py
+#   python generate_wmgm_phantom.py data_phantom
 #
 # Ranges of GM and noise STD can be changed inside the code. They are hard-coded so that a specific version of the code
 # can be tagged, and will always produce the same results (whereas if we allow users to enter params, the output will
 # depends on the input params).
 #
 # OUTPUT:
-# The script generates a collection of files under local folder data_phantom/
+# The script generates a collection of files under specified folder.
 #
 # Authors: Stephanie Alley, Julien Cohen-Adad
 # License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
@@ -25,10 +25,7 @@
 
 import os, sys
 import argparse
-# import glob
-# import sct_utils as sct
 import numpy as np
-# import random
 import nibabel as nib
 # append path to useful SCT scripts
 path_sct = os.getenv('SCT_DIR')
@@ -41,6 +38,7 @@ from spinalcordtoolbox.metadata import read_label_file, parse_id_group
 def get_parameters():
     parser = argparse.ArgumentParser(description='Generate a synthetic spinal cord phantom with various values of gray '
                                                  'matter and Gaussian noise amplitude.')
+    parser.add_argument('folder_out', help='Name of the output folder')
     args = parser.parse_args()
     return args
 
@@ -86,13 +84,17 @@ def save_nifti(data, fname):
 
 
 def main():
+    sct.init_sct()  # start logger
     # default params
     wm_value = 50
     gm_values = [50, 60, 70, 80, 90, 100]
     std_noises = [0, 5, 10]
     zslice = 850  # 850: corresponds to mid-C4 level (enlargement)
-    folder_out = 'data_phantom'  # output folder
     range_tract = 0  # we do not want heterogeneity within WM and within GM. All tracts should have the same value.
+
+    # create output folder
+    if not os.path.exists(folder_out):
+        os.makedirs(folder_out)
 
     # Extract the tracts from the atlas folder
     folder_atlas = os.path.join(path_sct, "data/PAM50/atlas/")
@@ -128,8 +130,11 @@ def main():
     data_gm[np.where(data_gm >= 0.5)] = 1
     data_gm[np.where(data_gm < 0.5)] = 0
     save_nifti(data_gm, os.path.join(folder_out, "mask_gm.nii.gz"))
+    # display
+    sct.log.info("\nDone!")
 
 
 if __name__ == "__main__":
-    sct.init_sct()  # start logger
+    args = get_parameters()
+    folder_out = args.folder_out
     main()
