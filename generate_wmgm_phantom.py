@@ -147,7 +147,7 @@ def main():
     # default params
     wm_value = 50
     gm_values = [50, 60, 70, 80, 90, 100]
-    std_noises = [0, 10, 20, 40]
+    std_noises = [0, 5, 10]
     zslice = 850  # 850: corresponds to mid-C4 level (enlargement)
     folder_out = 'data_phantom'  # output folder
     range_tract = 0  # we do not want heterogeneity within WM and within GM. All tracts should have the same value.
