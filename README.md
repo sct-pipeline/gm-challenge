@@ -16,7 +16,7 @@ Two NIfTI files are required: an initial scan and a re-scan without repositionin
 SCT is used for all processing of the data.
 (2 files are uploaded)
 
----
+
 ## Analysis
 
 ### Processing
