@@ -36,6 +36,7 @@ path_sct = os.getenv('SCT_DIR')
 sys.path.append(os.path.join(path_sct, 'scripts'))
 import sct_utils as sct
 from msct_image import Image
+from spinalcordtoolbox.metadata import read_label_file, parse_id_group
 
 
 def get_parameters():
@@ -49,27 +50,32 @@ def get_parameters():
 #=======================================================================================================================
 # Get tracts 
 #=======================================================================================================================
-def get_tracts(tracts_folder, zslice=500):
+def get_tracts(folder_atlas, zslice=500):
     """
     Loads tracts in an atlas folder and converts them from .nii.gz format to numpy ndarray
     :param tracts_folder:
     :param zslice: slice to select for generating the phantom
     :return: ndarray nx,ny,nb_tracts
     """
-    fname_tracts = glob.glob(tracts_folder + '/*' + '.nii.gz')
-    nb_tracts = np.size(fname_tracts)
-    # load first file to get dimensions
-    im = Image(fname_tracts[0])
-    nx, ny, nz, nt, px, py, pz, pt = im.dim
+    # parameters
+    file_info_label = 'info_label.txt'
+    # read info labels
+    indiv_labels_ids, indiv_labels_names, indiv_labels_files, combined_labels_ids, combined_labels_names, combined_labels_id_groups, ml_clusters = read_label_file(
+        folder_atlas, file_info_label)
 
+    # fname_tracts = glob.glob(folder_atlas + '/*' + '.nii.gz')
+    nb_tracts = np.size(indiv_labels_files)
+    # load first file to get dimensions
+    im = Image(os.path.join(folder_atlas, indiv_labels_files[0]))
+    nx, ny, nz, nt, px, py, pz, pt = im.dim
     # initialize data tracts
     data_tracts = np.zeros([nx, ny, nb_tracts])
-
     #Load each partial volume of each tract
-    for i in range(0, len(fname_tracts)):
-        sct.no_new_line_log('Load each atlas label: {}/{}..'.format(i + 1, nb_tracts))
+    for i in range(nb_tracts):
+        sct.no_new_line_log('Load each atlas label: {}/{}'.format(i + 1, nb_tracts))
         # TODO: display counter
-        data_tracts[:, :, i] = Image(fname_tracts[i]).data[:, :, zslice]
+        data_tracts[:, :, i] = Image(os.path.join(folder_atlas, indiv_labels_files[i])).data[:, :, zslice]
+    return data_tracts
 
 
 def phantom_generation(tracts, std_noise_perc, range_tract_perc, value_wm, value_gm, folder_out):
@@ -145,14 +151,15 @@ def save_3D_nparray_nifti(np_matrix_3d, output_image):
 
 def main():
     # default params
-    zslice = 500
+    zslice = 850  # 850: corresponds to mid-C4 level (enlargement)
+    folder_out = 'data_phantom'  # output folder
     # parameters
     args = get_parameters()
     value_wm = args.value_wm
     value_gm = args.value_gm
     std_noise = args.std_noise
     range_tract = 0  # we do not want heterogeneity within WM and within GM. All tracts should have the same value.
-    folder_out = os.path.join(os.getcwd(), "phantom_WM" + str(value_wm) + "_GM" + str(value_gm) + "_STD" + str(std_noise) + ".nii.gz")
+    # folder_out = os.path.join(os.getcwd(), "phantom_WM" + str(value_wm) + "_GM" + str(value_gm) + "_STD" + str(std_noise) + ".nii.gz")
 
     folder_atlas = os.path.join(path_sct, "data/PAM50/atlas/")
 
@@ -163,6 +170,26 @@ def main():
 
     # Extract the tracts from the atlas folder
     data_tracts = get_tracts(folder_atlas, zslice=zslice)
+
+    # TODO: get WM and GM indexes from info_label.txt
+    ind_wm = range(0, 30)
+    ind_gm = range(30, 36)
+
+    # Add values to each tract
+    data_tracts[:, :, ind_wm] *= value_wm
+    data_tracts[:, :, ind_gm] *= value_gm
+
+    # sum across labels
+    data_phantom = np.sum(data_tracts, axis=2)
+
+    # save as nifti file
+    affine = np.diag([1, 1, 1, 1])
+    im_phantom = nib.Nifti1Image(data_phantom, affine)
+    fname_out = os.path.join(os.getcwd(), folder_out, "phantom_WM" + str(value_wm) + "_GM" + str(value_gm) + "_STD" + str(std_noise) + ".nii.gz")
+    nib.save(im_phantom, fname_out)
+
+
+
 
     # Generate the phantom
     [synthetic_vol, synthetic_voln, values_synthetic_data, tracts_sum] = phantom_generation(tracts, std_noise, range_tract, value_wm, value_gm, folder_out)
