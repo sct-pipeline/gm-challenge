@@ -169,6 +169,7 @@ def main():
     # Extract the tracts from the atlas folder
     folder_atlas = os.path.join(path_sct, "data/PAM50/atlas/")
     data_tracts = get_tracts(folder_atlas, zslice=zslice)
+    nx, ny, nb_tracts = data_tracts.shape
 
     # TODO: get WM and GM indexes from info_label.txt
     ind_wm = range(0, 30)
@@ -182,6 +183,9 @@ def main():
             data_tracts[:, :, ind_gm] *= gm_value
             # sum across labels
             data_phantom = np.sum(data_tracts, axis=2)
+            # add noise
+            if not std_noise:
+                data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny))
             # save as nifti file
             affine = np.diag([1, 1, 1, 1])
             im_phantom = nib.Nifti1Image(data_phantom, affine)
