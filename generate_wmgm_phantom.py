@@ -73,6 +73,18 @@ def get_tracts(folder_atlas, zslice=500):
     return data_tracts
 
 
+def save_nifti(data, fname):
+    """
+    Create a standard header with nibabel and save matrix as NIFTI
+    :param data:
+    :param fname:
+    :return:
+    """
+    affine = np.diag([1, 1, 1, 1])
+    im_phantom = nib.Nifti1Image(data, affine)
+    nib.save(im_phantom, fname)
+
+
 def main():
     # default params
     wm_value = 50
@@ -104,10 +116,18 @@ def main():
             if std_noise:
                 data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny))
             # save as nifti file
-            affine = np.diag([1, 1, 1, 1])
-            im_phantom = nib.Nifti1Image(data_phantom, affine)
-            fname_out = os.path.join(os.getcwd(), folder_out, "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_STD" + str(std_noise) + ".nii.gz")
-            nib.save(im_phantom, fname_out)
+            save_nifti(data_phantom, os.path.join(os.getcwd(), folder_out, "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_STD" + str(std_noise) + ".nii.gz"))
+
+    # generate mask of spinal cord
+    data_cord = np.sum(data_tracts, axis=2)
+    data_cord[np.where(data_cord >= 0.5)] = 1
+    data_cord[np.where(data_cord < 0.5)] = 0
+    save_nifti(data_cord, "mask_cord.nii.gz")
+    # generate mask of gray matter
+    data_gm = np.sum(data_tracts[ind_gm], axis=2)
+    data_gm[np.where(data_gm >= 0.5)] = 1
+    data_gm[np.where(data_gm < 0.5)] = 0
+    save_nifti(data_gm, "mask_gm.nii.gz")
 
 
 if __name__ == "__main__":
