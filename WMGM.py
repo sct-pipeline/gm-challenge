@@ -1,13 +1,20 @@
 #!/usr/bin/env python
 ##############################################################
 #
-# This script will execute commands for Spinal Cord Toolbox (SCT) to process the data and compute metrics for assessing the quality of the image.
+# This script will execute commands for Spinal Cord Toolbox (SCT) to process the data and compute metrics for assessing
+# the quality of the image.
 #
 # Two NIfTI files are required: an initial scan (image 1) and a re-scan without repositioning (image 2).
 #
-# The script should be launched as follows:
+# The script should be launched using SCT's python:
 #
-#      WMGM.py <image 1> <image 2>
+#    cd $SCT_DIR
+#    source python/bin/activate
+#    cd PATH_TO_DATA
+#    python PATH_OF_THIS_SCRIPT/WMGM.py <image 1> <image 2>
+#
+# Author: Stephanie Alley, Julien Cohen-Adad
+# Copyright: see:
 #
 ##############################################################
 
