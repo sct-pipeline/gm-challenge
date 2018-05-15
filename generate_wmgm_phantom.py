@@ -1,9 +1,20 @@
 #!/usr/bin/env python
-
-# Generates a phantom from an atlas of tracts
+#
+# Generates a synthetic phantom from the WM and GM atlas.
 # Saves the phantom to a NIfTI image
+#
+# The script should be launched using SCT's python:
+#
+#    cd $SCT_DIR
+#    source python/bin/activate
+#    python generate_wmgm_phantom.py <value_wm> <value_gm> <std_noise> <image>
+#
+# Example of usage:
+#    python generate_wmgm_phantom.py 50 40 10 created_phantom.nii.gz
+#
+# Authors: Stephanie Alley, Julien Cohen-Adad
+# License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
-# To run: generate_wmgm_phantom.py <value_wm> <value_gm> <std_noise> <image>
 
 import os
 import argparse
