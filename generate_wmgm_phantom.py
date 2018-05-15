@@ -116,18 +116,18 @@ def main():
             if std_noise:
                 data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny))
             # save as nifti file
-            save_nifti(data_phantom, os.path.join(os.getcwd(), folder_out, "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_STD" + str(std_noise) + ".nii.gz"))
+            save_nifti(data_phantom, os.path.join(folder_out, "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_STD" + str(std_noise) + ".nii.gz"))
 
     # generate mask of spinal cord
     data_cord = np.sum(data_tracts, axis=2)
     data_cord[np.where(data_cord >= 0.5)] = 1
     data_cord[np.where(data_cord < 0.5)] = 0
-    save_nifti(data_cord, "mask_cord.nii.gz")
+    save_nifti(data_cord, os.path.join(folder_out, "mask_cord.nii.gz"))
     # generate mask of gray matter
-    data_gm = np.sum(data_tracts[ind_gm], axis=2)
+    data_gm = np.sum(data_tracts[:, :, ind_gm], axis=2)
     data_gm[np.where(data_gm >= 0.5)] = 1
     data_gm[np.where(data_gm < 0.5)] = 0
-    save_nifti(data_gm, "mask_gm.nii.gz")
+    save_nifti(data_gm, os.path.join(folder_out, "mask_gm.nii.gz"))
 
 
 if __name__ == "__main__":
