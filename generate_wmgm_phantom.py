@@ -20,14 +20,23 @@
 # Authors: Stephanie Alley, Julien Cohen-Adad
 # License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
+# TODO: remove input params and set them as list inside code
+# TODO: download PAM50 by default, and have option to set path to atlas
+# TDOD: param for selecting z
 
-import os
+import os, sys
 import argparse
 import glob
 # import sct_utils as sct
 import numpy as np
 import random
 import nibabel as nib
+# append path to useful SCT scripts
+path_sct = os.getenv('SCT_DIR')
+sys.path.append(os.path.join(path_sct, 'scripts'))
+import sct_utils as sct
+from msct_image import Image
+
 
 def get_parameters():
     parser = argparse.ArgumentParser(description='Generate a phantom for measuring metric sensitivity')
@@ -40,28 +49,28 @@ def get_parameters():
 #=======================================================================================================================
 # Get tracts 
 #=======================================================================================================================
-def get_tracts(tracts_folder):
-    # Loads tracts in an atlas folder and converts them from .nii.gz format to numpy ndarray 
-    # Save path of each tracts
-    # Only the tract must be in tracts_format in the folder
-    fname_tract = glob.glob(tracts_folder + '/*' + '.nii.gz')
-    
-    #Initialise tracts variable as object because there are 4 dimensions
-    tracts = np.empty([len(fname_tract), 1], dtype=object)
-    
-    #Load each partial volume of each tract
-    for label in range(0, len(fname_tract)):
-       tracts[label, 0] = nib.load(fname_tract[label]).get_data()
-    
-    #Reshape tracts if it is the 2D image instead of 3D
-    for label in range(0, len(fname_tract)):
-       if (tracts[label, 0]).ndim == 2:
-           tracts[label, 0] = tracts[label, 0].reshape(int(np.size(tracts[label, 0], 0)), int(np.size(tracts[label, 0], 1)), 1)
-    return tracts
+def get_tracts(tracts_folder, zslice=500):
+    """
+    Loads tracts in an atlas folder and converts them from .nii.gz format to numpy ndarray
+    :param tracts_folder:
+    :param zslice: slice to select for generating the phantom
+    :return: ndarray nx,ny,nb_tracts
+    """
+    fname_tracts = glob.glob(tracts_folder + '/*' + '.nii.gz')
+    nb_tracts = np.size(fname_tracts)
+    # load first file to get dimensions
+    im = Image(fname_tracts[0])
+    nx, ny, nz, nt, px, py, pz, pt = im.dim
 
-#=======================================================================================================================
-# phantom generation
-#=======================================================================================================================
+    # initialize data tracts
+    data_tracts = np.zeros([nx, ny, nb_tracts])
+
+    #Load each partial volume of each tract
+    for i in range(0, len(fname_tracts)):
+        sct.no_new_line_log('Load each atlas label: {}/{}..'.format(i + 1, nb_tracts))
+        # TODO: display counter
+        data_tracts[:, :, i] = Image(fname_tracts[i]).data[:, :, zslice]
+
 
 def phantom_generation(tracts, std_noise_perc, range_tract_perc, value_wm, value_gm, folder_out):
     """
@@ -135,6 +144,8 @@ def save_3D_nparray_nifti(np_matrix_3d, output_image):
 
 
 def main():
+    # default params
+    zslice = 500
     # parameters
     args = get_parameters()
     value_wm = args.value_wm
@@ -143,9 +154,6 @@ def main():
     range_tract = 0  # we do not want heterogeneity within WM and within GM. All tracts should have the same value.
     folder_out = os.path.join(os.getcwd(), "phantom_WM" + str(value_wm) + "_GM" + str(value_gm) + "_STD" + str(std_noise) + ".nii.gz")
 
-
-    # retrieve path to PAM50 atlas
-    path_sct = os.getenv('SCT_DIR')
     folder_atlas = os.path.join(path_sct, "data/PAM50/atlas/")
 
     # Generated phantom with and without noise
@@ -154,7 +162,7 @@ def main():
     # tracts_sum_img = 'tracts_sum.nii.gz'
 
     # Extract the tracts from the atlas folder
-    tracts = get_tracts(folder_atlas)
+    data_tracts = get_tracts(folder_atlas, zslice=zslice)
 
     # Generate the phantom
     [synthetic_vol, synthetic_voln, values_synthetic_data, tracts_sum] = phantom_generation(tracts, std_noise, range_tract, value_wm, value_gm, folder_out)
@@ -178,4 +186,5 @@ if __name__ == "__main__":
     # if not os.path.exists(folder_out):
     #     os.makedirs(folder_out)
     # fname_phantom = os.path.join(folder_out, 'phantom_values.txt')
+    sct.init_sct()  # start logger
     main()
