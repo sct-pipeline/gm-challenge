@@ -6,49 +6,28 @@ import pandas as pd
 
 def get_parameters():
     parser = argparse.ArgumentParser(description='Measure metric sensitivity for GM challenge')
-    parser.add_argument('file_1')
-    parser.add_argument('file_2')
-    parser.add_argument('phantom_cord_seg')
-    parser.add_argument('phantom_gm_seg')
-    parser.add_argument('phantom_wm_seg')
+    parser.add_argument('image_1')
+    parser.add_argument('image_2')
     args = parser.parse_args()
-
     return args
 
 def main():
-    program = 'metric_sensitivity'
-    file_1 = args.file_1
-    file_2 = args.file_2
-    phantom_cord_seg = args.phantom_cord_seg
-    phantom_gm_seg = args.phantom_gm_seg
-    phantom_wm_seg = args.phantom_wm_seg
-    filename_1 = os.path.basename(file_1)
-    filename_2 = os.path.basename(file_2)
-
-    output_dir = os.path.dirname(file_1) + '/' + program
-
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
-
-    shutil.copy2(file_1, output_dir)
-    shutil.copy2(file_2, output_dir)
-
-    os.chdir(output_dir)
-
-    ########## Compute metrics
+    image_1 = os.path.basename(args.image_1)
+    image_2 = os.path.basename(args.image_2)
 
     # Initialize data frame for reporting results
     results = pd.DataFrame(np.nan, index=['SNR', 'Contrast'], columns=['Metric Value'])
 
+    ########## Compute metrics
+
     #------- SNR -------
     # Concatenate image 1 and image 2 to generate the proper input to sct_compute_snr
-    subprocess.check_output(
-        ["sct_image", "-i", os.path.join(filename_1 + ',' + filename_2), "-concat", "t",
-         "-o", "t2s_phantom_concat.nii.gz"], stdin=None, stderr=subprocess.STDOUT)
+    subprocess.check_output(["sct_image", "-i", os.path.join(image_1 + ',' + image_2), "-concat", "t",
+         "-o", "t2s_concat.nii.gz"], stdin=None, stderr=subprocess.STDOUT)
 
     # Calculate the SNR
     snr = subprocess.Popen(
-        ["sct_compute_snr", "-i", "t2s_phantom_concat.nii.gz", "-m", phantom_cord_seg, "-vol",
+        ["sct_compute_snr", "-i", "t2s_concat.nii.gz", "-m", "mask_cord.nii.gz", "-vol",
          "0,1"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     snr.wait()
 
@@ -61,12 +40,16 @@ def main():
     results.loc['SNR'] = snr_results[1].strip()
 
     #------- Contrast -------
-    # Compute the mean signal value in both the white matter and gray matter of image 1
-    subprocess.check_output(["sct_extract_metric", "-i", filename_1, "-f",
-                             phantom_wm_seg, "-method", "max", "-o", "mean_wm.txt"], stdin=None, stderr=subprocess.STDOUT)
+    # Generate a white matter mask
+    subprocess.check_output(["sct_maths", "-i", "mask_cord.nii.gz", "-sub",
+                             "mask_gm.nii.gz", "-o", "mask_wm.nii.gz"], stdin=None, stderr=subprocess.STDOUT)
 
-    subprocess.check_output(["sct_extract_metric", "-i", filename_1, "-f",
-                             phantom_gm_seg, "-method", "max", "-o", "mean_gm.txt"], stdin=None, stderr=subprocess.STDOUT)
+    # Compute the mean signal value in both the white matter and gray matter of image 1
+    subprocess.check_output(["sct_extract_metric", "-i", image_1, "-f",
+                             "mask_wm.nii.gz", "-method", "max", "-o", "mean_wm.txt"], stdin=None, stderr=subprocess.STDOUT)
+
+    subprocess.check_output(["sct_extract_metric", "-i", image_1, "-f",
+                             "mask_gm.nii.gz", "-method", "max", "-o", "mean_gm.txt"], stdin=None, stderr=subprocess.STDOUT)
 
     # Extract the mean signal value for the white matter and the gray matter
     with open("mean_wm.txt") as file:
@@ -84,13 +67,15 @@ def main():
 
     results.loc['Contrast'] = contrast
 
-    if os.path.isfile('metric_sensitivity.txt'):
-        os.remove('metric_sensitivity.txt')
+    image_name = image_1.split(os.extsep)[0]
+
+    if os.path.isfile(os.path.join(image_name + '_metric_sensitivity.txt')):
+        os.remove(os.path.join(image_name + '_metric_sensitivity.txt'))
 
     # Write metric values to a text file
     results.columns = ['']
 
-    results_to_return = open('metric_sensitivity.txt', 'w')
+    results_to_return = open(os.path.join(image_name + '_metric_sensitivity.txt'), 'w')
     results_to_return.write('The following metric values were calculated:\n')
     results_to_return.write(results.__repr__())
     results_to_return.close()
