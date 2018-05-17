@@ -9,7 +9,6 @@ class Param:
     def __init__(self):
         parameters = sys.argv[:]
 
-        self.program = os.path.basename(parameters[0])
         self.dir_data = os.path.dirname(parameters[2])
         self.num = parameters[1]
 
@@ -30,7 +29,7 @@ def err(output):
         print(status[0])
 
 def main():
-    program = param.program
+    program = "WMGM"
     dir_data = param.dir_data
     num = param.num
     file_1 = param.file_1
