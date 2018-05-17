@@ -1,12 +1,4 @@
 <?php
-$allowed_connections=null;
-$computer='ferguson.neuro.polymtl.ca';
-$ip_computer='132.207.154.78';
-$user_computer='niftyweb_sct';
-$password_computer='x%9C%2BN.%C9%CF%CFI%CA%AF%00%00%13I%03%DE';
-$path_computer='/home/niftyweb_sct/data_tmp';
-$contact_email='stephanie.alley@polymtl.ca';
-
 $program='WMGM';
 $link_short='SCGM';
 $image='wmgm.png';
