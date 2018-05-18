@@ -87,7 +87,6 @@ def main():
         err(seg_wm_v1)
 
     # Analysis: compute metrics
-
     # Initialize data frame for reporting results
     results = pd.DataFrame(np.nan, index=['SNR', 'Contrast', 'Sharpness'], columns=['Metric Value'])
 
