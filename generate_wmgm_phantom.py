@@ -42,7 +42,7 @@ def get_parameters():
     return args
 
 
-def get_tracts(folder_atlas, zslice=500):
+def get_tracts(folder_atlas, zslice=500, num_slice=10):
     """
     Loads tracts in an atlas folder and converts them from .nii.gz format to numpy ndarray
     :param tracts_folder:
@@ -61,12 +61,12 @@ def get_tracts(folder_atlas, zslice=500):
     im = Image(os.path.join(folder_atlas, indiv_labels_files[0]))
     nx, ny, nz, nt, px, py, pz, pt = im.dim
     # initialize data tracts
-    data_tracts = np.zeros([nx, ny, nb_tracts])
+    data_tracts = np.zeros([nx, ny, num_slice, nb_tracts])
     #Load each partial volume of each tract
     for i in range(nb_tracts):
         sct.no_new_line_log('Load each atlas label: {}/{}'.format(i + 1, nb_tracts))
         # TODO: display counter
-        data_tracts[:, :, i] = Image(os.path.join(folder_atlas, indiv_labels_files[i])).data[:, :, zslice]
+        data_tracts[:, :, :, i] = Image(os.path.join(folder_atlas, indiv_labels_files[i])).data[:, :, zslice-(num_slice/2):zslice+(num_slice/2)]
     return data_tracts
 
 
@@ -89,6 +89,7 @@ def main():
     gm_values = [50, 60, 70, 80, 90, 100]
     std_noises = [0, 5, 10]
     zslice = 850  # 850: corresponds to mid-C4 level (enlargement)
+    num_slice = 10
     range_tract = 0  # we do not want heterogeneity within WM and within GM. All tracts should have the same value.
 
     # create output folder
@@ -97,8 +98,8 @@ def main():
 
     # Extract the tracts from the atlas folder
     folder_atlas = os.path.join(path_sct, "data/PAM50/atlas/")
-    data_tracts = get_tracts(folder_atlas, zslice=zslice)
-    nx, ny, nb_tracts = data_tracts.shape
+    data_tracts = get_tracts(folder_atlas, zslice=zslice, num_slice=num_slice)
+    nx, ny, nz, nb_tracts = data_tracts.shape
 
     # TODO: get WM and GM indexes from info_label.txt
     ind_wm = range(0, 30)
@@ -109,23 +110,23 @@ def main():
         for std_noise in std_noises:
             data_tracts_modif = data_tracts.copy()
             # Add values to each tract
-            data_tracts_modif[:, :, ind_wm] *= wm_value
-            data_tracts_modif[:, :, ind_gm] *= gm_value
+            data_tracts_modif[:, :, :, ind_wm] *= wm_value
+            data_tracts_modif[:, :, :, ind_gm] *= gm_value
             # sum across labels
-            data_phantom = np.sum(data_tracts_modif, axis=2)
+            data_phantom = np.sum(data_tracts_modif, axis=3)
             # add noise
             if std_noise:
-                data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny))
+                data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny, nz))
             # save as nifti file
             save_nifti(data_phantom, os.path.join(folder_out, "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_STD" + str(std_noise) + ".nii.gz"))
 
     # generate mask of spinal cord
-    data_cord = np.sum(data_tracts, axis=2)
+    data_cord = np.sum(data_tracts, axis=3)
     data_cord[np.where(data_cord >= 0.5)] = 1
     data_cord[np.where(data_cord < 0.5)] = 0
     save_nifti(data_cord, os.path.join(folder_out, "mask_cord.nii.gz"))
     # generate mask of gray matter
-    data_gm = np.sum(data_tracts[:, :, ind_gm], axis=2)
+    data_gm = np.sum(data_tracts[:, :, :, ind_gm], axis=3)
     data_gm[np.where(data_gm >= 0.5)] = 1
     data_gm[np.where(data_gm < 0.5)] = 0
     save_nifti(data_gm, os.path.join(folder_out, "mask_gm.nii.gz"))
