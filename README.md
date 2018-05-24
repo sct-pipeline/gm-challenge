@@ -8,11 +8,11 @@ Spinal cord gray matter imaging challenge for the 5th Spinal Cord Workshop (June
 The objective for this challenge is to propose a protocol that will generate the best image quality. For more details,
 please see: https://goo.gl/2owcL7.
 
-* [WMGM.py](./WMGM.py): Process data using SCT and compute image quality metrics. More details [here](#analysis).
-* [data/](./data): Example dataset to try WMGM.py on.
-* [generate_wmgm_phantom.py](./generate_wmgm_phantom.py): generate synthetic phantom of WM and GM to validate the present pipeline. The idea here is to run this function two times, and then to run WMGM.py pairwise, example:
+* [process_data.py](./process_data.py): Process data using SCT and compute image quality metrics. More details [here](#analysis).
+* [data/](./data): Example dataset to try process_data.py on.
+* [generate_wmgm_phantom.py](./generate_wmgm_phantom.py): generate synthetic phantom of WM and GM to validate the present pipeline. The idea here is to run this function two times, and then to run process_data.py pairwise, example:
 ```
-WMGM.py phantom1/phantom_WM50_GM80_STD0.nii.gz phantom2/phantom_WM50_GM80_STD0.nii.gz
+process_data.py phantom1/phantom_WM50_GM80_STD0.nii.gz phantom2/phantom_WM50_GM80_STD0.nii.gz
 ```
 
 ### Dependencies
