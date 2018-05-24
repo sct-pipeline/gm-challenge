@@ -87,7 +87,7 @@ def main():
     sct.init_sct()  # start logger
     # default params
     wm_value = 50
-    gm_values = [50, 60, 70]
+    gm_values = [50, 60, 70, 80, 90, 100]
     std_noises = [0, 5, 10]
     smoothing = [0, 1, 2]
     zslice = 850  # 850: corresponds to mid-C4 level (enlargement)
