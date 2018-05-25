@@ -178,20 +178,32 @@ def main():
 
     # Package results inside folder
     # TODO
-    # Copy text file containing results to segmentations folder
-    shutil.copy2(os.path.join(file_output), os.path.join(output_dir + '/segmentations'))
+    #Package results for daemon
+    if num:
+        # Create folder for segmentations
+        segmentations = os.path.join(output_dir + '/segmentations/')
+        if not os.path.exists(segmentations):
+            os.makedirs(segmentations)
 
-    # Create ZIP file of segmentation results
-    shutil.make_archive(os.path.join(num + '_' + program + '_results'), 'zip', os.path.join(output_dir + '/segmentations'))
+        # Copy data1_seg.nii.gz and data1_gmseg.nii.gz to segmentations folder
+        shutil.copy2("data1_seg.nii.gz", segmentations)
+        shutil.copy2("data1_gmseg.nii.gz", segmentations)
 
-    # Move results files to data directory 
-    if os.path.isfile(os.path.join(dir_data + '/' + num + '_' + program + '_results' + '.txt')):
-        os.remove(os.path.join(dir_data + '/' + num + '_' + program + '_results' + '.txt'))
-    shutil.move(os.path.join(output_dir + '/segmentations/' + num + '_' + program + '_results' + '.txt'), os.path.join(dir_data  + '/' + num + '_' + program + '.txt'))
+        # Copy text file containing results to segmentations folder
+        shutil.copy2(os.path.join(file_output), segmentations)
 
-    if os.path.isfile(os.path.join(dir_data + '/' + num + '_' + program + '_results' + '.zip')):
-        os.remove(os.path.join(dir_data + '/' + num + '_' + program + '_results' + '.zip'))
-    shutil.move(os.path.join(num + '_' + program + '_results' + '.zip'), os.path.join(dir_data  + '/' + num + '_' + program + '.zip'))
+        # Create ZIP file of segmentation results
+        shutil.make_archive(os.path.join(num + '_WMGM_results'), 'zip', segmentations)
+
+        # Move results files to data directory 
+        if os.path.isfile(os.path.join(dir_data + '/' + num + '_WMGM_results.txt')):
+            os.remove(os.path.join(dir_data + '/' + num + '_WMGM_results.txt'))
+        shutil.move(os.path.join(output_dir, segmentations, num + '_WMGM_results.txt'), os.path.join(dir_data  + '/' + num + '_WMGM.txt'))
+
+        if os.path.isfile(os.path.join(dir_data + '/' + num + '_WMGM_results.zip')):
+            os.remove(os.path.join(dir_data + '/' + num + '_WMGM_results.zip'))
+        shutil.move(os.path.join(num + '_WMGM_results.zip'), os.path.join(dir_data  + '/' + num + '_WMGM.zip'))
+    else: #TODO package results otherwise
 
 
 if __name__ == "__main__":
