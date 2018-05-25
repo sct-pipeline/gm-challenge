@@ -106,7 +106,8 @@ def compute_sharpness(file_data, file_mask_gm):
 
 
 def main():
-    output_dir = './output_wmgm'  # TODO: be able to set with argument
+    output_dir = "./output_wmgm"  # TODO: be able to set with argument
+    file_output = "results.txt"
     fdata2 = "data2.nii.gz"
 
     if not os.path.isdir(output_dir):
@@ -158,44 +159,24 @@ def main():
 
     # Compute sharpness at GM/WM interface
     results.loc['Sharpness'] = compute_sharpness("data1.nii.gz", "data1_gmseg.nii.gz")
-    #
-    # #------- Sharpness -------
-    # laplacian = subprocess.Popen(["sct_maths", "-i", os.path.join(volume_1 + '.' + ext), "-laplacian", "3", "-o",
-    #                          os.path.join(volume_1 + '_lap' + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    # laplacian.wait()
-    # err(laplacian)
-    #
-    # if not os.path.exists(os.path.join(output_dir,volume_1 + '_seg_manual' + '.' + ext)):
-    #     mean_lap = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '_lap' + '.' + ext), "-f",
-    #                          os.path.join(volume_1 + '_seg' + '.' + ext), "-method", "max", "-o", "sharpness.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    #     mean_lap.wait()
-    #     err(mean_lap)
-    # else:
-    #     mean_lap = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '_lap' + '.' + ext), "-f",
-    #                          os.path.join(volume_1 + '_seg_manual' + '.' + ext), "-method", "max", "-o", "sharpness.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    #     mean_lap.wait()
-    #     err(mean_lap)
-    #
-    # with open("sharpness.txt") as file:
-    #     output_sharp = file.readlines()
-    #
-    # sharpness = output_sharp[-1].split(",")
-    #
-    # results.loc['Sharpness'] = sharpness[3]
-    #
-    # if os.path.isfile(os.path.join(num + '_' + program + '_results' + '.txt')):
-    #     os.remove(os.path.join(num + '_' + program + '_results' + '.txt'))
 
+    # Display results
     results.columns = ['']
 
-    results_to_return = open(os.path.join(num + '_' + program + '_results' + '.txt'), 'w')
+    results_to_return = open(os.path.join(file_output), 'w')
     results_to_return.write('The following metric values were calculated:\n')
     results_to_return.write(results.__repr__())
-    results_to_return.write('\n\nA text file containing this information, as well as the image segmentations, is available for download through the link below. Please note that these are the intermediate results (automatically processed). We acknowledge that manual adjustment of the cord and gray matter segmentations might be necessary. They will be performed in the next few days, and the final results will be sent back to you.\n')
+    results_to_return.write('\n\nA text file containing this information, as well as the image segmentations, are '
+                            'available for download through the link below. Please note that these are the intermediate '
+                            'results (automatically processed). We acknowledge that manual adjustment of the cord and '
+                            'gray matter segmentations might be necessary. They will be performed in the next few days, '
+                            'and the final results will be sent back to you.\n')
     results_to_return.close()
 
+    # Package results inside folder
+    # TODO
     # Copy text file containing results to segmentations folder
-    shutil.copy2(os.path.join(num + '_' + program + '_results' + '.txt'), os.path.join(output_dir + '/segmentations'))
+    shutil.copy2(os.path.join(file_output), os.path.join(output_dir + '/segmentations'))
 
     # Create ZIP file of segmentation results
     shutil.make_archive(os.path.join(num + '_' + program + '_results'), 'zip', os.path.join(output_dir + '/segmentations'))
