@@ -81,6 +81,30 @@ def compute_contrast(file_data, file_mask1, file_mask2):
     return abs(mean_mask1 - mean_mask2) / min(mean_mask1, mean_mask2)
 
 
+def compute_sharpness(file_data, file_mask_gm):
+    """
+    Compute sharpness at GM/WM interface. The mask of GM is dilated, and then subtracted from the GM mask, in order to
+    produce a mask at the GM/WM interfact. This mask is then used to extract the Laplacian value of the image. The
+    sharper the transition, the higher the Laplacian. Note that the Laplacian will also be affected by the underlying
+    WM/GM contrast, hence the WM and GM values need to be normalized before computing the Laplacian.
+    :param file_data:
+    :param file_mask_gm:
+    :return: float: sharpness
+    """
+    # Dilate GM mask
+    sct.run("sct_maths -i data1_gmseg.nii.gz -dilate 1 -o data1_gmseg_dil.nii.gz", verbose=verbose)
+    # Subtract to get mask at WM/GM interface
+    sct.run("sct_maths -i data1_gmseg_dil.nii.gz -sub data1_gmseg.nii.gz -o mask_interface.nii.gz", verbose=verbose)
+    # Compute Laplacian on image
+    sct.run("sct_maths -i data1.nii.gz -laplacian 0.5,0.5,0 -o data1_lapl.nii.gz", verbose=verbose)
+    # Normalize WM/GM before computing Laplacian
+    # TODO
+    # Extract Laplacian at WM/GM interface
+    sct.run("sct_extract_metric -i data1_lapl.nii.gz -f mask_interface.nii.gz -o laplacian.pickle", verbose=verbose)
+    # return
+    return pickle.load(io.open("laplacian.pickle"))["Metric value"][0]
+
+
 def main():
     output_dir = './output_wmgm'  # TODO: be able to set with argument
     fdata2 = "data2.nii.gz"
@@ -131,69 +155,36 @@ def main():
 
     # Compute contrast
     results.loc['Contrast'] = compute_contrast("data1.nii.gz", "data1_wmseg.nii.gz", "data1_gmseg.nii.gz")
+
+    # Compute sharpness at GM/WM interface
+    results.loc['Sharpness'] = compute_sharpness("data1.nii.gz", "data1_gmseg.nii.gz")
     #
-    # #------- Contrast -------
-    # if not os.path.exists(os.path.join(output_dir,volume_1 + '_gmseg_manual' + '.' + ext)):
-    #     mean_wm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
-    #                          os.path.join(volume_1 + '_wmseg' + '.' + ext), "-method", "max", "-o", "mean_wm.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    #     mean_wm.wait()
-    #     err(mean_wm)
+    # #------- Sharpness -------
+    # laplacian = subprocess.Popen(["sct_maths", "-i", os.path.join(volume_1 + '.' + ext), "-laplacian", "3", "-o",
+    #                          os.path.join(volume_1 + '_lap' + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # laplacian.wait()
+    # err(laplacian)
     #
-    #     mean_gm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
-    #                          os.path.join(volume_1 + '_gmseg' + '.' + ext), "-method", "max", "-o", "mean_gm.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    #     mean_gm.wait()
-    #     err(mean_gm)
+    # if not os.path.exists(os.path.join(output_dir,volume_1 + '_seg_manual' + '.' + ext)):
+    #     mean_lap = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '_lap' + '.' + ext), "-f",
+    #                          os.path.join(volume_1 + '_seg' + '.' + ext), "-method", "max", "-o", "sharpness.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    #     mean_lap.wait()
+    #     err(mean_lap)
     # else:
-    #     mean_wm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
-    #                          os.path.join(volume_1 + '_wmseg_manual' + '.' + ext), "-method", "max", "-o", "mean_wm.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    #     mean_wm.wait()
-    #     err(mean_wm)
+    #     mean_lap = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '_lap' + '.' + ext), "-f",
+    #                          os.path.join(volume_1 + '_seg_manual' + '.' + ext), "-method", "max", "-o", "sharpness.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    #     mean_lap.wait()
+    #     err(mean_lap)
     #
-    #     mean_gm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
-    #                          os.path.join(volume_1 + '_gmseg_manual' + '.' + ext), "-method", "max", "-o", "mean_gm.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    #     mean_gm.wait()
-    #     err(mean_gm)
+    # with open("sharpness.txt") as file:
+    #     output_sharp = file.readlines()
     #
-    # with open("mean_wm.txt") as file:
-    #     output_wm = file.readlines()
+    # sharpness = output_sharp[-1].split(",")
     #
-    # mean_wm_results = output_wm[-1].split(",")
+    # results.loc['Sharpness'] = sharpness[3]
     #
-    # with open("mean_gm.txt") as file:
-    #     output_gm = file.readlines()
-    #
-    # mean_gm_results = output_gm[-1].split(",")
-    #
-    # contrast = abs(float(mean_wm_results[3]) - float(mean_gm_results[3])) / min([float(mean_wm_results[3]), float(mean_gm_results[3])])
-    #
-    # results.loc['Contrast'] = contrast
-
-    #------- Sharpness -------
-    laplacian = subprocess.Popen(["sct_maths", "-i", os.path.join(volume_1 + '.' + ext), "-laplacian", "3", "-o",
-                             os.path.join(volume_1 + '_lap' + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    laplacian.wait()
-    err(laplacian)
-
-    if not os.path.exists(os.path.join(output_dir,volume_1 + '_seg_manual' + '.' + ext)):
-        mean_lap = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '_lap' + '.' + ext), "-f",
-                             os.path.join(volume_1 + '_seg' + '.' + ext), "-method", "max", "-o", "sharpness.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        mean_lap.wait()
-        err(mean_lap)
-    else:
-        mean_lap = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '_lap' + '.' + ext), "-f",
-                             os.path.join(volume_1 + '_seg_manual' + '.' + ext), "-method", "max", "-o", "sharpness.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        mean_lap.wait()
-        err(mean_lap)
-
-    with open("sharpness.txt") as file:
-        output_sharp = file.readlines()
-
-    sharpness = output_sharp[-1].split(",")
-
-    results.loc['Sharpness'] = sharpness[3]
-
-    if os.path.isfile(os.path.join(num + '_' + program + '_results' + '.txt')):
-        os.remove(os.path.join(num + '_' + program + '_results' + '.txt'))
+    # if os.path.isfile(os.path.join(num + '_' + program + '_results' + '.txt')):
+    #     os.remove(os.path.join(num + '_' + program + '_results' + '.txt'))
 
     results.columns = ['']
 
