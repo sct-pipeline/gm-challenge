@@ -47,6 +47,9 @@ def get_parameters():
                         type=int,
                         default=1,
                         required=False)
+    parser.add_argument("-n", "--num",
+                        help="NiftyWeb ID",
+                        required=False)
     parser.add_argument("-v", "--verbose",
                         help="Verbose {0,1}. Default=1",
                         type=int,
@@ -197,5 +200,6 @@ if __name__ == "__main__":
     file_seg = args.seg
     file_gmseg = args.gmseg
     register = args.register
+    num = args.num
     verbose = args.verbose
     main()
