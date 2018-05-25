@@ -111,32 +111,6 @@ def main():
     snr = np.float(output[output.index("SNR_diff =") + 11:])
     results.loc['SNR'] = snr
 
-    # #------- SNR -------
-    # concat = subprocess.Popen(
-    #     ["sct_image", "-i", os.path.join(volume_1 + '.' + ext + ',' + volume_2 + '_reg' + '.' + ext), "-concat", "t",
-    #      "-o", "t2s_concat.nii.gz"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    # concat.wait()
-    # err(concat)
-    #
-    # if not os.path.exists(os.path.join(output_dir,volume_1 + '_seg_manual' + '.' + ext)):
-    #     snr = subprocess.Popen(
-    #     ["sct_compute_snr", "-i", "t2s_concat.nii.gz", "-m", os.path.join(volume_1 + '_seg' + '.' + ext), "-vol",
-    #      "0,1"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    #     snr.wait()
-    # else:
-    #     snr = subprocess.Popen(
-    #     ["sct_compute_snr", "-i", "t2s_concat.nii.gz", "-m", os.path.join(volume_1 + '_seg_manual' + '.' + ext), "-vol",
-    #      "0,1"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    #     snr.wait()
-    #
-    # if snr.returncode != 0:
-    #     print(snr.communicate()[0])
-    #
-    # snr_output = snr.communicate()[0]
-    # snr_results = snr_output.split("SNR_diff =")
-
-    # results.loc['SNR'] = snr_results[1].strip()
-
     #------- Contrast -------
     if not os.path.exists(os.path.join(output_dir,volume_1 + '_gmseg_manual' + '.' + ext)):
         mean_wm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
