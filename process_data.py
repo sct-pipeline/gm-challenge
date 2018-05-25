@@ -50,23 +50,6 @@ def get_parameters():
     return args
 
 
-# class Param:
-#     def __init__(self):
-#         parameters = sys.argv[:]
-#
-#         self.dir_data = os.path.dirname(parameters[2])
-#         self.num = parameters[1]
-#
-#         self.file_1 = parameters[2]
-#         self.file_2 = parameters[3]
-#
-#         self.filename_1 = os.path.basename(parameters[2])
-#         self.filename_2 = os.path.basename(parameters[3])
-#
-#         self.volume_1 = self.filename_1.split(os.extsep)[0]
-#         self.volume_2 = self.filename_2.split(os.extsep)[0]
-#         self.ext = '.'.join(self.filename_1.split(os.extsep)[1:])
-
 def err(output):
     status = output.communicate()
 
@@ -75,16 +58,7 @@ def err(output):
 
 
 def main():
-    # program = "WMGM"
-    # dir_data = param.dir_data
-    # num = param.num
-    # file_1 = param.file_1
-    # file_2 = param.file_2
-    # volume_1 = param.volume_1
-    # volume_2 = param.volume_2
-    # ext = param.ext
-    # output_dir = os.path.join(dir_data + '/' + num + '_' + program)
-    output_dir = './output_wmgm'
+    output_dir = './output_wmgm'  # TODO: be able to set with argument
 
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
@@ -116,26 +90,6 @@ def main():
     # Register image 2 to image 1
     sct.run("sct_register_multimodal -i data2.nii.gz -d data1.nii.gz -param step=1,type=im,algo=slicereg,metric=CC "
             "-m mask_data1.nii.gz -x spline", verbose=verbose)
-
-    # Move cord and gray matter segmentations into a separate folder to be returned to the user
-    # segmentations = os.path.join(output_dir + '/segmentations')
-    # if not os.path.exists(segmentations):
-    #     os.makedirs('segmentations')
-    #
-    # shutil.copy2(os.path.join(volume_1 + '_seg' + '.' + ext), segmentations)
-    # shutil.copy2(os.path.join(volume_1 + '_gmseg' + '.' + ext), segmentations)
-    #
-    # if os.path.exists(os.path.join(output_dir,volume_1 + '_seg_manual' + '.' + ext)):
-    #     shutil.copy2(os.path.join(volume_1 + '_seg_manual' + '.' + ext), segmentations)
-    #     shutil.copy2(os.path.join(volume_1 + '_gmseg_manual' + '.' + ext), segmentations)
-
-    # # Generate white matter segmentation
-    # if not os.path.exists(os.path.join(volume_1 + '_wmseg_manual' + '.' + ext)):
-    #     seg_wm_v1 = subprocess.Popen(["sct_maths", "-i", os.path.join(volume_1 + '_seg' + '.' + ext), "-sub",
-    #                          os.path.join(volume_1 + '_gmseg' + '.' + ext), "-o",
-    #                          os.path.join(volume_1 + '_wmseg' + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    #     seg_wm_v1.wait()
-    #     err(seg_wm_v1)
 
     # Analysis: compute metrics
     # Initialize data frame for reporting results
