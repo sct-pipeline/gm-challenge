@@ -14,27 +14,45 @@
 # Authors: Stephanie Alley, Julien Cohen-Adad
 # License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
-import sys, os, shutil, subprocess, time
+import sys, os, shutil, subprocess, time, argparse
 import numpy as np
 import pandas as pd
+# append path to useful SCT scripts
+path_sct = os.getenv('SCT_DIR')
+sys.path.append(os.path.join(path_sct, 'scripts'))
+import sct_utils as sct
+from sct_convert import convert
 
 
-class Param:
-    def __init__(self):
-        parameters = sys.argv[:]
+def get_parameters():
+    parser = argparse.ArgumentParser(description='Compute metrics to assess the quality of spinal cord images. This '
+                                                 'script requires two input files of scan-rescan acquisitions, which '
+                                                 'will be used to compute the SNR. Other metrics (contrast, sharpness) '
+                                                 'will be computed from the first file.')
+    parser.add_argument("-i", "--input",
+                        help="List here the two nifti files to compute the metrics on, separated by space.",
+                        nargs='+',
+                        required=True)
+    args = parser.parse_args()
+    return args
 
-        self.dir_data = os.path.dirname(parameters[2])
-        self.num = parameters[1]
 
-        self.file_1 = parameters[2]
-        self.file_2 = parameters[3]
-
-        self.filename_1 = os.path.basename(parameters[2])
-        self.filename_2 = os.path.basename(parameters[3])
-
-        self.volume_1 = self.filename_1.split(os.extsep)[0]
-        self.volume_2 = self.filename_2.split(os.extsep)[0]
-        self.ext = '.'.join(self.filename_1.split(os.extsep)[1:])
+# class Param:
+#     def __init__(self):
+#         parameters = sys.argv[:]
+#
+#         self.dir_data = os.path.dirname(parameters[2])
+#         self.num = parameters[1]
+#
+#         self.file_1 = parameters[2]
+#         self.file_2 = parameters[3]
+#
+#         self.filename_1 = os.path.basename(parameters[2])
+#         self.filename_2 = os.path.basename(parameters[3])
+#
+#         self.volume_1 = self.filename_1.split(os.extsep)[0]
+#         self.volume_2 = self.filename_2.split(os.extsep)[0]
+#         self.ext = '.'.join(self.filename_1.split(os.extsep)[1:])
 
 def err(output):
     status = output.communicate()
@@ -42,26 +60,35 @@ def err(output):
     if output.returncode != 0:
         print(status[0])
 
+
 def main():
-    program = "WMGM"
-    dir_data = param.dir_data
-    num = param.num
-    file_1 = param.file_1
-    file_2 = param.file_2
-    volume_1 = param.volume_1
-    volume_2 = param.volume_2
-    ext = param.ext
-    output_dir = os.path.join(dir_data + '/' + num + '_' + program)
+    # program = "WMGM"
+    # dir_data = param.dir_data
+    # num = param.num
+    # file_1 = param.file_1
+    # file_2 = param.file_2
+    # volume_1 = param.volume_1
+    # volume_2 = param.volume_2
+    # ext = param.ext
+    # output_dir = os.path.join(dir_data + '/' + num + '_' + program)
+    output_dir = './output_wmgm'
 
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
-    shutil.copy2(file_1, output_dir)
-    shutil.copy2(file_2, output_dir)
+    # copy to output directory and convert to nii.gz
+
+    convert(file_data[0], os.path.join(output_dir, "data1.nii.gz"), squeeze_data=False, verbose=0)
+    convert(file_data[1], os.path.join(output_dir, "data2.nii.gz"), squeeze_data=False, verbose=0)
+
+    sct.convert()
+    shutil.copy2(file_data[0], os.path.join(output_dir, 'file1.nii.gz')
+    shutil.copy2(file_data[1], output_dir)
 
     os.chdir(output_dir)
 
     # Register image 2 to image 1
+    sct.run()
     register = subprocess.Popen(
         ["sct_register_multimodal", "-i", file_2, "-d", file_1, "-param", "step=1,type=im,algo=rigid", "-x", "nn", "-o",
          os.path.join(volume_2 + '_reg' + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -216,6 +243,8 @@ def main():
         os.remove(os.path.join(dir_data + '/' + num + '_' + program + '_results' + '.zip'))
     shutil.move(os.path.join(num + '_' + program + '_results' + '.zip'), os.path.join(dir_data  + '/' + num + '_' + program + '.zip'))
 
+
 if __name__ == "__main__":
-    param = Param()
+    args = get_parameters()
+    file_data = args.input
     main()
