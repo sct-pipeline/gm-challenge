@@ -17,7 +17,7 @@
 # TODO: get verbose working (current issue is sys.stdout.isatty()) is False, hence sct.run() is using sct.log with no terminal output
 # TODO: make flag to bypass registration (not needed for phantom)
 
-import sys, os, shutil, subprocess, time, argparse
+import sys, os, shutil, subprocess, time, argparse, pickle, io
 import numpy as np
 import pandas as pd
 # append path to useful SCT scripts
@@ -61,6 +61,24 @@ def err(output):
 
     if output.returncode != 0:
         print(status[0])
+
+
+def compute_contrast(file_data, file_mask1, file_mask2):
+    """
+    Compute contrast in image between two regions
+    :param file_data: image
+    :param file_mask1: mask for region 1
+    :param file_mask2: mask for region 2
+    :return: float: contrast
+    """
+    # Get mean value within mask
+    sct.run("sct_extract_metric -i " + file_data + " -f " + file_mask1 + " -method bin -o mean_mask1.pickle")
+    sct.run("sct_extract_metric -i " + file_data + " -f " + file_mask2 + " -method bin -o mean_mask2.pickle")
+    # Retrieve values from saved pickle
+    mean_mask1 = pickle.load(io.open("mean_mask1.pickle"))["Metric value"][0]
+    mean_mask2 = pickle.load(io.open("mean_mask2.pickle"))["Metric value"][0]
+    # Compute contrast
+    return abs(mean_mask1 - mean_mask2) / min(mean_mask1, mean_mask2)
 
 
 def main():
@@ -111,41 +129,44 @@ def main():
     snr = np.float(output[output.index("SNR_diff =") + 11:])
     results.loc['SNR'] = snr
 
-    #------- Contrast -------
-    if not os.path.exists(os.path.join(output_dir,volume_1 + '_gmseg_manual' + '.' + ext)):
-        mean_wm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
-                             os.path.join(volume_1 + '_wmseg' + '.' + ext), "-method", "max", "-o", "mean_wm.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        mean_wm.wait()
-        err(mean_wm)
-
-        mean_gm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
-                             os.path.join(volume_1 + '_gmseg' + '.' + ext), "-method", "max", "-o", "mean_gm.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        mean_gm.wait()
-        err(mean_gm)
-    else:
-        mean_wm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
-                             os.path.join(volume_1 + '_wmseg_manual' + '.' + ext), "-method", "max", "-o", "mean_wm.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        mean_wm.wait()
-        err(mean_wm)
-
-        mean_gm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
-                             os.path.join(volume_1 + '_gmseg_manual' + '.' + ext), "-method", "max", "-o", "mean_gm.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        mean_gm.wait()
-        err(mean_gm)
-
-    with open("mean_wm.txt") as file:
-        output_wm = file.readlines()
-
-    mean_wm_results = output_wm[-1].split(",")
-
-    with open("mean_gm.txt") as file:
-        output_gm = file.readlines()
-
-    mean_gm_results = output_gm[-1].split(",")
-
-    contrast = abs(float(mean_wm_results[3]) - float(mean_gm_results[3])) / min([float(mean_wm_results[3]), float(mean_gm_results[3])])
-
-    results.loc['Contrast'] = contrast
+    # Compute contrast
+    results.loc['Contrast'] = compute_contrast("data1.nii.gz", "data1_wmseg.nii.gz", "data1_gmseg.nii.gz")
+    #
+    # #------- Contrast -------
+    # if not os.path.exists(os.path.join(output_dir,volume_1 + '_gmseg_manual' + '.' + ext)):
+    #     mean_wm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
+    #                          os.path.join(volume_1 + '_wmseg' + '.' + ext), "-method", "max", "-o", "mean_wm.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    #     mean_wm.wait()
+    #     err(mean_wm)
+    #
+    #     mean_gm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
+    #                          os.path.join(volume_1 + '_gmseg' + '.' + ext), "-method", "max", "-o", "mean_gm.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    #     mean_gm.wait()
+    #     err(mean_gm)
+    # else:
+    #     mean_wm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
+    #                          os.path.join(volume_1 + '_wmseg_manual' + '.' + ext), "-method", "max", "-o", "mean_wm.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    #     mean_wm.wait()
+    #     err(mean_wm)
+    #
+    #     mean_gm = subprocess.Popen(["sct_extract_metric", "-i", os.path.join(volume_1 + '.' + ext), "-f",
+    #                          os.path.join(volume_1 + '_gmseg_manual' + '.' + ext), "-method", "max", "-o", "mean_gm.txt"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    #     mean_gm.wait()
+    #     err(mean_gm)
+    #
+    # with open("mean_wm.txt") as file:
+    #     output_wm = file.readlines()
+    #
+    # mean_wm_results = output_wm[-1].split(",")
+    #
+    # with open("mean_gm.txt") as file:
+    #     output_gm = file.readlines()
+    #
+    # mean_gm_results = output_gm[-1].split(",")
+    #
+    # contrast = abs(float(mean_wm_results[3]) - float(mean_gm_results[3])) / min([float(mean_wm_results[3]), float(mean_gm_results[3])])
+    #
+    # results.loc['Contrast'] = contrast
 
     #------- Sharpness -------
     laplacian = subprocess.Popen(["sct_maths", "-i", os.path.join(volume_1 + '.' + ext), "-laplacian", "3", "-o",

@@ -17,6 +17,7 @@
 # Authors: Stephanie Alley, Julien Cohen-Adad
 # License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
+# TODO: generated cord mask is too large!
 # TODO: remove input params and set them as list inside code
 # TODO: download PAM50 by default, and have option to set path to atlas
 # TDOD: param for selecting z
