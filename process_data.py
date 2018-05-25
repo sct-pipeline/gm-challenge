@@ -33,6 +33,12 @@ def get_parameters():
                         help="List here the two nifti files to compute the metrics on, separated by space.",
                         nargs='+',
                         required=True)
+    parser.add_argument("-s", "--seg",
+                        help="Spinal cord segmentation for the first dataset.",
+                        required=False)
+    parser.add_argument("-g", "--gmseg",
+                        help="Gray matter segmentation for the first dataset.",
+                        required=False)
     args = parser.parse_args()
     return args
 
@@ -77,27 +83,29 @@ def main():
         os.makedirs(output_dir)
 
     # copy to output directory and convert to nii.gz
-    convert(file_data[0], os.path.join(output_dir, "data1.nii.gz"), squeeze_data=False, verbose=0)
-    convert(file_data[1], os.path.join(output_dir, "data2.nii.gz"), squeeze_data=False, verbose=0)
+    convert(file_data[0], os.path.join(output_dir, "data1.nii.gz"))
+    convert(file_data[1], os.path.join(output_dir, "data2.nii.gz"))
     os.chdir(output_dir)
+
+    # Segment spinal cord
+    if file_seg is None:
+        sct.run("sct_deepseg_sc -i data1.nii.gz -c t2s")
+    else:
+        convert(file_seg, os.path.join(output_dir, "data1_seg.nii.gz"))
+
+    # Segment gray matter
+    if file_gmseg is None:
+        sct.run("sct_deepseg_sc -i data1.nii.gz")
+    else:
+        convert(file_gmseg, os.path.join(output_dir, "data1_gmseg.nii.gz"))
 
     # Create mask around the cord for more accurate registration
     # TODO
 
     # Register image 2 to image 1
-    sct.run("sct_register_multimodal -i data2.nii.gz -d data1.nii.gz -param step=1,type=im,algo=slicereg,metric=CC -m mask_data1.nii.gz -x spline")
+    sct.run("sct_register_multimodal -i data2.nii.gz -d data1.nii.gz -param step=1,type=im,algo=slicereg,metric=CC "
+            "-m mask_data1.nii.gz -x spline")
 
-    # Segment spinal cord
-    if not os.path.exists(os.path.join(output_dir,volume_1 + '_seg_manual' + '.' + ext)):
-        seg_sc_v1 = subprocess.Popen(["sct_deepseg_sc", "-i", os.path.join(volume_1 + '.' + ext), "-c", "t2s"], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        seg_sc_v1.wait()
-        err(seg_sc_v1)
-
-    # Segment gray matter
-    if not os.path.exists(os.path.join(output_dir,volume_1 + '_gmseg_manual' + '.' + ext)):
-        seg_gm_v1 = subprocess.Popen(["sct_deepseg_gm", "-i", os.path.join(volume_1 + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        seg_gm_v1.wait()
-        err(seg_gm_v1)
 
     # Move cord and gray matter segmentations into a separate folder to be returned to the user
     segmentations = os.path.join(output_dir + '/segmentations')
@@ -239,4 +247,6 @@ def main():
 if __name__ == "__main__":
     args = get_parameters()
     file_data = args.input
+    file_seg = args.seg
+    file_gmseg = args.gmseg
     main()
