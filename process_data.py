@@ -85,19 +85,20 @@ def main():
     # copy to output directory and convert to nii.gz
     convert(file_data[0], os.path.join(output_dir, "data1.nii.gz"))
     convert(file_data[1], os.path.join(output_dir, "data2.nii.gz"))
+    if file_seg is not None:
+        convert(file_seg, os.path.join(output_dir, "data1_seg.nii.gz"))
+    if file_gmseg is not None:
+        convert(file_gmseg, os.path.join(output_dir, "data1_gmseg.nii.gz"))
+
     os.chdir(output_dir)
 
     # Segment spinal cord
     if file_seg is None:
         sct.run("sct_deepseg_sc -i data1.nii.gz -c t2s")
-    else:
-        convert(file_seg, os.path.join(output_dir, "data1_seg.nii.gz"))
 
     # Segment gray matter
     if file_gmseg is None:
-        sct.run("sct_deepseg_sc -i data1.nii.gz")
-    else:
-        convert(file_gmseg, os.path.join(output_dir, "data1_gmseg.nii.gz"))
+        sct.run("sct_deepseg_gm -i data1.nii.gz")
 
     # Create mask around the cord for more accurate registration
     # TODO
