@@ -88,9 +88,9 @@ def main():
     wm_value = 50
     gm_values = [50, 75, 100]
     std_noises = [0, 5, 10]
-    smoothing = [0, 1, 2] # standard deviation values for Gaussian kernel
+    smoothing = [0, 0.5, 1]  # standard deviation values for Gaussian kernel
     zslice = 850  # 850: corresponds to mid-C4 level (enlargement)
-    num_slice = 10 # number of slices in z direction
+    num_slice = 10  # number of slices in z direction
     range_tract = 0  # we do not want heterogeneity within WM and within GM. All tracts should have the same value.
 
     # create output folder
