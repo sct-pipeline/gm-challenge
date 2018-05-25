@@ -39,6 +39,11 @@ def get_parameters():
     parser.add_argument("-g", "--gmseg",
                         help="Gray matter segmentation for the first dataset.",
                         required=False)
+    parser.add_argument("-v", "--verbose",
+                        help="Verbose 0 / [1].",
+                        type=int,
+                        default=1,
+                        required=False)
     args = parser.parse_args()
     return args
 
@@ -94,18 +99,18 @@ def main():
 
     # Segment spinal cord
     if file_seg is None:
-        sct.run("sct_deepseg_sc -i data1.nii.gz -c t2s")
+        sct.run("sct_deepseg_sc -i data1.nii.gz -c t2s", verbose=verbose)
 
     # Segment gray matter
     if file_gmseg is None:
-        sct.run("sct_deepseg_gm -i data1.nii.gz")
+        sct.run("sct_deepseg_gm -i data1.nii.gz", verbose=verbose)
 
     # Create mask around the cord for more accurate registration
-    # TODO
+    sct.run("sct_create_mask -i data1.nii.gz -p centerline,data1_seg.nii.gz -size 35mm", verbose=verbose)
 
     # Register image 2 to image 1
     sct.run("sct_register_multimodal -i data2.nii.gz -d data1.nii.gz -param step=1,type=im,algo=slicereg,metric=CC "
-            "-m mask_data1.nii.gz -x spline")
+            "-m mask_data1.nii.gz -x spline", verbose=verbose)
 
 
     # Move cord and gray matter segmentations into a separate folder to be returned to the user
@@ -250,4 +255,5 @@ if __name__ == "__main__":
     file_data = args.input
     file_seg = args.seg
     file_gmseg = args.gmseg
+    verbose = args.verbose
     main()
