@@ -196,13 +196,13 @@ def main():
         shutil.make_archive(os.path.join(num + '_WMGM_results'), 'zip', segmentations)
 
         # Move results files to data directory 
-        if os.path.isfile(os.path.join(dir_data + '/' + num + '_WMGM_results.txt')):
-            os.remove(os.path.join(dir_data + '/' + num + '_WMGM_results.txt'))
-        shutil.move(os.path.join(output_dir, segmentations, num + '_WMGM_results.txt'), os.path.join(dir_data  + '/' + num + '_WMGM.txt'))
+        if os.path.isfile(os.path.join('../' + num + '_WMGM_results.txt')):
+            os.remove(os.path.join('../' + num + '_WMGM_results.txt'))
+        shutil.move(os.path.join(output_dir, segmentations, num + '_WMGM_results.txt'), os.path.join('../' + num + '_WMGM.txt'))
 
-        if os.path.isfile(os.path.join(dir_data + '/' + num + '_WMGM_results.zip')):
-            os.remove(os.path.join(dir_data + '/' + num + '_WMGM_results.zip'))
-        shutil.move(os.path.join(num + '_WMGM_results.zip'), os.path.join(dir_data  + '/' + num + '_WMGM.zip'))
+        if os.path.isfile(os.path.join('../' + num + '_WMGM_results.zip')):
+            os.remove(os.path.join('../' + num + '_WMGM_results.zip'))
+        shutil.move(os.path.join(num + '_WMGM_results.zip'), os.path.join('../' + num + '_WMGM.zip'))
     else: #TODO package results otherwise
 
 
