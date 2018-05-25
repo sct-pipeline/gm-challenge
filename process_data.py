@@ -14,6 +14,8 @@
 # Authors: Stephanie Alley, Julien Cohen-Adad
 # License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
+# TODO: get verbose working (current issue is sys.stdout.isatty()) is False, hence sct.run() is using sct.log with no terminal output
+
 import sys, os, shutil, subprocess, time, argparse
 import numpy as np
 import pandas as pd
@@ -105,6 +107,9 @@ def main():
     if file_gmseg is None:
         sct.run("sct_deepseg_gm -i data1.nii.gz", verbose=verbose)
 
+    # Generate white matter segmentation
+    sct.run("sct_maths -i data1_seg.nii.gz -sub data1_gmseg.nii.gz -o data1_wmseg.nii.gz", verbose=verbose)
+
     # Create mask around the cord for more accurate registration
     sct.run("sct_create_mask -i data1.nii.gz -p centerline,data1_seg.nii.gz -size 35mm", verbose=verbose)
 
@@ -112,26 +117,25 @@ def main():
     sct.run("sct_register_multimodal -i data2.nii.gz -d data1.nii.gz -param step=1,type=im,algo=slicereg,metric=CC "
             "-m mask_data1.nii.gz -x spline", verbose=verbose)
 
-
     # Move cord and gray matter segmentations into a separate folder to be returned to the user
-    segmentations = os.path.join(output_dir + '/segmentations')
-    if not os.path.exists(segmentations):
-        os.makedirs('segmentations')
+    # segmentations = os.path.join(output_dir + '/segmentations')
+    # if not os.path.exists(segmentations):
+    #     os.makedirs('segmentations')
+    #
+    # shutil.copy2(os.path.join(volume_1 + '_seg' + '.' + ext), segmentations)
+    # shutil.copy2(os.path.join(volume_1 + '_gmseg' + '.' + ext), segmentations)
+    #
+    # if os.path.exists(os.path.join(output_dir,volume_1 + '_seg_manual' + '.' + ext)):
+    #     shutil.copy2(os.path.join(volume_1 + '_seg_manual' + '.' + ext), segmentations)
+    #     shutil.copy2(os.path.join(volume_1 + '_gmseg_manual' + '.' + ext), segmentations)
 
-    shutil.copy2(os.path.join(volume_1 + '_seg' + '.' + ext), segmentations)
-    shutil.copy2(os.path.join(volume_1 + '_gmseg' + '.' + ext), segmentations)
-
-    if os.path.exists(os.path.join(output_dir,volume_1 + '_seg_manual' + '.' + ext)):
-        shutil.copy2(os.path.join(volume_1 + '_seg_manual' + '.' + ext), segmentations)
-        shutil.copy2(os.path.join(volume_1 + '_gmseg_manual' + '.' + ext), segmentations)
-
-    # Generate white matter segmentation
-    if not os.path.exists(os.path.join(volume_1 + '_wmseg_manual' + '.' + ext)):
-        seg_wm_v1 = subprocess.Popen(["sct_maths", "-i", os.path.join(volume_1 + '_seg' + '.' + ext), "-sub",
-                             os.path.join(volume_1 + '_gmseg' + '.' + ext), "-o",
-                             os.path.join(volume_1 + '_wmseg' + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        seg_wm_v1.wait()
-        err(seg_wm_v1)
+    # # Generate white matter segmentation
+    # if not os.path.exists(os.path.join(volume_1 + '_wmseg_manual' + '.' + ext)):
+    #     seg_wm_v1 = subprocess.Popen(["sct_maths", "-i", os.path.join(volume_1 + '_seg' + '.' + ext), "-sub",
+    #                          os.path.join(volume_1 + '_gmseg' + '.' + ext), "-o",
+    #                          os.path.join(volume_1 + '_wmseg' + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    #     seg_wm_v1.wait()
+    #     err(seg_wm_v1)
 
     # Analysis: compute metrics
     # Initialize data frame for reporting results
