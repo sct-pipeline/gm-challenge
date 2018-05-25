@@ -77,23 +77,15 @@ def main():
         os.makedirs(output_dir)
 
     # copy to output directory and convert to nii.gz
-
     convert(file_data[0], os.path.join(output_dir, "data1.nii.gz"), squeeze_data=False, verbose=0)
     convert(file_data[1], os.path.join(output_dir, "data2.nii.gz"), squeeze_data=False, verbose=0)
-
-    sct.convert()
-    shutil.copy2(file_data[0], os.path.join(output_dir, 'file1.nii.gz')
-    shutil.copy2(file_data[1], output_dir)
-
     os.chdir(output_dir)
 
+    # Create mask around the cord for more accurate registration
+    # TODO
+
     # Register image 2 to image 1
-    sct.run()
-    register = subprocess.Popen(
-        ["sct_register_multimodal", "-i", file_2, "-d", file_1, "-param", "step=1,type=im,algo=rigid", "-x", "nn", "-o",
-         os.path.join(volume_2 + '_reg' + '.' + ext)], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    register.wait()
-    err(register)
+    sct.run("sct_register_multimodal -i data2.nii.gz -d data1.nii.gz -param step=1,type=im,algo=slicereg,metric=CC -m mask_data1.nii.gz -x spline")
 
     # Segment spinal cord
     if not os.path.exists(os.path.join(output_dir,volume_1 + '_seg_manual' + '.' + ext)):
