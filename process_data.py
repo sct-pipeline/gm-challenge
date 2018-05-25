@@ -1,4 +1,18 @@
 #!/usr/bin/env python
+#
+# Compute metrics to assess the quality of spinal cord images.
+#
+# USAGE:
+# The script should be launched using SCT's python:
+#   PATH_GMCHALLENGE="PATH TO THIS REPOSITORY"
+#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}process_data.py
+#
+#
+# OUTPUT:
+# The script generates a collection of files under specified folder.
+#
+# Authors: Stephanie Alley, Julien Cohen-Adad
+# License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
 import sys, os, shutil, subprocess, time
 import numpy as np
