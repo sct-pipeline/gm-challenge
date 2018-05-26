@@ -89,25 +89,37 @@ def compute_sharpness(file_data, file_mask_gm):
     """
     print("Compute sharpness...")
     # Dilate GM mask
-    sct.run("sct_maths -i data1_gmseg.nii.gz -dilate 1 -o data1_gmseg_dil.nii.gz", verbose=verbose)
+    sct.run("sct_maths -i data1_gmseg.nii.gz -dilate 1 -o data1_gmseg_dil.nii.gz")
     # Subtract to get mask at WM/GM interface
-    sct.run("sct_maths -i data1_gmseg_dil.nii.gz -sub data1_gmseg.nii.gz -o mask_interface.nii.gz", verbose=verbose)
+    sct.run("sct_maths -i data1_gmseg_dil.nii.gz -sub data1_gmseg.nii.gz -o mask_interface.nii.gz")
     # Compute Laplacian on image
-    sct.run("sct_maths -i data1.nii.gz -laplacian 0.5,0.5,0 -o data1_lapl.nii.gz", verbose=verbose)
+    sct.run("sct_maths -i data1.nii.gz -laplacian 0.5,0.5,0 -o data1_lapl.nii.gz")
     # Normalize WM/GM before computing Laplacian
     # TODO
     # Extract Laplacian at WM/GM interface
-    sct.run("sct_extract_metric -i data1_lapl.nii.gz -f mask_interface.nii.gz -o laplacian.pickle", verbose=verbose)
+    sct.run("sct_extract_metric -i data1_lapl.nii.gz -f mask_interface.nii.gz -o laplacian.pickle")
     # return
     return pickle.load(io.open("laplacian.pickle"))["Metric value"][0]
 
 
-def main():
+def main(args=None):
 
+    # Params
     output_dir = "./output_wmgm"  # TODO: be able to set with argument
     file_output = "results"  # no prefix
     fdata2 = "data2.nii.gz"
 
+    # Parse arguments
+    if not args:
+        args = sys.argv[1:]
+    file_data = args.input
+    file_seg = args.seg
+    file_gmseg = args.gmseg
+    register = args.register
+    num = args.num
+    verbose = args.verbose
+
+    # Make output dir
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
@@ -211,11 +223,5 @@ def main():
 
 
 if __name__ == "__main__":
-    args = get_parameters()
-    file_data = args.input
-    file_seg = args.seg
-    file_gmseg = args.gmseg
-    register = args.register
-    num = args.num
-    verbose = args.verbose
-    main()
+    ARGS = get_parameters()
+    main(ARGS)
