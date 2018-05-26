@@ -7,16 +7,16 @@
 #   PATH_GMCHALLENGE="PATH TO THIS REPOSITORY"
 #   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}process_data.py
 #
-#
 # OUTPUT:
-# The script generates a collection of files under specified folder.
+#   results.csv: quantitative results in CSV format
+#   results.txt: results in txt form to be sent to participant
 #
 # Authors: Stephanie Alley, Julien Cohen-Adad
 # License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
 # TODO: get verbose working (current issue is sys.stdout.isatty()) is False, hence sct.run() is using sct.log with no terminal output
 
-import sys, os, shutil, subprocess, time, argparse, pickle, io
+import sys, os, shutil, argparse, pickle, io
 import numpy as np
 import pandas as pd
 # append path to useful SCT scripts
