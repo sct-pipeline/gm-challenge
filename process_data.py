@@ -103,6 +103,7 @@ def compute_sharpness(file_data, file_mask_gm):
 
 
 def main():
+
     output_dir = "./output_wmgm"  # TODO: be able to set with argument
     file_output = "results"  # no prefix
     fdata2 = "data2.nii.gz"
