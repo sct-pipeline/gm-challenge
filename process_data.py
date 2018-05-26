@@ -14,6 +14,7 @@
 # Authors: Stephanie Alley, Julien Cohen-Adad
 # License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
+# TODO: enable to input suffix for results filename (otherwise, overwriting in process_folder
 # TODO: get verbose working (current issue is sys.stdout.isatty()) is False, hence sct.run() is using sct.log with no terminal output
 
 import sys, os, shutil, argparse, pickle, io
