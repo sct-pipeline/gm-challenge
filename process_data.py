@@ -15,7 +15,6 @@
 # License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
 # TODO: get verbose working (current issue is sys.stdout.isatty()) is False, hence sct.run() is using sct.log with no terminal output
-# TODO: make flag to bypass registration (not needed for phantom)
 
 import sys, os, shutil, subprocess, time, argparse, pickle, io
 import numpy as np
@@ -74,6 +73,7 @@ def compute_contrast(file_data, file_mask1, file_mask2):
     :param file_mask2: mask for region 2
     :return: float: contrast
     """
+    print("Compute contrast...")
     # Get mean value within mask
     sct.run("sct_extract_metric -i " + file_data + " -f " + file_mask1 + " -method bin -o mean_mask1.pickle")
     sct.run("sct_extract_metric -i " + file_data + " -f " + file_mask2 + " -method bin -o mean_mask2.pickle")
@@ -94,6 +94,7 @@ def compute_sharpness(file_data, file_mask_gm):
     :param file_mask_gm:
     :return: float: sharpness
     """
+    print("Compute sharpness...")
     # Dilate GM mask
     sct.run("sct_maths -i data1_gmseg.nii.gz -dilate 1 -o data1_gmseg_dil.nii.gz", verbose=verbose)
     # Subtract to get mask at WM/GM interface
@@ -110,13 +111,14 @@ def compute_sharpness(file_data, file_mask_gm):
 
 def main():
     output_dir = "./output_wmgm"  # TODO: be able to set with argument
-    file_output = "results.txt"
+    file_output = "results"  # no prefix
     fdata2 = "data2.nii.gz"
 
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
     # copy to output directory and convert to nii.gz
+    print("Copy data...")
     convert(file_data[0], os.path.join(output_dir, "data1.nii.gz"))
     convert(file_data[1], os.path.join(output_dir, fdata2))
     if file_seg is not None:
@@ -128,16 +130,20 @@ def main():
 
     # Segment spinal cord
     if file_seg is None:
+        print("Segment spinal cord...")
         sct.run("sct_deepseg_sc -i data1.nii.gz -c t2s", verbose=verbose)
 
     # Segment gray matter
     if file_gmseg is None:
+        print("Segment gray matter...")
         sct.run("sct_deepseg_gm -i data1.nii.gz", verbose=verbose)
 
     # Generate white matter segmentation
+    print("Generate white matter segmentation...")
     sct.run("sct_maths -i data1_seg.nii.gz -sub data1_gmseg.nii.gz -o data1_wmseg.nii.gz", verbose=verbose)
 
     if register:
+        print("Register data2 to data1...")
         # Create mask around the cord for more accurate registration
         sct.run("sct_create_mask -i data1.nii.gz -p centerline,data1_seg.nii.gz -size 35mm", verbose=verbose)
         # Register image 2 to image 1
@@ -151,6 +157,7 @@ def main():
     results = pd.DataFrame(np.nan, index=['SNR', 'Contrast', 'Sharpness'], columns=['Metric Value'])
 
     # Compute SNR
+    print("Compute SNR...")
     sct.run("sct_image -i data1.nii.gz," + fdata2 + " -concat t -o data_concat.nii.gz")
     status, output = sct.run("sct_compute_snr -i data_concat.nii.gz -vol 0,1 -m data1_seg.nii.gz")
     # parse SNR info
@@ -166,7 +173,11 @@ def main():
     # Display results
     results.columns = ['']
 
-    results_to_return = open(os.path.join(file_output), 'w')
+    # Save DataFrame as CSV
+    results.to_csv(file_output + ".csv")
+
+    # Build text file for user
+    results_to_return = open(file_output + ".txt", 'w')
     results_to_return.write('The following metric values were calculated:\n')
     results_to_return.write(results.__repr__())
     results_to_return.write('\n\nA text file containing this information, as well as the image segmentations, are '
@@ -204,6 +215,7 @@ def main():
             os.remove(os.path.join('../' + num + '_WMGM_results.zip'))
         shutil.move(os.path.join(num + '_WMGM_results.zip'), os.path.join('../' + num + '_WMGM.zip'))
     else: #TODO package results otherwise
+        a=1
 
 
 if __name__ == "__main__":
