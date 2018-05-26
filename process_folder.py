@@ -61,13 +61,14 @@ def main():
 
     # Get list of files in folder1
     folder1, folder2 = folder_data
-    fnames1 = glob.glob(os.path.join(folder1, "*.*"))
+    fnames1 = sorted(glob.glob(os.path.join(folder1)))
 
     # loop and process
     for fname1 in fnames1:
         # get fname for second folder
         path_temp, file1 = os.path.split(fname1)
-        fname2 = os.path.join(folder2, file1)
+        path2, file2 = os.path.split(folder2)
+        fname2 = os.path.join(path2, file1)
         # display
         print("\nData #1: " + fname1)
         print("Data #2: " + fname2)
