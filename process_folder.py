@@ -58,6 +58,13 @@ def get_parameters():
     return args
 
 
+def err(output):
+    status = output.communicate()
+
+    if output.returncode != 0:
+        print(status[0])
+
+
 def compute_contrast(file_data, file_mask1, file_mask2):
     """
     Compute contrast in image between two regions
