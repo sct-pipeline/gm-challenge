@@ -102,7 +102,17 @@ def compute_sharpness(file_data, file_mask_gm):
     return pickle.load(io.open("laplacian.pickle"))["Metric value"][0]
 
 
-def main(args=None):
+def main(file_data, file_seg, file_gmseg, register=1, num=None, verbose=1):
+    """
+    Compute metrics to assess the quality of spinal cord images.
+    :param file_data:
+    :param file_seg:
+    :param file_gmseg:
+    :param register:
+    :param num:
+    :param verbose:
+    :return:
+    """
 
     # Params
     output_dir = "./output_wmgm"  # TODO: be able to set with argument
@@ -110,14 +120,14 @@ def main(args=None):
     fdata2 = "data2.nii.gz"
 
     # Parse arguments
-    if not args:
-        args = sys.argv[1:]
-    file_data = args.input
-    file_seg = args.seg
-    file_gmseg = args.gmseg
-    register = args.register
-    num = args.num
-    verbose = args.verbose
+    # if not args:
+    #     args = sys.argv[1:]
+    # file_data = args.input
+    # file_seg = args.seg
+    # file_gmseg = args.gmseg
+    # register = args.register
+    # num = args.num
+    # verbose = args.verbose
 
     # Make output dir
     if not os.path.isdir(output_dir):
@@ -223,5 +233,5 @@ def main(args=None):
 
 
 if __name__ == "__main__":
-    ARGS = get_parameters()
-    main(ARGS)
+    args = get_parameters()
+    main(args.input, args.seg, args.gmseg, register=args.register, num=args.num, verbose=args.verbose)
