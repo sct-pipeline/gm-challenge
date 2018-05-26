@@ -191,6 +191,7 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, verbose=1):
 
     # Save DataFrame as CSV
     results.to_csv(file_output + ".csv")
+    print("--> created file: " + file_output + ".csv")
 
     # Build text file for user
     results_to_return = open(file_output + ".txt", 'w')
@@ -202,6 +203,7 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, verbose=1):
                             'gray matter segmentations might be necessary. They will be performed in the next few days, '
                             'and the final results will be sent back to you.\n')
     results_to_return.close()
+    print("--> created file: " + file_output + ".txt")
 
     # Package results inside folder
     # TODO
@@ -230,6 +232,7 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, verbose=1):
         if os.path.isfile(os.path.join('../' + num + '_WMGM_results.zip')):
             os.remove(os.path.join('../' + num + '_WMGM_results.zip'))
         shutil.move(os.path.join(num + '_WMGM_results.zip'), os.path.join('../' + num + '_WMGM.zip'))
+
 
 
 if __name__ == "__main__":

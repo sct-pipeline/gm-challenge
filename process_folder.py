@@ -68,9 +68,11 @@ def main():
         # get fname for second folder
         path_temp, file1 = os.path.split(fname1)
         fname2 = os.path.join(folder2, file1)
+        # display
+        print("\nData #1: " + fname1)
+        print("Data #2: " + fname2)
         # process pair of data
         process_data.main([fname1, fname2], file_seg, file_gmseg, register=register, verbose=verbose)
-
 
 
 if __name__ == "__main__":
