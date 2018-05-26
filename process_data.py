@@ -142,6 +142,7 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, verbose=1):
     if file_gmseg is not None:
         convert(file_gmseg, os.path.join(output_dir, "data1_gmseg.nii.gz"))
 
+    curdir = os.getcwd()
     os.chdir(output_dir)
 
     # Segment spinal cord
@@ -233,6 +234,8 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, verbose=1):
             os.remove(os.path.join('../' + num + '_WMGM_results.zip'))
         shutil.move(os.path.join(num + '_WMGM_results.zip'), os.path.join('../' + num + '_WMGM.zip'))
 
+    # back to current folder
+    os.chdir(curdir)
 
 
 if __name__ == "__main__":
