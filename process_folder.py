@@ -22,7 +22,7 @@ import pandas as pd
 path_sct = os.getenv('SCT_DIR')
 sys.path.append(os.path.join(path_sct, 'scripts'))
 import sct_utils as sct
-from process_data import main
+import process_data
 
 
 def get_parameters():
@@ -60,17 +60,22 @@ def main():
     # fdata2 = "data2.nii.gz"
 
     # Get list of files in folder1
-    fnames = glob.glob(os.path.join(file_data[0], "*.*"))
+    folder1, folder2 = folder_data
+    fnames1 = glob.glob(os.path.join(folder1, "*.*"))
 
     # loop and process
-    for fname in fnames:
-        # TODO: refactor process_data to use as module
-        # process_data.main()
+    for fname1 in fnames1:
+        # get fname for second folder
+        path_temp, file1 = os.path.split(fname1)
+        fname2 = os.path.join(folder2, file1)
+        # process pair of data
+        process_data.main([fname1, fname2], file_seg, file_gmseg, register=register, verbose=verbose)
+
 
 
 if __name__ == "__main__":
     args = get_parameters()
-    file_data = args.input
+    folder_data = args.input
     file_seg = args.seg
     file_gmseg = args.gmseg
     register = args.register
