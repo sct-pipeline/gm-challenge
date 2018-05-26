@@ -214,8 +214,6 @@ def main():
         if os.path.isfile(os.path.join('../' + num + '_WMGM_results.zip')):
             os.remove(os.path.join('../' + num + '_WMGM_results.zip'))
         shutil.move(os.path.join(num + '_WMGM_results.zip'), os.path.join('../' + num + '_WMGM.zip'))
-    else: #TODO package results otherwise
-        a=1
 
 
 if __name__ == "__main__":
