@@ -66,20 +66,20 @@ def main():
     fname_csv_list = sorted(glob.glob(os.path.join(folder1, "*.csv")))
 
     # initialize dataframe
-    results_all = pd.DataFrame(columns={'wm',
-                                        'gm',
-                                        'std',
-                                        'smooth',
-                                        'snr',
-                                        'contrast',
-                                        'sharpness'})
+    results_all = pd.DataFrame(columns={'WM',
+                                        'GM',
+                                        'Noise',
+                                        'Smooth',
+                                        'SNR',
+                                        'Contrast',
+                                        'Sharpness'})
 
     # loop and process
     i = 0
     for fname_csv in fname_csv_list:
         # get file name
         metadata = pd.Series.from_csv(fname_csv, header=None).to_dict()
-        file_data = metadata["file"]
+        file_data = metadata["File"]
         # get fname of each nifti file
         fname1 = os.path.join(folder1, file_data)
         fname2 = os.path.join(folder2, file_data)
@@ -89,13 +89,13 @@ def main():
         # process pair of data
         results = process_data.main([fname1, fname2], file_seg, file_gmseg, register=register, verbose=verbose)
         # append to dataframe
-        results_all = results_all.append({'wm': metadata['wm'],
-                                          'gm': metadata['gm'],
-                                          'std': metadata['std'],
-                                          'smooth': metadata['smooth'],
-                                          'snr': results.loc['SNR'][0],
-                                          'contrast': results.loc['Contrast'][0],
-                                          'sharpness': results.loc['Sharpness'][0]}, ignore_index=True)
+        results_all = results_all.append({'WM': metadata['WM'],
+                                          'GM': metadata['GM'],
+                                          'Noise': metadata['Noise'],
+                                          'Smooth': metadata['Smooth'],
+                                          'SNR': results.loc['SNR'][0],
+                                          'Contrast': results.loc['Contrast'][0],
+                                          'Sharpness': results.loc['Sharpness'][0]}, ignore_index=True)
     results_all.to_csv(file_output)
 
 if __name__ == "__main__":
