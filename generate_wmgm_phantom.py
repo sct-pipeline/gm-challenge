@@ -133,7 +133,7 @@ def main():
                                        'std': std_noise,
                                        'smooth': smooth,
                                        'file': file_out + ".nii.gz"})
-                metadata.to_csv(file_out + ".csv")
+                metadata.to_csv(os.path.join(folder_out, file_out + ".csv"))
 
 
     # generate mask of spinal cord
