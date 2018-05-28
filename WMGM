@@ -29,7 +29,7 @@ def main():
     os.chdir(dir_data)
 
     # Initiate processing script
-    subprocess.call(["python", "/home/niftyweb_sct/gm_challenge/process_data.py", "-i", image_1, image_2, "-n", num, "-o","{}_WMGM".format(num)])
+    subprocess.call(["${SCT_DIR}/python/bin/python", "/home/niftyweb_sct/gm_challenge/process_data.py", "-i", image_1, image_2, "-n", num, "-o","{}_WMGM".format(num)])
 
     # Check for output files to return to user
     final_txt = os.path.join(dir_data + '/' + num + '_WMGM.txt')
