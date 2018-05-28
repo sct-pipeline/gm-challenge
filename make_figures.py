@@ -49,22 +49,22 @@ def main():
     list_noise = sorted(list(set(results_all['Noise'].tolist())))
     wm = sorted(list(set(results_all['WM'].tolist())))[0]
 
-    for metric in ['Contrast', 'SNR']:
+    for metric in ['Contrast', 'SNR', 'Sharpness']:
         # build array
-        data = np.zeros([len(list_noise), len(list_gm)])
+        data = np.zeros([len(list_gm), len(list_noise)])
         for i_gm in range(len(list_gm)):
             for i_noise in range(len(list_noise)):
                 data[i_gm, i_noise] = results_all.query("Noise == " + str(list_noise[i_noise]) +
                                                         " & Smooth == " + str(smooth) +
                                                         " & GM == " + str(list_gm[i_gm]))[metric]
         # plot fig
-        N = 3
+        N = len(list_gm)
         fig, ax = plt.subplots()
         ind = np.arange(N)  # the x locations for the groups
-        width = 0.25  # the width of the bars
-        p1 = ax.bar(ind - width, data[:, 0], width, color='r')
-        p2 = ax.bar(ind, data[:, 1], width, color='y')
-        p3 = ax.bar(ind + width, data[:, 2], width, color='b')
+        width = 0.20  # the width of the bars
+        p2 = ax.bar(ind - width, data[:, 2], width, color='b')
+        p1 = ax.bar(ind, data[:, 1], width, color='y')
+        p3 = ax.bar(ind + width, data[:, 0], width, color='r')
         ax.set_title(metric)
         ax.set_xlabel("Simulated Contrast (in %)")
         ax.set_xticks(ind + width / 2)
@@ -79,7 +79,10 @@ def main():
         # save csv for importing as table
         with open("results_" + metric + ".csv", "wb") as f:
             writer = csv.writer(f)
-            writer.writerows(data.transpose())
+            for row in data.transpose():
+                row = ["%.2f" % f for f in row]  # we need to do this otherwise float conversion gives e.g. 23.00000001
+                writer.writerow(row)
+
 
 if __name__ == "__main__":
     args = get_parameters()
