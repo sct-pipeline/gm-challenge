@@ -62,6 +62,21 @@ def get_parameters():
     return args
 
 
+def compute_snr(file_data1, file_data2, file_mask):
+    """
+    Compute SNR based on two input data and a mask
+    :param file_data1: image 1
+    :param file_data1: image 2
+    :param file_mask: mask where to compute SNR
+    :return: float: SNR
+    """
+    print("Compute SNR...")
+    sct.run("sct_image -i " + file_data1 + "," + file_data2 + " -concat t -o data_concat.nii.gz")
+    status, output = sct.run("sct_compute_snr -i data_concat.nii.gz -vol 0,1 -m " + file_mask)
+    # parse SNR info
+    return np.float(output[output.index("SNR_diff =") + 11:])
+
+
 def compute_contrast(file_data, file_mask1, file_mask2):
     """
     Compute contrast in image between two regions
@@ -179,12 +194,7 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     results = pd.DataFrame(np.nan, index=['SNR', 'Contrast', 'Sharpness'], columns=['Metric Value'])
 
     # Compute SNR
-    print("Compute SNR...")
-    sct.run("sct_image -i data1.nii.gz," + fdata2 + " -concat t -o data_concat.nii.gz")
-    status, output = sct.run("sct_compute_snr -i data_concat.nii.gz -vol 0,1 -m data1_seg.nii.gz")
-    # parse SNR info
-    snr = np.float(output[output.index("SNR_diff =") + 11:])
-    results.loc['SNR'] = snr
+    results.loc['SNR'] = compute_snr("data1.nii.gz", fdata2, file_seg)
 
     # Compute contrast
     results.loc['Contrast'] = compute_contrast("data1.nii.gz", "data1_wmseg.nii.gz", "data1_gmseg.nii.gz")
