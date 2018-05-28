@@ -120,9 +120,9 @@ def main():
                 # Add blurring
                 if smooth:
                     data_phantom = ndimage.gaussian_filter(data_phantom, sigma=(smooth), order=0)
-                    # add noise
-                    if std_noise:
-                        data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny, nz))
+                # add noise
+                if std_noise:
+                    data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny, nz))
                 # build file name
                 file_out = "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_Noise" + str(std_noise) + "_Smooth" + str(smooth)
                 # save as nifti file
