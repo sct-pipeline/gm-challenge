@@ -17,7 +17,6 @@ def get_parameters():
     return args
 
 def main():
-    program = 'WMGM'
     num = args.num
     image_1 = os.path.basename(args.image_1)
     image_2 = os.path.basename(args.image_2)
@@ -30,11 +29,11 @@ def main():
     os.chdir(dir_data)
 
     # Initiate processing script
-    subprocess.call(["python", "/home/niftyweb_sct/gm_challenge/process_data.py", "-i", image_1, image_2, "-n", num, "-o","{}_{}".format(num,program)])
+    subprocess.call(["python", "/home/niftyweb_sct/gm_challenge/process_data.py", "-i", image_1, image_2, "-n", num, "-o","{}_WMGM".format(num)])
 
     # Check for output files to return to user
-    final_txt = os.path.join(dir_data + '/' + num + '_' + program + '.txt')
-    final_zip = os.path.join(dir_data + '/' + num + '_' + program + '.zip')
+    final_txt = os.path.join(dir_data + '/' + num + '_WMGM.txt')
+    final_zip = os.path.join(dir_data + '/' + num + '_WMGM.zip')
 
     if (os.path.isfile(final_txt)) and (os.path.isfile(final_zip)):
 	exit()
