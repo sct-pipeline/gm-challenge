@@ -13,7 +13,7 @@
 # Authors: Julien Cohen-Adad
 # License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
-import os, sys
+import os, sys, csv
 import argparse
 import numpy as np
 import nibabel as nib
@@ -68,13 +68,17 @@ def main():
         ax.set_xlabel("Simulated Contrast")
         ax.set_xticks(ind + width / 2)
         ax.set_xticklabels((list_gm))
-        ax.legend((p1[0], p2[0], p3[0]), (["Noise STD = " + str(i) for i in list_noise]))
+        # ax.legend((p1[0], p2[0], p3[0]), (["Noise STD = " + str(i) for i in list_noise]))
         ax.set_ylabel("Measured " + metric)
         plt.grid(axis='y')
         ax.autoscale_view()
         # plt.show()
-        plt.savefig("fig_" + metric + ".png")
+        plt.savefig("results_" + metric + ".png")
 
+        # save csv for importing as table
+        with open("results_" + metric + ".csv", "wb") as f:
+            writer = csv.writer(f)
+            writer.writerows(data.transpose())
 
 if __name__ == "__main__":
     args = get_parameters()
