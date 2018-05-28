@@ -83,7 +83,7 @@ def compute_contrast(file_data, file_mask1, file_mask2):
     :param file_data: image
     :param file_mask1: mask for region 1
     :param file_mask2: mask for region 2
-    :return: float: contrast
+    :return: float: contrast in percent (rounded at 2 decimals)
     """
     print("Compute contrast...")
     # Get mean value within mask
@@ -92,8 +92,9 @@ def compute_contrast(file_data, file_mask1, file_mask2):
     # Retrieve values from saved pickle
     mean_mask1 = pickle.load(io.open("mean_mask1.pickle"))["Metric value"][0]
     mean_mask2 = pickle.load(io.open("mean_mask2.pickle"))["Metric value"][0]
-    # Compute contrast
-    return abs(mean_mask1 - mean_mask2) / min(mean_mask1, mean_mask2)
+    # Compute contrast in percentage
+    contrast = abs(mean_mask1 - mean_mask2) / min(mean_mask1, mean_mask2) * 100
+    return round(contrast, 2)  # round at 2 decimals
 
 
 def compute_sharpness(file_data, file_mask_gm):
