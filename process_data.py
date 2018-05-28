@@ -50,6 +50,9 @@ def get_parameters():
     parser.add_argument("-n", "--num",
                         help="NiftyWeb ID",
                         required=False)
+    parser.add_argument("-o", "--output_dir",
+                        help="Output directory",
+                        required=False)
     parser.add_argument("-v", "--verbose",
                         help="Verbose {0,1}. Default=1",
                         type=int,
@@ -103,7 +106,7 @@ def compute_sharpness(file_data, file_mask_gm):
     return pickle.load(io.open("laplacian.pickle"))["Metric value"][0]
 
 
-def main(file_data, file_seg, file_gmseg, register=1, num=None, verbose=1):
+def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None, verbose=1):
     """
     Compute metrics to assess the quality of spinal cord images.
     :param file_data:
@@ -116,7 +119,8 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, verbose=1):
     """
 
     # Params
-    output_dir = "./output_wmgm"  # TODO: be able to set with argument
+    if not output_dir:
+        output_dir = "./output_wmgm"
     file_output = "results"  # no prefix
     fdata2 = "data2.nii.gz"
 
@@ -246,4 +250,4 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, verbose=1):
 
 if __name__ == "__main__":
     args = get_parameters()
-    main(args.input, args.seg, args.gmseg, register=args.register, num=args.num, verbose=args.verbose)
+    main(args.input, args.seg, args.gmseg, register=args.register, num=args.num, output_dir=args.output_dir, verbose=args.verbose)
