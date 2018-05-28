@@ -220,6 +220,9 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, verbose=1):
         shutil.copy2("data1_seg.nii.gz", segmentations)
         shutil.copy2("data1_gmseg.nii.gz", segmentations)
 
+        # Rename text file for interaction with daemon
+        os.rename(file_output + '.txt', num + '_WMGM_' + file_output + '.txt')
+
         # Copy text file containing results to segmentations folder
         shutil.copy2(os.path.join(file_output), segmentations)
 
