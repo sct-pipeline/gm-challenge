@@ -88,7 +88,7 @@ def main():
     # default params
     wm_value = 50
     gm_values = [50, 75, 100]
-    std_noises = [0, 5, 10]
+    std_noises = [1, 2, 5]
     smoothing = [0, 0.5, 1]  # standard deviation values for Gaussian kernel
     zslice = 850  # 850: corresponds to mid-C4 level (enlargement)
     num_slice = 10  # number of slices in z direction
@@ -137,7 +137,7 @@ def main():
 
 
     # generate mask of spinal cord
-    data_cord = np.sum(data_tracts, axis=3)
+    data_cord = np.sum(data_tracts[:, :, :, ind_wm+ind_gm], axis=3)
     data_cord[np.where(data_cord >= 0.5)] = 1
     data_cord[np.where(data_cord < 0.5)] = 0
     save_nifti(data_cord, os.path.join(folder_out, "mask_cord.nii.gz"))
