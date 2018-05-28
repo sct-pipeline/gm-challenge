@@ -124,7 +124,7 @@ def main():
                     if std_noise:
                         data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny, nz))
                 # build file name
-                file_out = "phantom_wm" + str(wm_value) + "_wm" + str(gm_value) + "_std" + str(std_noise) + "_smooth" + str(smooth)
+                file_out = "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_Noise" + str(std_noise) + "_Smooth" + str(smooth)
                 # save as nifti file
                 save_nifti(data_phantom, os.path.join(folder_out, file_out + ".nii.gz"))
                 # save metadata
