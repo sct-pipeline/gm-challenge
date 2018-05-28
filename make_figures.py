@@ -45,20 +45,33 @@ def main():
     results_all = pd.read_csv(file_csv)
 
     # plot fig
-    fig, ax = plt.subplots(1)
+    data1 = results_all.query('Noise == 0 & Smooth == 0')['Contrast'].tolist()
+    data2 = results_all.query('Noise == 5 & Smooth == 0')['Contrast'].tolist()
+    data3 = results_all.query('Noise == 10 & Smooth == 0')['Contrast'].tolist()
 
-    plt.violinplot(list_data, pos, points=100, widths=0.8, showmeans=True, showextrema=True, showmedians=True,
-                   bw_method=0.5)
+    N=3
+
+    fig, ax = plt.subplots()
+
+    ind = np.arange(N)  # the x locations for the groups
+    width = 0.25  # the width of the bars
+    p1 = ax.bar(ind - width, data1, width, color='r')
+    p2 = ax.bar(ind, data2, width, color='y')
+    p3 = ax.bar(ind + width, data3, width, color='b')
+
+    ax.set_title('Contrast')
+
+    ax.set_xlabel('Noise')
+    ax.set_xticks(ind + width / 2)
+    ax.set_xticklabels(('0', '5', '10'))
+
+    ax.legend((p1[0], p2[0], p3[0]), ('GM=50', 'GM=75', 'GM=100'))
+    ax.set_ylabel('Contrast')
     plt.grid(axis='y')
-    plt.ylabel('Dice coefficient')
-    plt.xticks(pos, args.label)
-    ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-    ax.spines['top'].set_visible(False)
-    ylim = ax.get_ylim()
-    for i in range(nb_plots):
-        plt.text(i + 0.02, ylim[0] + 0.01, text_results[i], horizontalalignment='left', verticalalignment='bottom')
-    plt.savefig('violin_plot.png')
+
+    ax.autoscale_view()
+
+    plt.savefig('fig_contrast.png')
     #
 
 
