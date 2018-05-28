@@ -199,7 +199,7 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     # Compute metrics
     results.loc['SNR'] = compute_snr("data1.nii.gz", fdata2, "data1_wmseg.nii.gz")
     results.loc['Contrast'] = compute_contrast("data1.nii.gz", "data1_wmseg.nii.gz", "data1_gmseg.nii.gz")
-    results.loc['Sharpness'] = 0  # TODO: compute_sharpness("data1.nii.gz", "data1_gmseg.nii.gz")
+    results.loc['Sharpness'] = compute_sharpness("data1.nii.gz", "data1_gmseg.nii.gz")
 
     # Display results
     results.columns = ['']
