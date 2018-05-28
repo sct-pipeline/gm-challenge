@@ -128,11 +128,11 @@ def main():
                 # save as nifti file
                 save_nifti(data_phantom, os.path.join(folder_out, file_out + ".nii.gz"))
                 # save metadata
-                metadata = pd.Series({ 'wm': wm_value,
-                                       'gm': gm_value,
-                                       'std': std_noise,
-                                       'smooth': smooth,
-                                       'file': file_out + ".nii.gz"})
+                metadata = pd.DataFrame({'wm': wm_value,
+                                         'gm': gm_value,
+                                         'std': std_noise,
+                                         'smooth': smooth,
+                                         'file': file_out + ".nii.gz"})
                 metadata.to_csv(os.path.join(folder_out, file_out + ".csv"))
 
 
