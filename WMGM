@@ -2,18 +2,31 @@
 
 ##############################################################
 #
-# This script is initiated by a daemon that communicates with the data submission on NiftyWeb.
+# This script is initiated by daemon_SOFTWEB_2files.py, which communicates with the data submission on NiftyWeb.
+# WMGM is run without an extension.
 #
-# Two NIfTI files are required: an initial scan (image 1) and a re-scan without repositioning (image 2).
+# Three inputs are provided to NiftyWeb. Two are NIfTI files: an initial scan (image1) and a re-scan without repositioning (image2).
+# The third input is a PDF containing protocol information. In addition, 4 parameters are provided (field strength, coil type, sequence, and data type).
+# Each NiftyWeb submission is assigned an ID when it is added to the queue for processing.
 #
-# It is executed in the following way:
 #
-#    python PATH_OF_THIS_SCRIPT/WMGM <data ID> <image 1> <image 2>
+# USAGE:
+# The script is launched by the daemon using SCT's python:
+#   ${SCT_DIR}/python/bin/python PATH_TO_DAEMON/daemon_SOFTWEB_2files.py WMGM <ID> PATH_TO_IMAGE1/image1 PATH_TO_IMAGE2/image2 PATH_TO_PDF/PDF -field <field strength> -coil <coil type> -sequence <sequence> -data <type of data>
+#
+#
+# WMGM extracts the two NIfTI files, and calls process_data.py to process and analyze the data. WMGM then waits for these results files to be returned:
+#   ID_WMGM.txt: text file containing metric results
+#   ID_WMGM.zip: folder containing text file with results as well as cord and gray matter segmentations
+#
+# Once the results files have been generated, they are returned to the user by the daemon.
+#
 #
 # Author: Stephanie Alley, Julien Cohen-Adad
 # Copyright: see:
 #
 ##############################################################
+
 
 import sys, os, shutil, subprocess, time
 import numpy as np
