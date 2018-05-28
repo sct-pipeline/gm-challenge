@@ -68,13 +68,14 @@ def compute_snr(file_data1, file_data2, file_mask):
     :param file_data1: image 1
     :param file_data1: image 2
     :param file_mask: mask where to compute SNR
-    :return: float: SNR
+    :return: float: SNR rounded at 2 decimals
     """
     print("Compute SNR...")
     sct.run("sct_image -i " + file_data1 + "," + file_data2 + " -concat t -o data_concat.nii.gz")
     status, output = sct.run("sct_compute_snr -i data_concat.nii.gz -vol 0,1 -m " + file_mask)
     # parse SNR info
-    return np.float(output[output.index("SNR_diff =") + 11:])
+    snr = np.float(output[output.index("SNR_diff =") + 11:])
+    return round(snr, 2)  # round at 2 decimals
 
 
 def compute_contrast(file_data, file_mask1, file_mask2):
