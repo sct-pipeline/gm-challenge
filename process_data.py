@@ -216,7 +216,7 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     #Package results for daemon
     if num:
         # Create folder for segmentations
-        segmentations = os.path.join(output_dir + '/segmentations/')
+        segmentations = 'segmentations'
         if not os.path.exists(segmentations):
             os.makedirs(segmentations)
 
@@ -228,15 +228,15 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
         os.rename(file_output + '.txt', num + '_WMGM_' + file_output + '.txt')
 
         # Copy text file containing results to segmentations folder
-        shutil.copy2(os.path.join(file_output), segmentations)
-
+        shutil.copy2(num + '_WMGM_' + file_output + '.txt', segmentations)
+        
         # Create ZIP file of segmentation results
         shutil.make_archive(os.path.join(num + '_WMGM_results'), 'zip', segmentations)
 
         # Move results files to data directory 
         if os.path.isfile(os.path.join('../' + num + '_WMGM_results.txt')):
             os.remove(os.path.join('../' + num + '_WMGM_results.txt'))
-        shutil.move(os.path.join(output_dir, segmentations, num + '_WMGM_results.txt'), os.path.join('../' + num + '_WMGM.txt'))
+        shutil.move(os.path.join(num + '_WMGM_results.txt'), os.path.join('../' + num + '_WMGM.txt'))
 
         if os.path.isfile(os.path.join('../' + num + '_WMGM_results.zip')):
             os.remove(os.path.join('../' + num + '_WMGM_results.zip'))
