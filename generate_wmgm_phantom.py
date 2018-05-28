@@ -107,6 +107,7 @@ def main():
     ind_wm = range(0, 30)
     ind_gm = range(30, 36)
 
+    print("\nGenerate phantom...")
     # loop across gm_value and std_values and generate phantom
     for gm_value in gm_values:
         for std_noise in std_noises:
@@ -147,7 +148,7 @@ def main():
     data_gm[np.where(data_gm < 0.5)] = 0
     save_nifti(data_gm, os.path.join(folder_out, "mask_gm.nii.gz"))
     # display
-    sct.log.info("\nDone!")
+    sct.log.info("Done!")
 
 
 if __name__ == "__main__":
