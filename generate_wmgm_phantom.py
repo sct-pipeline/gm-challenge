@@ -5,7 +5,7 @@
 # USAGE:
 # The script should be launched using SCT's python:
 #   PATH_GMCHALLENGE="PATH TO THIS REPOSITORY"
-#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}generate_wmgm_phantom.py data_phantom
+#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}generate_wmgm_phantom.py folder_out
 #
 # Ranges of GM and noise STD can be changed inside the code. They are hard-coded so that a specific version of the code
 # can be tagged, and will always produce the same results (whereas if we allow users to enter params, the output will
@@ -33,7 +33,7 @@ sys.path.append(os.path.join(path_sct, 'scripts'))
 import sct_utils as sct
 from msct_image import Image
 from spinalcordtoolbox.metadata import read_label_file, parse_id_group
-
+import pandas as pd
 
 def get_parameters():
     parser = argparse.ArgumentParser(description='Generate a synthetic spinal cord phantom with various values of gray '
@@ -123,8 +123,18 @@ def main():
                     # add noise
                     if std_noise:
                         data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny, nz))
+                # build file name
+                file_out = "phantom_wm" + str(wm_value) + "_wm" + str(gm_value) + "_std" + str(std_noise) + "_smooth" + str(smooth)
                 # save as nifti file
-                save_nifti(data_phantom, os.path.join(folder_out, "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_STD" + str(std_noise) + "_smooth" + str(smooth) + ".nii.gz"))
+                save_nifti(data_phantom, os.path.join(folder_out, file_out + ".nii.gz"))
+                # save metadata
+                metadata = pd.Series({ 'wm': wm_value,
+                                       'gm': gm_value,
+                                       'std': std_noise,
+                                       'smooth': smooth,
+                                       'file': file_out + ".nii.gz"})
+                metadata.to_csv(file_out + ".csv")
+
 
     # generate mask of spinal cord
     data_cord = np.sum(data_tracts, axis=3)
