@@ -225,22 +225,22 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
         shutil.copy2("data1_gmseg.nii.gz", segmentations)
 
         # Rename text file for interaction with daemon
-        os.rename(file_output + '.txt', num + '_WMGM_results.txt')
+        os.rename(file_output + '.txt', num + '_WMGM.txt')
 
         # Copy text file containing results to segmentations folder
-        shutil.copy2(num + '_WMGM_results.txt', segmentations)
+        shutil.copy2(num + '_WMGM.txt', segmentations)
         
         # Create ZIP file of segmentation results
-        shutil.make_archive(os.path.join(num + '_WMGM_results'), 'zip', segmentations)
+        shutil.make_archive(os.path.join(num + '_WMGM'), 'zip', segmentations)
 
         # Move results files to data directory 
-        if os.path.isfile(os.path.join(curdir, num + '_WMGM_results.txt')):
-            os.remove(os.path.join(curdir, num + '_WMGM_results.txt'))
-        shutil.move(os.path.join(num + '_WMGM_results.txt'), os.path.join(curdir, num + '_WMGM.txt'))
+        if os.path.isfile(os.path.join(curdir, num + '_WMGM.txt')):
+            os.remove(os.path.join(curdir, num + '_WMGM.txt'))
+        shutil.move(os.path.join(num + '_WMGM.txt'), os.path.join(curdir, num + '_WMGM.txt'))
 
-        if os.path.isfile(os.path.join(curdir, num + '_WMGM_results.zip')):
-            os.remove(os.path.join(curdir, num + '_WMGM_results.zip'))
-        shutil.move(os.path.join(num + '_WMGM_results.zip'), os.path.join(curdir, num + '_WMGM.zip'))
+        if os.path.isfile(os.path.join(curdir, num + '_WMGM.zip')):
+            os.remove(os.path.join(curdir, num + '_WMGM.zip'))
+        shutil.move(os.path.join(num + '_WMGM.zip'), os.path.join(curdir, num + '_WMGM.zip'))
 
     # back to current folder
     os.chdir(curdir)
