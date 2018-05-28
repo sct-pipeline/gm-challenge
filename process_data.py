@@ -225,10 +225,10 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
         shutil.copy2("data1_gmseg.nii.gz", segmentations)
 
         # Rename text file for interaction with daemon
-        os.rename(file_output + '.txt', num + '_WMGM_' + file_output + '.txt')
+        os.rename(file_output + '.txt', num + '_WMGM_results.txt')
 
         # Copy text file containing results to segmentations folder
-        shutil.copy2(num + '_WMGM_' + file_output + '.txt', segmentations)
+        shutil.copy2(num + '_WMGM_results.txt', segmentations)
         
         # Create ZIP file of segmentation results
         shutil.make_archive(os.path.join(num + '_WMGM_results'), 'zip', segmentations)
