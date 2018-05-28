@@ -86,9 +86,9 @@ def save_nifti(data, fname):
 def main():
     sct.init_sct()  # start logger
     # default params
-    wm_value = 50
-    gm_values = [50, 75, 100]
-    std_noises = [1, 2, 5]
+    wm_value = 100
+    gm_values = [120, 140, 160, 180]
+    std_noises = [1, 5, 10]
     smoothing = [0, 0.5, 1]  # standard deviation values for Gaussian kernel
     zslice = 850  # 850: corresponds to mid-C4 level (enlargement)
     num_slice = 10  # number of slices in z direction
