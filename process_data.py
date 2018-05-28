@@ -129,6 +129,7 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     :param file_gmseg:
     :param register:
     :param num:
+    :param output_dir:
     :param verbose:
     :return: results: pandas dataframe with results
     """
@@ -193,13 +194,9 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     # Initialize data frame for reporting results
     results = pd.DataFrame(np.nan, index=['SNR', 'Contrast', 'Sharpness'], columns=['Metric Value'])
 
-    # Compute SNR
+    # Compute metrics
     results.loc['SNR'] = compute_snr("data1.nii.gz", fdata2, file_seg)
-
-    # Compute contrast
     results.loc['Contrast'] = compute_contrast("data1.nii.gz", "data1_wmseg.nii.gz", "data1_gmseg.nii.gz")
-
-    # Compute sharpness at GM/WM interface
     results.loc['Sharpness'] = 0  # TODO: compute_sharpness("data1.nii.gz", "data1_gmseg.nii.gz")
 
     # Display results
