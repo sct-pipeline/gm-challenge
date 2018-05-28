@@ -112,7 +112,7 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, verbose=1):
     :param register:
     :param num:
     :param verbose:
-    :return:
+    :return: results: pandas dataframe with results
     """
 
     # Params
@@ -240,6 +240,8 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, verbose=1):
 
     # back to current folder
     os.chdir(curdir)
+
+    return results
 
 
 if __name__ == "__main__":
