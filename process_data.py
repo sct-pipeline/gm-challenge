@@ -234,13 +234,13 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
         shutil.make_archive(os.path.join(num + '_WMGM_results'), 'zip', segmentations)
 
         # Move results files to data directory 
-        if os.path.isfile(os.path.join('../' + num + '_WMGM_results.txt')):
-            os.remove(os.path.join('../' + num + '_WMGM_results.txt'))
-        shutil.move(os.path.join(num + '_WMGM_results.txt'), os.path.join('../' + num + '_WMGM.txt'))
+        if os.path.isfile(os.path.join(curdir, num + '_WMGM_results.txt')):
+            os.remove(os.path.join(curdir, num + '_WMGM_results.txt'))
+        shutil.move(os.path.join(num + '_WMGM_results.txt'), os.path.join(curdir, num + '_WMGM.txt'))
 
-        if os.path.isfile(os.path.join('../' + num + '_WMGM_results.zip')):
-            os.remove(os.path.join('../' + num + '_WMGM_results.zip'))
-        shutil.move(os.path.join(num + '_WMGM_results.zip'), os.path.join('../' + num + '_WMGM.zip'))
+        if os.path.isfile(os.path.join(curdir, num + '_WMGM_results.zip')):
+            os.remove(os.path.join(curdir, num + '_WMGM_results.zip'))
+        shutil.move(os.path.join(num + '_WMGM_results.zip'), os.path.join(curdir, num + '_WMGM.zip'))
 
     # back to current folder
     os.chdir(curdir)
