@@ -40,39 +40,40 @@ def get_parameters():
 def main():
     sct.init_sct()  # start logger
     # default params
-
+    smooth = 0
     # Read CSV
     results_all = pd.read_csv(file_csv)
 
-    # plot fig
-    data1 = results_all.query('Noise == 0 & Smooth == 0')['Contrast'].tolist()
-    data2 = results_all.query('Noise == 5 & Smooth == 0')['Contrast'].tolist()
-    data3 = results_all.query('Noise == 10 & Smooth == 0')['Contrast'].tolist()
+    # build index
+    list_gm = sorted(list(set(results_all['GM'].tolist())))
+    list_noise = sorted(list(set(results_all['Noise'].tolist())))
 
-    N=3
-
-    fig, ax = plt.subplots()
-
-    ind = np.arange(N)  # the x locations for the groups
-    width = 0.25  # the width of the bars
-    p1 = ax.bar(ind - width, data1, width, color='r')
-    p2 = ax.bar(ind, data2, width, color='y')
-    p3 = ax.bar(ind + width, data3, width, color='b')
-
-    ax.set_title('Contrast')
-
-    ax.set_xlabel('Noise')
-    ax.set_xticks(ind + width / 2)
-    ax.set_xticklabels(('0', '5', '10'))
-
-    ax.legend((p1[0], p2[0], p3[0]), ('GM=50', 'GM=75', 'GM=100'))
-    ax.set_ylabel('Contrast')
-    plt.grid(axis='y')
-
-    ax.autoscale_view()
-
-    plt.savefig('fig_contrast.png')
-    #
+    for metric in ['Contrast', 'SNR']:
+        # build array
+        data = np.zeros([len(list_noise), len(list_gm)])
+        for i_gm in range(len(list_gm)):
+            for i_noise in range(len(list_noise)):
+                data[i_gm, i_noise] = results_all.query("Noise == " + str(list_noise[i_noise]) +
+                                                        " & Smooth == " + str(smooth) +
+                                                        " & GM == " + str(list_gm[i_gm]))[metric]
+        # plot fig
+        N = 3
+        fig, ax = plt.subplots()
+        ind = np.arange(N)  # the x locations for the groups
+        width = 0.25  # the width of the bars
+        p1 = ax.bar(ind - width, data[:, 0], width, color='r')
+        p2 = ax.bar(ind, data[:, 1], width, color='y')
+        p3 = ax.bar(ind + width, data[:, 2], width, color='b')
+        ax.set_title(metric)
+        ax.set_xlabel("Simulated Contrast")
+        ax.set_xticks(ind + width / 2)
+        ax.set_xticklabels((list_gm))
+        ax.legend((p1[0], p2[0], p3[0]), (["Noise STD = " + str(i) for i in list_noise]))
+        ax.set_ylabel("Measured " + metric)
+        plt.grid(axis='y')
+        ax.autoscale_view()
+        # plt.show()
+        plt.savefig("fig_" + metric + ".png")
 
 
 if __name__ == "__main__":
