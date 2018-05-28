@@ -7,7 +7,7 @@
 # USAGE:
 # The script should be launched using SCT's python:
 #   PATH_GMCHALLENGE="PATH TO THIS REPOSITORY"
-#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}process_folder.py -i folder1 folder2
+#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}process_folder.py -i folder1 folder2 -s folder1/mask_cord.nii.gz -g folder1/mask_gm.nii.gz -r 0
 #
 # OUTPUT:
 #   results_folder.csv: quantitative results in CSV format
