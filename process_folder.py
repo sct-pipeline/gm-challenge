@@ -58,20 +58,24 @@ def get_parameters():
 
 def main():
     # output_dir = "./output_wmgm"  # TODO: be able to set with argument
-    # file_output = "results"  # no prefix
+    file_output = "results_all.csv"  # csv output
     # fdata2 = "data2.nii.gz"
 
     # Get list of files in folder1
     folder1, folder2 = folder_data
     fname_csv_list = sorted(glob.glob(os.path.join(folder1, "*.csv")))
 
-
-    test = pd.DataFrame(data={'snr': 0,
-                              'contrast': 0,
-                              'sharpness': 0},
-                        index=index)
+    # initialize dataframe
+    results_all = pd.DataFrame(columns={'wm',
+                                        'gm',
+                                        'std',
+                                        'smooth',
+                                        'snr',
+                                        'contrast',
+                                        'sharpness'})
 
     # loop and process
+    i = 0
     for fname_csv in fname_csv_list:
         # get file name
         metadata = pd.Series.from_csv(fname_csv, header=None).to_dict()
@@ -84,8 +88,15 @@ def main():
         print("Data #2: " + fname2)
         # process pair of data
         results = process_data.main([fname1, fname2], file_seg, file_gmseg, register=register, verbose=verbose)
-        # update dataframe
-
+        # append to dataframe
+        results_all = results_all.append({'wm': metadata['wm'],
+                                          'gm': metadata['gm'],
+                                          'std': metadata['std'],
+                                          'smooth': metadata['smooth'],
+                                          'snr': results.loc['SNR'][0],
+                                          'contrast': results.loc['Contrast'][0],
+                                          'sharpness': results.loc['Sharpness'][0]}, ignore_index=True)
+    results_all.to_csv(file_output)
 
 if __name__ == "__main__":
     args = get_parameters()
