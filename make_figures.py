@@ -47,6 +47,7 @@ def main():
     # build index
     list_gm = sorted(list(set(results_all['GM'].tolist())))
     list_noise = sorted(list(set(results_all['Noise'].tolist())))
+    wm = sorted(list(set(results_all['WM'].tolist())))[0]
 
     for metric in ['Contrast', 'SNR']:
         # build array
@@ -65,9 +66,9 @@ def main():
         p2 = ax.bar(ind, data[:, 1], width, color='y')
         p3 = ax.bar(ind + width, data[:, 2], width, color='b')
         ax.set_title(metric)
-        ax.set_xlabel("Simulated Contrast")
+        ax.set_xlabel("Simulated Contrast (in %)")
         ax.set_xticks(ind + width / 2)
-        ax.set_xticklabels((list_gm))
+        ax.set_xticklabels((abs(list_gm - wm)/[float(min(i, wm)) for i in list_gm] * 100).astype(int))
         # ax.legend((p1[0], p2[0], p3[0]), (["Noise STD = " + str(i) for i in list_noise]))
         ax.set_ylabel("Measured " + metric)
         plt.grid(axis='y')
