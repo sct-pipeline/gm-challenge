@@ -1,37 +1,39 @@
 #!/usr/bin/env python
 
-import sys, os, shutil, subprocess, time
+import sys, os, shutil, subprocess, time, argparse
 import numpy as np
 import pandas as pd
 
 
-class Param:
-    def __init__(self):
-        parameters = sys.argv[:]
-        
-        self.program = os.path.basename(parameters[0])
-        self.num = parameters[1]
-        self.file_1 = parameters[2]
-        self.file_2 = parameters[3]
-        self.dir_data = os.path.dirname(parameters[2])
+def get_parameters():
+    parser = argparse.ArgumentParser(description='Extract the two NIfTI images and submission ID, and use them to call process_data.py.')
+    parser.add_argument('num',
+                        help='NiftyWeb ID')
+    parser.add_argument('image_1',
+                        help='Initial scan')
+    parser.add_argument('image_2',
+                        help='Re-scan')
+    args = parser.parse_args()
+    return args
 
 def main():
-    program = param.program
-    num = param.num
-    file_1 = param.file_1
-    file_2 = param.file_2
-    dir_data = param.dir_data
+    num = args.num
+    image_1 = os.path.basename(args.image_1)
+    image_2 = os.path.basename(args.image_2)
+    dir_data = os.path.dirname(args.image_1)
 
     # Send email notification of request
     mail = 'mutt -s "Request received for {}" stephanie.j.alley@gmail.com,jcohen@polymtl.ca,f.carrasco@ucl.ac.uk < /dev/null'.format(num)
     subprocess.check_call(mail, shell=True)
     
+    os.chdir(dir_data)
+
     # Initiate processing script
-    subprocess.call(["python", "/home/niftyweb_sct/gm_challenge/process_data.py", num, file_1, file_2])
+    subprocess.call(["${SCT_DIR}/python/bin/python", "/home/niftyweb_sct/gm_challenge/process_data.py", "-i", image_1, image_2, "-n", num, "-o","{}_WMGM".format(num)])
 
     # Check for output files to return to user
-    final_txt = os.path.join(dir_data + '/' + num + '_' + program + '.txt')
-    final_zip = os.path.join(dir_data + '/' + num + '_' + program + '.zip')
+    final_txt = os.path.join(dir_data + '/' + num + '_WMGM.txt')
+    final_zip = os.path.join(dir_data + '/' + num + '_WMGM.zip')
 
     if (os.path.isfile(final_txt)) and (os.path.isfile(final_zip)):
 	exit()
@@ -44,5 +46,5 @@ def main():
             time.sleep(60)
 
 if __name__ == "__main__":
-    param = Param()
+    args = get_parameters()
     main()

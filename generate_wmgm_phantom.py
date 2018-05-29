@@ -5,7 +5,7 @@
 # USAGE:
 # The script should be launched using SCT's python:
 #   PATH_GMCHALLENGE="PATH TO THIS REPOSITORY"
-#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}generate_wmgm_phantom.py data_phantom
+#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}generate_wmgm_phantom.py folder_out
 #
 # Ranges of GM and noise STD can be changed inside the code. They are hard-coded so that a specific version of the code
 # can be tagged, and will always produce the same results (whereas if we allow users to enter params, the output will
@@ -17,6 +17,7 @@
 # Authors: Stephanie Alley, Julien Cohen-Adad
 # License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
+# TODO: generated cord mask is too large!
 # TODO: remove input params and set them as list inside code
 # TODO: download PAM50 by default, and have option to set path to atlas
 # TDOD: param for selecting z
@@ -32,7 +33,7 @@ sys.path.append(os.path.join(path_sct, 'scripts'))
 import sct_utils as sct
 from msct_image import Image
 from spinalcordtoolbox.metadata import read_label_file, parse_id_group
-
+import pandas as pd
 
 def get_parameters():
     parser = argparse.ArgumentParser(description='Generate a synthetic spinal cord phantom with various values of gray '
@@ -85,9 +86,9 @@ def save_nifti(data, fname):
 def main():
     sct.init_sct()  # start logger
     # default params
-    wm_value = 50
-    gm_values = [50, 75, 100]
-    std_noises = [0, 5, 10]
+    wm_value = 100
+    gm_values = [120, 140, 160, 180]
+    std_noises = [1, 5, 10]
     smoothing = [0, 0.5, 1]  # standard deviation values for Gaussian kernel
     zslice = 850  # 850: corresponds to mid-C4 level (enlargement)
     num_slice = 10  # number of slices in z direction
@@ -106,6 +107,7 @@ def main():
     ind_wm = range(0, 30)
     ind_gm = range(30, 36)
 
+    print("\nGenerate phantom...")
     # loop across gm_value and std_values and generate phantom
     for gm_value in gm_values:
         for std_noise in std_noises:
@@ -119,14 +121,24 @@ def main():
                 # Add blurring
                 if smooth:
                     data_phantom = ndimage.gaussian_filter(data_phantom, sigma=(smooth), order=0)
-                    # add noise
-                    if std_noise:
-                        data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny, nz))
+                # add noise
+                if std_noise:
+                    data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny, nz))
+                # build file name
+                file_out = "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_Noise" + str(std_noise) + "_Smooth" + str(smooth)
                 # save as nifti file
-                save_nifti(data_phantom, os.path.join(folder_out, "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_STD" + str(std_noise) + "_smooth" + str(smooth) + ".nii.gz"))
+                save_nifti(data_phantom, os.path.join(folder_out, file_out + ".nii.gz"))
+                # save metadata
+                metadata = pd.Series({'WM': wm_value,
+                                      'GM': gm_value,
+                                      'Noise': std_noise,
+                                      'Smooth': smooth,
+                                      'File': file_out + ".nii.gz"})
+                metadata.to_csv(os.path.join(folder_out, file_out + ".csv"))
+
 
     # generate mask of spinal cord
-    data_cord = np.sum(data_tracts, axis=3)
+    data_cord = np.sum(data_tracts[:, :, :, ind_wm+ind_gm], axis=3)
     data_cord[np.where(data_cord >= 0.5)] = 1
     data_cord[np.where(data_cord < 0.5)] = 0
     save_nifti(data_cord, os.path.join(folder_out, "mask_cord.nii.gz"))
@@ -136,7 +148,7 @@ def main():
     data_gm[np.where(data_gm < 0.5)] = 0
     save_nifti(data_gm, os.path.join(folder_out, "mask_gm.nii.gz"))
     # display
-    sct.log.info("\nDone!")
+    sct.log.info("Done!")
 
 
 if __name__ == "__main__":
