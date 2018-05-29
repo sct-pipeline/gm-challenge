@@ -62,15 +62,20 @@ def main():
         fig, ax = plt.subplots()
         ind = np.arange(N)  # the x locations for the groups
         width = 0.20  # the width of the bars
+        fontsize = 20
+        fontsize_axes = 16
         p2 = ax.bar(ind - width, data[:, 2], width, color='b')
         p1 = ax.bar(ind, data[:, 1], width, color='y')
         p3 = ax.bar(ind + width, data[:, 0], width, color='r')
-        ax.set_title(metric)
-        ax.set_xlabel("Simulated Contrast (in %)")
+        ax.set_title(metric, fontsize=fontsize)
+        ax.set_xlabel("Simulated Contrast (in %)", fontsize=fontsize)
         ax.set_xticks(ind + width / 2)
-        ax.set_xticklabels((abs(list_gm - wm)/[float(min(i, wm)) for i in list_gm] * 100).astype(int))
+        xticklabels = (abs(list_gm - wm) / [float(min(i, wm)) for i in list_gm] * 100).astype(int)
+        ax.set_xticklabels(xticklabels, fontsize=fontsize_axes)
         # ax.legend((p1[0], p2[0], p3[0]), (["Noise STD = " + str(i) for i in list_noise]))
-        ax.set_ylabel("Measured " + metric)
+        ax.set_ylabel("Measured " + metric, fontsize=fontsize)
+        yticklabels = ax.get_yticks().astype(int)
+        ax.set_yticklabels(yticklabels, fontsize=fontsize_axes)
         plt.grid(axis='y')
         ax.autoscale_view()
         # plt.show()
