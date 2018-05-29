@@ -74,15 +74,16 @@ def main():
         ax.set_xticklabels(xticklabels, fontsize=fontsize_axes)
         # ax.legend((p1[0], p2[0], p3[0]), (["Noise STD = " + str(i) for i in list_noise]))
         ax.set_ylabel("Measured " + metric, fontsize=fontsize)
+        # ax.set_ylim(0, 80)
         yticklabels = ax.get_yticks().astype(int)
         ax.set_yticklabels(yticklabels, fontsize=fontsize_axes)
         plt.grid(axis='y')
         ax.autoscale_view()
         # plt.show()
-        plt.savefig("results_" + metric + ".png")
+        plt.savefig("results_" + metric + "_smooth" + str(smooth) + ".png")
 
         # save csv for importing as table
-        with open("results_" + metric + ".csv", "wb") as f:
+        with open("results_" + metric + "_smooth" + str(smooth) + ".csv", "wb") as f:
             writer = csv.writer(f)
             for row in data.transpose():
                 row = ["%.2f" % f for f in row]  # we need to do this otherwise float conversion gives e.g. 23.00000001
