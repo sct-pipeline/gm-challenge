@@ -188,7 +188,7 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
         sct.run("sct_create_mask -i data1.nii.gz -p centerline,data1_seg.nii.gz -size 35mm", verbose=verbose)
         # Register image 2 to image 1
         sct.run("sct_register_multimodal -i " + fdata2 + " -d data1.nii.gz -param step=1,type=im,algo=slicereg,metric=CC "
-                "-m mask_data1.nii.gz -x spline", verbose=verbose)
+                "-m mask_data1.nii.gz -x nn", verbose=verbose)
         # Add suffix to file name
         sct.add_suffix(fdata2, "_reg")
 
