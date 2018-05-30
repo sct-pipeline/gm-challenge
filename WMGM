@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-import sys, os, shutil, subprocess, time, argparse
-=======
-=======
->>>>>>> 0374c94fd66abf361e817f9df60b1c554288b81b
 ##############################################################
 #
 # This script is initiated by daemon_SOFTWEB_2files.py, which communicates with the data submission on NiftyWeb.
@@ -34,8 +28,7 @@ import sys, os, shutil, subprocess, time, argparse
 ##############################################################
 
 
-import sys, os, shutil, subprocess, time
->>>>>>> Add header to WMGM
+import sys, os, shutil, subprocess, time, argparse
 import numpy as np
 import pandas as pd
 
