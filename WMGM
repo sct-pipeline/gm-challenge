@@ -13,6 +13,17 @@ def get_parameters():
                         help='Initial scan')
     parser.add_argument('image_2',
                         help='Re-scan')
+    parser.add_argument('PDF',
+                        help='PDF of protocol information')
+    parser.add_argument('-field', '--field',
+                        help='Field strength')
+    parser.add_argument('-coil', '--coil',
+                        help='Coil type')
+    parser.add_argument('-sequence', '--sequence',
+                        help='Sequence')
+    parser.add_argument('-data', '--data',
+                        help='Data type',
+                        nargs='*')
     args = parser.parse_args()
     return args
 
