@@ -47,7 +47,7 @@ def main():
     final_zip = os.path.join(dir_data + '/' + num + '_WMGM.zip')
 
     if (os.path.isfile(final_txt)) and (os.path.isfile(final_zip)):
-	exit()
+	   exit()
 
     done = 0
     while(done == 0):
