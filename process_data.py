@@ -69,7 +69,7 @@ def compute_snr_diff(file_data1, file_data2, file_mask):
     :param file_data1: image 1
     :param file_data1: image 2
     :param file_mask: mask where to compute SNR
-    :return: float: SNR rounded at 2 decimals
+    :return: float: SNR_diff rounded at 2 decimals
     """
     print("Compute SNR_diff...")
     sct.run("sct_image -i " + file_data1 + "," + file_data2 + " -concat t -o data_concat.nii.gz")
@@ -83,16 +83,21 @@ def compute_snr_single(file_data, file_mask):
     Compute SNR based on a single image and a mask
     :param file_data: image
     :param file_mask: mask for ROI_body
-    :return: float: SNR rounded at 2 decimals
+    :return: float: SNR_single rounded at 2 decimals
     """
     print("Compute SNR_single...")
     # Convert image to array
     data = Image(file_data).data
     # Convert mask to array
     wm_mask = Image(file_mask).data
-    roi= np.where(wm_mask == 1)
-    roi_data = data[roi]
-    snr_single = np.mean(roi_data) / np.std(roi_data)
+    # Use mask to select data in ROI_body
+    roi_data = np.where(wm_mask == 1, data, 0)
+    # Compute SNR slice-wise
+    snr_slices = np.zeros((roi_data.shape[2]))
+    for i in range(roi_data.shape[2]):
+        snr_slice = np.mean(roi_data[:,:,i][np.where(roi_data[:,:,i] > 0)]) / np.std(roi_data[:,:,i][np.where(roi_data[:,:,i] > 0)])
+        snr_slices[i] = snr_slice
+    snr_single = np.mean(snr_slices)
     return round(snr_single, 2)
 
 def compute_contrast(file_data, file_mask1, file_mask2):
