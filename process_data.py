@@ -24,6 +24,7 @@ import pandas as pd
 path_sct = os.getenv('SCT_DIR')
 sys.path.append(os.path.join(path_sct, 'scripts'))
 import sct_utils as sct
+from msct_image import Image
 from sct_convert import convert
 
 
@@ -62,21 +63,42 @@ def get_parameters():
     return args
 
 
-def compute_snr(file_data1, file_data2, file_mask):
+def compute_snr_diff(file_data1, file_data2, file_mask):
     """
     Compute SNR based on two input data and a mask
     :param file_data1: image 1
     :param file_data1: image 2
     :param file_mask: mask where to compute SNR
-    :return: float: SNR rounded at 2 decimals
+    :return: float: SNR_diff rounded at 2 decimals
     """
-    print("Compute SNR...")
+    print("Compute SNR_diff...")
     sct.run("sct_image -i " + file_data1 + "," + file_data2 + " -concat t -o data_concat.nii.gz")
     status, output = sct.run("sct_compute_snr -i data_concat.nii.gz -vol 0,1 -m " + file_mask)
     # parse SNR info
-    snr = np.float(output[output.index("SNR_diff =") + 11:])
-    return round(snr, 2)  # round at 2 decimals
+    snr_diff = np.float(output[output.index("SNR_diff =") + 11:])
+    return round(snr_diff, 2) # round at 2 decimals
 
+def compute_snr_single(file_data, file_mask):
+    """
+    Compute SNR based on a single image and a mask
+    :param file_data: image
+    :param file_mask: mask for ROI_body
+    :return: float: SNR_single rounded at 2 decimals
+    """
+    print("Compute SNR_single...")
+    # Convert image to array
+    data = Image(file_data).data
+    # Convert mask to array
+    wm_mask = Image(file_mask).data
+    # Use mask to select data in ROI_body
+    roi_data = np.where(wm_mask == 1, data, 0)
+    # Compute SNR slice-wise
+    snr_slices = np.zeros((roi_data.shape[2]))
+    for i in range(roi_data.shape[2]):
+        snr_slice = np.mean(roi_data[:,:,i][np.where(roi_data[:,:,i] > 0)]) / np.std(roi_data[:,:,i][np.where(roi_data[:,:,i] > 0)])
+        snr_slices[i] = snr_slice
+    snr_single = np.mean(snr_slices)
+    return round(snr_single, 2)
 
 def compute_contrast(file_data, file_mask1, file_mask2):
     """
@@ -194,10 +216,11 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
 
     # Analysis: compute metrics
     # Initialize data frame for reporting results
-    results = pd.DataFrame(np.nan, index=['SNR', 'Contrast'], columns=['Metric Value'])
+    results = pd.DataFrame(np.nan, index=['SNR_diff', 'SNR_single', 'Contrast'], columns=['Metric Value'])
 
     # Compute metrics
-    results.loc['SNR'] = compute_snr("data1.nii.gz", fdata2, "data1_wmseg.nii.gz")
+    results.loc['SNR_diff'] = compute_snr_diff("data1.nii.gz", fdata2, "data1_wmseg.nii.gz")
+    results.loc['SNR_single'] = compute_snr_single("data1.nii.gz", "data1_wmseg.nii.gz")
     results.loc['Contrast'] = compute_contrast("data1.nii.gz", "data1_wmseg.nii.gz", "data1_gmseg.nii.gz")
     # results.loc['Sharpness'] = compute_sharpness("data1.nii.gz", "data1_gmseg.nii.gz")
 
