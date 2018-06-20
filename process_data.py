@@ -5,7 +5,7 @@
 # USAGE:
 # The script should be launched using SCT's python:
 #   PATH_GMCHALLENGE="PATH TO THIS REPOSITORY"
-#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}process_data.py
+#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}/process_data.py
 #
 # OUTPUT:
 #   results.csv: quantitative results in CSV format
@@ -17,15 +17,8 @@
 # TODO: enable to input suffix for results filename (otherwise, overwriting in process_folder
 # TODO: get verbose working (current issue is sys.stdout.isatty()) is False, hence sct.run() is using sct.log with no terminal output
 
-import sys, os, shutil, argparse, pickle, io
-import numpy as np
-import pandas as pd
-# append path to useful SCT scripts
-path_sct = os.getenv('SCT_DIR')
-sys.path.append(os.path.join(path_sct, 'scripts'))
-import sct_utils as sct
-from msct_image import Image
-from sct_convert import convert
+
+import argparse
 
 
 def get_parameters():
@@ -38,13 +31,15 @@ def get_parameters():
                         nargs='+',
                         required=True)
     parser.add_argument("-s", "--seg",
-                        help="Spinal cord segmentation for the first dataset.",
+                        help="Spinal cord segmentation for the first dataset. If not provided, segmentation will be "
+                             "performed.",
                         required=False)
     parser.add_argument("-g", "--gmseg",
-                        help="Gray matter segmentation for the first dataset.",
+                        help="Gray matter segmentation for the first dataset. If not provided, segmentation will be "
+                             "performed.",
                         required=False)
     parser.add_argument("-r", "--register",
-                        help="Perform registration between scan #1 and scan #2. Default=1.",
+                        help="{0, 1}. Perform registration between scan #1 and scan #2. Default=1.",
                         type=int,
                         default=1,
                         required=False)
@@ -67,7 +62,7 @@ def compute_snr_diff(file_data1, file_data2, file_mask):
     """
     Compute SNR based on two input data and a mask
     :param file_data1: image 1
-    :param file_data1: image 2
+    :param file_data2: image 2
     :param file_mask: mask where to compute SNR
     :return: float: SNR_diff rounded at 2 decimals
     """
@@ -77,6 +72,7 @@ def compute_snr_diff(file_data1, file_data2, file_mask):
     # parse SNR info
     snr_diff = np.float(output[output.index("SNR_diff =") + 11:])
     return round(snr_diff, 2) # round at 2 decimals
+
 
 def compute_snr_single(file_data, file_mask):
     """
@@ -95,10 +91,13 @@ def compute_snr_single(file_data, file_mask):
     # Compute SNR slice-wise
     snr_slices = np.zeros((roi_data.shape[2]))
     for i in range(roi_data.shape[2]):
-        snr_slice = np.mean(roi_data[:,:,i][np.where(roi_data[:,:,i] > 0)]) / np.std(roi_data[:,:,i][np.where(roi_data[:,:,i] > 0)])
+        mean_slice = np.mean(roi_data[:, :, i][np.where(roi_data[:, :, i] > 0)])
+        std_slice = np.std(roi_data[:, :, i][np.where(roi_data[:, :, i] > 0)])
+        snr_slice = mean_slice / std_slice
         snr_slices[i] = snr_slice
     snr_single = np.mean(snr_slices)
     return round(snr_single, 2)
+
 
 def compute_contrast(file_data, file_mask1, file_mask2):
     """
@@ -157,12 +156,21 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     :param verbose:
     :return: results: pandas dataframe with results
     """
+    import sys, os, shutil, argparse, pickle, io
+    import numpy as np
+    import pandas as pd
+    # append path to useful SCT scripts
+    path_sct = os.getenv('SCT_DIR')
+    sys.path.append(os.path.join(path_sct, 'scripts'))
+    import sct_utils as sct
+    from msct_image import Image
+    from sct_convert import convert
 
     # Params
     if not output_dir:
         output_dir = "./output_wmgm"
     file_output = "results"  # no prefix
-    fdata2 = "data2.nii.gz"
+    fdata2 = "data2.nii.gz"  # we create a variable because file name might be updated depending on preprocessing
 
     # Parse arguments
     # if not args:
