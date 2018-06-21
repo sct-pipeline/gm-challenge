@@ -212,13 +212,17 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     print("Generate white matter segmentation...")
     sct.run("sct_maths -i data1_seg.nii.gz -sub data1_gmseg.nii.gz -o data1_wmseg.nii.gz", verbose=verbose)
 
+    # Erode white matter mask to minimize edge contamination when computing SNR values.
+    print("Erode white matter mask...")
+    sct.run("sct_maths -i data1_wmseg.nii.gz - erode 1 -o data1_wmseg_erode.nii.gz", verbose=verbose)
+
     if register:
         print("Register data2 to data1...")
         # Create mask around the cord for more accurate registration
         sct.run("sct_create_mask -i data1.nii.gz -p centerline,data1_seg.nii.gz -size 35mm", verbose=verbose)
         # Register image 2 to image 1
-        sct.run("sct_register_multimodal -i " + fdata2 + " -d data1.nii.gz -param step=1,type=im,algo=slicereg,metric=CC "
-                "-m mask_data1.nii.gz -x nn", verbose=verbose)
+        sct.run("sct_register_multimodal -i " + fdata2 + " -d data1.nii.gz -param step=2,type=im,algo=rigid,smooth=1,"
+                                                         "iter=100 -m mask_data1.nii.gz -x nn", verbose=verbose)
         # Add suffix to file name
         sct.add_suffix(fdata2, "_reg")
 
