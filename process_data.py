@@ -70,8 +70,13 @@ def compute_snr_diff(file_data1, file_data2, file_mask):
     sct.run("sct_image -i " + file_data1 + "," + file_data2 + " -concat t -o data_concat.nii.gz")
     status, output = sct.run("sct_compute_snr -i data_concat.nii.gz -vol 0,1 -m " + file_mask)
     # parse SNR info
-    snr_diff = np.float(output[output.index("SNR_diff =") + 11:])
-    return round(snr_diff, 2) # round at 2 decimals
+    # TODO: run sct_compute_snr as Python module
+    try:
+        outstring = output[output.index("SNR_diff =") + 11:]
+        snr_diff = np.float(outstring[: outstring.index("\n")])
+    except Exception as e:
+        print(e)
+    return round(snr_diff, 2)  # round at 2 decimals
 
 
 def compute_snr_single(file_data, file_mask):
@@ -156,16 +161,6 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     :param verbose:
     :return: results: pandas dataframe with results
     """
-    import sys, os, shutil, argparse, pickle, io
-    import numpy as np
-    import pandas as pd
-    # append path to useful SCT scripts
-    path_sct = os.getenv('SCT_DIR')
-    sys.path.append(os.path.join(path_sct, 'scripts'))
-    import sct_utils as sct
-    from msct_image import Image
-    from sct_convert import convert
-
     # Params
     if not output_dir:
         output_dir = "./output_wmgm"
@@ -212,9 +207,10 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     print("Generate white matter segmentation...")
     sct.run("sct_maths -i data1_seg.nii.gz -sub data1_gmseg.nii.gz -o data1_wmseg.nii.gz", verbose=verbose)
 
-    # Erode white matter mask to minimize edge contamination when computing SNR values.
+    # Erode white matter mask to minimize partial volume effect
+    # Note: we cannot erode the gray matter because it is too thin (most of the time, only one voxel)
     print("Erode white matter mask...")
-    sct.run("sct_maths -i data1_wmseg.nii.gz - erode 1 -o data1_wmseg_erode.nii.gz", verbose=verbose)
+    sct.run("sct_maths -i data1_wmseg.nii.gz -erode 1 -o data1_wmseg_erode.nii.gz", verbose=verbose)
 
     if register:
         print("Register data2 to data1...")
@@ -231,15 +227,13 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     results = pd.DataFrame(np.nan, index=['SNR_diff', 'SNR_single', 'Contrast'], columns=['Metric Value'])
 
     # Compute metrics
-    results.loc['SNR_diff'] = compute_snr_diff("data1.nii.gz", fdata2, "data1_wmseg.nii.gz")
-    results.loc['SNR_single'] = compute_snr_single("data1.nii.gz", "data1_wmseg.nii.gz")
+    results.loc['SNR_diff'] = compute_snr_diff("data1.nii.gz", fdata2, "data1_wmseg_erode.nii.gz")
+    results.loc['SNR_single'] = compute_snr_single("data1.nii.gz", "data1_wmseg_erode.nii.gz")
     results.loc['Contrast'] = compute_contrast("data1.nii.gz", "data1_wmseg.nii.gz", "data1_gmseg.nii.gz")
     # results.loc['Sharpness'] = compute_sharpness("data1.nii.gz", "data1_gmseg.nii.gz")
 
-    # Display results
-    results.columns = ['']
-
     # Save DataFrame as CSV
+    results.columns = ['']
     results.to_csv(file_output + ".csv")
     print("--> created file: " + file_output + ".csv")
 
@@ -294,4 +288,15 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
 
 if __name__ == "__main__":
     args = get_parameters()
+
+    import sys, os, shutil, argparse, pickle, io
+    import numpy as np
+    import pandas as pd
+    # append path to useful SCT scripts
+    path_sct = os.getenv('SCT_DIR')
+    sys.path.append(os.path.join(path_sct, 'scripts'))
+    import sct_utils as sct
+    from msct_image import Image
+    from sct_convert import convert
+
     main(args.input, args.seg, args.gmseg, register=args.register, num=args.num, output_dir=args.output_dir, verbose=args.verbose)
