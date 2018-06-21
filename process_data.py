@@ -94,12 +94,17 @@ def compute_snr_single(file_data, file_mask):
     # Use mask to select data in ROI_body
     roi_data = np.where(wm_mask == 1, data, 0)
     # Compute SNR slice-wise
-    snr_slices = np.zeros((roi_data.shape[2]))
+    # snr_slices = np.zeros((roi_data.shape[2]))
+    snr_slices = []
     for i in range(roi_data.shape[2]):
-        mean_slice = np.mean(roi_data[:, :, i][np.where(roi_data[:, :, i] > 0)])
-        std_slice = np.std(roi_data[:, :, i][np.where(roi_data[:, :, i] > 0)])
-        snr_slice = mean_slice / std_slice
-        snr_slices[i] = snr_slice
+        ind_nonzero = np.where(roi_data[:, :, i] > 0)
+        # check if there is non-null voxel on this slice
+        if len(ind_nonzero[0]):
+            mean_slice = np.mean(roi_data[:, :, i][ind_nonzero])
+            std_slice = np.std(roi_data[:, :, i][ind_nonzero])
+            snr_slice = mean_slice / std_slice
+            # snr_slices[i] = snr_slice
+            snr_slices.append(snr_slice)
     snr_single = np.mean(snr_slices)
     return round(snr_single, 2)
 
