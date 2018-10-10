@@ -39,15 +39,19 @@ PROCESSING SUBJECT: ${subject%?}\n========================\n\
   # Go to subject folder
   cd ${subject}
   # Build base command
-  CMD=${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}/process_data.py
+  CMD="${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}/process_data.py"
   # Add data
-  CMD=${CMD} data1.nii.gz data2.nii.gz
+  CMD="${CMD} -i data1.nii.gz data2.nii.gz"
   # If manual segmentation exists, use it
   if [ -e "data1_seg_manual.nii.gz" ]; then
-    CMD=${CMD} -s data1_seg_manual.nii.gz
+    CMD="${CMD} -s data1_seg_manual.nii.gz"
+  fi
+  # If manual segmentation exists, use it
+  if [ -e "data1_gmseg_manual.nii.gz" ]; then
+    CMD="${CMD} -g data1_gmseg_manual.nii.gz"
   fi
   # Run command
-  echo $CMD
+  echo $CMD; $CMD
   # Go back to parent folder
   cd ..
 done
