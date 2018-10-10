@@ -154,7 +154,7 @@ def compute_sharpness(file_data, file_mask_gm):
     return pickle.load(io.open("laplacian.pickle"))["Metric value"][0]
 
 
-def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None, verbose=1):
+def main(file_input, file_seg, file_gmseg, register=1, num=None, output_dir=None, create_txt_output=False, verbose=1):
     """
     Compute metrics to assess the quality of spinal cord images.
     :param file_data:
@@ -163,14 +163,17 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     :param register:
     :param num:
     :param output_dir:
+    :param create_txt_output: Bool: Create output txt file for Niftyweb server
     :param verbose:
     :return: results: pandas dataframe with results
     """
     # Params
     if not output_dir:
-        output_dir = "./output_wmgm"
+        output_dir = "./results"
     file_output = "results"  # no prefix
-    fdata2 = "data2.nii.gz"  # we create a variable because file name might be updated depending on preprocessing
+    fdata = file_input  # copy input file because this variable will be updated across processing
+    fseg = sct.add_suffix(fdata[0], '_seg')
+    fgmseg = sct.add_suffix(fdata[0], '_gmseg')
 
     # Parse arguments
     # if not args:
@@ -188,29 +191,30 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
 
     # copy to output directory and convert to nii.gz
     print("Copy data...")
-    convert(file_data[0], os.path.join(output_dir, "data1.nii.gz"))
-    convert(file_data[1], os.path.join(output_dir, fdata2))
+    sct.copy(fdata[0], os.path.join(output_dir, fdata[0]))
+    sct.copy(fdata[1], os.path.join(output_dir, fdata[1]))
     if file_seg is not None:
-        convert(file_seg, os.path.join(output_dir, "data1_seg.nii.gz"))
+        sct.copy(file_seg, os.path.join(output_dir, fseg))
     if file_gmseg is not None:
-        convert(file_gmseg, os.path.join(output_dir, "data1_gmseg.nii.gz"))
+        sct.copy(file_gmseg, os.path.join(output_dir, fgmseg))
 
+    # move to results directory
     curdir = os.getcwd()
     os.chdir(output_dir)
 
     # Segment spinal cord
     if file_seg is None:
         print("Segment spinal cord...")
-        sct.run("sct_deepseg_sc -i data1.nii.gz -c t2s", verbose=verbose)
+        sct.run("sct_deepseg_sc -i " + fdata[0] + " -c t2s", verbose=verbose)
 
     # Segment gray matter
     if file_gmseg is None:
         print("Segment gray matter...")
-        sct.run("sct_deepseg_gm -i data1.nii.gz", verbose=verbose)
+        sct.run("sct_deepseg_gm -i " + fdata[0], verbose=verbose)
 
     # Generate white matter segmentation
     print("Generate white matter segmentation...")
-    sct.run("sct_maths -i data1_seg.nii.gz -sub data1_gmseg.nii.gz -o data1_wmseg.nii.gz", verbose=verbose)
+    sct.run("sct_maths -i " + fseg + " -sub " + fgmseg + " -o data1_wmseg.nii.gz", verbose=verbose)
 
     # Erode white matter mask to minimize partial volume effect
     # Note: we cannot erode the gray matter because it is too thin (most of the time, only one voxel)
@@ -220,21 +224,20 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     if register:
         print("Register data2 to data1...")
         # Create mask around the cord for more accurate registration
-        sct.run("sct_create_mask -i data1.nii.gz -p centerline,data1_seg.nii.gz -size 35mm", verbose=verbose)
+        sct.run("sct_create_mask -i " + fdata[0] + " -p centerline," + fseg + " -size 35mm", verbose=verbose)
         # Register image 2 to image 1
-        sct.run("sct_register_multimodal -i " + fdata2 + " -d data1.nii.gz -param step=2,type=im,algo=rigid,smooth=1,"
-                                                         "iter=100 -m mask_data1.nii.gz -x nn", verbose=verbose)
+        sct.run("sct_register_multimodal -i " + fdata[1] + " -d " + fdata[0] + " -param step=2,type=im,algo=rigid,metric=MeanSquares,smooth=1,iter=50,slicewise=1 -m mask_data1.nii.gz -x nn", verbose=verbose)
         # Add suffix to file name
-        sct.add_suffix(fdata2, "_reg")
+        fdata[1] = sct.add_suffix(fdata[1], "_reg")
 
     # Analysis: compute metrics
     # Initialize data frame for reporting results
-    results = pd.DataFrame(np.nan, index=['SNR_diff', 'SNR_single', 'Contrast'], columns=['Metric Value'])
+    results = pd.DataFrame(0, index=['SNR_diff', 'SNR_single', 'Contrast'], columns=['Metric Value'])
 
     # Compute metrics
-    results.loc['SNR_diff'] = compute_snr_diff("data1.nii.gz", fdata2, "data1_wmseg_erode.nii.gz")
-    results.loc['SNR_single'] = compute_snr_single("data1.nii.gz", "data1_wmseg_erode.nii.gz")
-    results.loc['Contrast'] = compute_contrast("data1.nii.gz", "data1_wmseg.nii.gz", "data1_gmseg.nii.gz")
+    results.loc['SNR_diff'] = compute_snr_diff(fdata[0], fdata[1], "data1_wmseg_erode.nii.gz")
+    results.loc['SNR_single'] = compute_snr_single(fdata[0], "data1_wmseg_erode.nii.gz")
+    results.loc['Contrast'] = compute_contrast(fdata[0], "data1_wmseg.nii.gz", fgmseg)
     # results.loc['Sharpness'] = compute_sharpness("data1.nii.gz", "data1_gmseg.nii.gz")
 
     # Save DataFrame as CSV
@@ -242,17 +245,18 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
     results.to_csv(file_output + ".csv")
     print("--> created file: " + file_output + ".csv")
 
-    # Build text file for user
-    results_to_return = open(file_output + ".txt", 'w')
-    results_to_return.write('The following metric values were calculated:\n')
-    results_to_return.write(results.__repr__())
-    results_to_return.write('\n\nA text file containing this information, as well as the image segmentations, are '
-                            'available for download through the link below. Please note that these are the intermediate '
-                            'results (automatically processed). We acknowledge that manual adjustment of the cord and '
-                            'gray matter segmentations might be necessary. They will be performed in the next few days, '
-                            'and the final results will be sent back to you.\n')
-    results_to_return.close()
-    print("--> created file: " + file_output + ".txt")
+    if create_txt_output:
+        # Build text file for user
+        results_to_return = open(file_output + ".txt", 'w')
+        results_to_return.write('The following metric values were calculated:\n')
+        results_to_return.write(results.__repr__())
+        results_to_return.write('\n\nA text file containing this information, as well as the image segmentations, are '
+                                'available for download through the link below. Please note that these are the intermediate '
+                                'results (automatically processed). We acknowledge that manual adjustment of the cord and '
+                                'gray matter segmentations might be necessary. They will be performed in the next few days, '
+                                'and the final results will be sent back to you.\n')
+        results_to_return.close()
+        print("--> created file: " + file_output + ".txt")
 
     # Package results inside folder
     # TODO
@@ -272,11 +276,11 @@ def main(file_data, file_seg, file_gmseg, register=1, num=None, output_dir=None,
 
         # Copy text file containing results to segmentations folder
         shutil.copy2(num + '_WMGM.txt', segmentations)
-        
+
         # Create ZIP file of segmentation results
         shutil.make_archive(os.path.join(num + '_WMGM'), 'zip', segmentations)
 
-        # Move results files to data directory 
+        # Move results files to data directory
         if os.path.isfile(os.path.join(curdir, num + '_WMGM.txt')):
             os.remove(os.path.join(curdir, num + '_WMGM.txt'))
         shutil.move(os.path.join(num + '_WMGM.txt'), os.path.join(curdir, num + '_WMGM.txt'))
@@ -301,7 +305,6 @@ if __name__ == "__main__":
     path_sct = os.getenv('SCT_DIR')
     sys.path.append(os.path.join(path_sct, 'scripts'))
     import sct_utils as sct
-    from msct_image import Image
-    from sct_convert import convert
+    from spinalcordtoolbox.image import Image
 
     main(args.input, args.seg, args.gmseg, register=args.register, num=args.num, output_dir=args.output_dir, verbose=args.verbose)

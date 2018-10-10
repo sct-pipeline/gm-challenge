@@ -2,11 +2,17 @@
 
 # Gray Matter Challenge (2018)
 Spinal cord gray matter imaging challenge for the 5th Spinal Cord Workshop (June 22<sup>nd</sup>, Paris).
+The objective for this challenge is to propose a protocol that will generate the best image quality. For more details,
+please see: https://goo.gl/2owcL7.
+
+## Dependencies
+
+[SCT v3.2.4](https://github.com/neuropoly/spinalcordtoolbox/releases/tag/v3.2.4) or above.
 
 ## Getting started
 
-The objective for this challenge is to propose a protocol that will generate the best image quality. For more details,
-please see: https://goo.gl/2owcL7.
+- Download (or `git clone`) this repository.
+- run: `./run_pipeline`
 
 * [process_data.py](./process_data.py): Process data using SCT and compute image quality metrics. More details [here](#analysis).
 * [generate_wmgm_phantom.py](./generate_wmgm_phantom.py): Generate synthetic phantom of WM and GM to validate the present pipeline.
@@ -43,4 +49,4 @@ Contrast = abs(mean(WM) - mean(GM)) / min{mean(WM),mean(GM)}
 Stephanie Alley, Ferran Prados, Julien Cohen-Adad
 
 ## License
-See: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
+See: [LICENSE](./LICENSE)
