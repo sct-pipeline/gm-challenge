@@ -1,10 +1,9 @@
 #!/bin/bash
 #
-# Batch script that loops across subjects and process them. It assumes that the
-# "data/" folder is local.
+# Batch script that loops across subjects and process them.
 #
 # Usage:
-#   ./run_pipeline.sh
+#   ./run_pipeline.sh PATH_TO_DATA
 #
 # Add the flag "-x" after "!/bin/bash" for full verbose of commands.
 # Julien Cohen-Adad 2018-10-10
@@ -25,7 +24,7 @@ On_Black='\033[40m'  # Black
 export PATH_GMCHALLENGE=`pwd`
 
 # Go to path data folder that encloses all subjects' folders
-cd ${PATH_DATA}
+cd $1
 
 # Get list of all subject folders from current directory
 SUBJECTS=`ls -d */`
