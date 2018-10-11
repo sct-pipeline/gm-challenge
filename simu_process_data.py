@@ -5,7 +5,7 @@
 #
 # USAGE:
 # The script should be launched using SCT's python:
-#   ${SCT_DIR}/python/bin/python simu_process_data.py -i folder_phantom1 folder_phantom2 -s folder_phantom1/mask_cord.nii.gz -g folder_phantom1/mask_gm.nii.gz -r 0
+#   ${SCT_DIR}/python/bin/python simu_process_data.py -i phantom1 phantom2 -s phantom1/mask_cord.nii.gz -g phantom1/mask_gm.nii.gz -r 0
 #
 # OUTPUT:
 #   results_folder.csv: quantitative results in CSV format
