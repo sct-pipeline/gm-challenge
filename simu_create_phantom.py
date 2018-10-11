@@ -30,8 +30,8 @@ import scipy.ndimage as ndimage
 path_sct = os.getenv('SCT_DIR')
 sys.path.append(os.path.join(path_sct, 'scripts'))
 import sct_utils as sct
-from msct_image import Image
-from spinalcordtoolbox.metadata import read_label_file, parse_id_group
+from spinalcordtoolbox.image import Image
+from spinalcordtoolbox.metadata import read_label_file
 import pandas as pd
 
 def get_parameters():
