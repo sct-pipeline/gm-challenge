@@ -77,7 +77,7 @@ def main():
         ax.set_yticklabels(yticklabels, fontsize=fontsize_axes)
         plt.grid(axis='y')
         ax.autoscale_view()
-        plt.show()
+        # plt.show()
         plt.savefig("results_" + metric + "_smooth" + str(smooth) + ".png")
 
         # save csv for importing as table
