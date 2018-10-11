@@ -18,7 +18,14 @@
 # TODO: get verbose working (current issue is sys.stdout.isatty()) is False, hence sct.run() is using sct.log with no terminal output
 
 
-import argparse
+import sys, os, shutil, argparse, pickle, io, argparse
+import numpy as np
+import pandas as pd
+# append path to useful SCT scripts
+path_sct = os.getenv('SCT_DIR')
+sys.path.append(os.path.join(path_sct, 'scripts'))
+import sct_utils as sct
+from spinalcordtoolbox.image import Image
 
 
 def get_parameters():
@@ -154,25 +161,27 @@ def compute_sharpness(file_data, file_mask_gm):
     return pickle.load(io.open("laplacian.pickle"))["Metric value"][0]
 
 
-def main(file_input, file_seg, file_gmseg, num=None, output_dir=None, create_txt_output=False, verbose=1):
+def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=None, create_txt_output=False, verbose=1):
     """
     Compute metrics to assess the quality of spinal cord images.
     :param file_data:
     :param file_seg:
     :param file_gmseg:
     :param num:
+    :param register: Bool: Register data2 to data1. Could be skipped if data are already registered (e.g. simulations)
     :param output_dir:
     :param create_txt_output: Bool: Create output txt file for Niftyweb server
     :param verbose:
     :return: results: pandas dataframe with results
     """
+
     # Params
     if not output_dir:
         output_dir = "./results"
     file_output = "results"  # no prefix
-    fdata = file_input  # copy input file because this variable will be updated across processing
-    fseg = sct.add_suffix(fdata[0], '_seg')
-    fgmseg = sct.add_suffix(fdata[0], '_gmseg')
+    fdata = [os.path.basename(fname) for fname in file_input]  # remove path, only keep file name
+    fseg = os.path.basename(sct.add_suffix(fdata[0], '_seg'))  # remove path, only keep file name
+    fgmseg = os.path.basename(sct.add_suffix(fdata[0], '_gmseg'))
 
     # Parse arguments
     # if not args:
@@ -190,9 +199,9 @@ def main(file_input, file_seg, file_gmseg, num=None, output_dir=None, create_txt
 
     # copy to output directory and convert to nii.gz
     print("Copy data...")
-    sct.copy(fdata[0], os.path.join(output_dir, fdata[0]))
-    if os.path.isfile(fdata[1]):
-        sct.copy(fdata[1], os.path.join(output_dir, fdata[1]))
+    sct.copy(file_input[0], os.path.join(output_dir, fdata[0]))
+    if os.path.isfile(file_input[1]):
+        sct.copy(file_input[1], os.path.join(output_dir, fdata[1]))
         run_diff_method = True
     else:
         run_diff_method = False
@@ -224,7 +233,7 @@ def main(file_input, file_seg, file_gmseg, num=None, output_dir=None, create_txt
     print("Erode white matter mask...")
     sct.run("sct_maths -i data1_wmseg.nii.gz -erode 1 -o data1_wmseg_erode.nii.gz", verbose=verbose)
 
-    if run_diff_method:
+    if run_diff_method and register:
         print("Register data2 to data1...")
         # Create mask around the cord for more accurate registration
         sct.run("sct_create_mask -i " + fdata[0] + " -p centerline," + fseg + " -size 35mm", verbose=verbose)
@@ -238,8 +247,8 @@ def main(file_input, file_seg, file_gmseg, num=None, output_dir=None, create_txt
     results = pd.DataFrame(0, index=['SNR_diff', 'SNR_single', 'Contrast'], columns=['Metric Value'])
 
     # Compute metrics
-    results.loc['SNR_single'] = compute_snr_single(fdata[0], "data1_wmseg_erode.nii.gz")
     results.loc['Contrast'] = compute_contrast(fdata[0], "data1_wmseg.nii.gz", fgmseg)
+    results.loc['SNR_single'] = compute_snr_single(fdata[0], "data1_wmseg_erode.nii.gz")
     if run_diff_method:
         results.loc['SNR_diff'] = compute_snr_diff(fdata[0], fdata[1], "data1_wmseg_erode.nii.gz")
     # results.loc['Sharpness'] = compute_sharpness("data1.nii.gz", "data1_gmseg.nii.gz")
@@ -301,14 +310,5 @@ def main(file_input, file_seg, file_gmseg, num=None, output_dir=None, create_txt
 
 if __name__ == "__main__":
     args = get_parameters()
-
-    import sys, os, shutil, argparse, pickle, io
-    import numpy as np
-    import pandas as pd
-    # append path to useful SCT scripts
-    path_sct = os.getenv('SCT_DIR')
-    sys.path.append(os.path.join(path_sct, 'scripts'))
-    import sct_utils as sct
-    from spinalcordtoolbox.image import Image
-
-    main(args.input, args.seg, args.gmseg, num=args.num, output_dir=args.output_dir, verbose=args.verbose)
+    main(args.input, args.seg, args.gmseg, num=args.num, register=args.register, output_dir=args.output_dir,
+         verbose=args.verbose)

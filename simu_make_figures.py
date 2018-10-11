@@ -4,8 +4,7 @@
 #
 # USAGE:
 # The script should be launched using SCT's python:
-#   PATH_GMCHALLENGE="PATH TO THIS REPOSITORY"
-#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}simu_make_figures.py -i results_all.csv
+#   ${SCT_DIR}/python/bin/python simu_make_figures.py -i results_all.csv
 #
 # OUTPUT:
 # Figs

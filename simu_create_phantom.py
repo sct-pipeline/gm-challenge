@@ -4,8 +4,7 @@
 #
 # USAGE:
 # The script should be launched using SCT's python:
-#   PATH_GMCHALLENGE="PATH TO THIS REPOSITORY"
-#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}simu_create_phantom.py folder_out
+#   ${SCT_DIR}/python/bin/python simu_create_phantom.py folder_phantom
 #
 # Ranges of GM and noise STD can be changed inside the code. They are hard-coded so that a specific version of the code
 # can be tagged, and will always produce the same results (whereas if we allow users to enter params, the output will
