@@ -12,6 +12,7 @@ This pipeline was tested on [SCT v3.2.5](https://github.com/neuropoly/spinalcord
 ## Getting started
 
 - Download (or `git clone`) this repository.
+- Download dataset of the challenge: https://osf.io/5dqen/
 - run: `./run_pipeline`
 
 ## Description of the scripts
