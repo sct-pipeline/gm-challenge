@@ -179,9 +179,9 @@ def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=N
     if not output_dir:
         output_dir = "./results"
     file_output = "results"  # no prefix
-    fdata = [os.path.basename(fname) for fname in file_input]  # remove path, only keep file name
-    fseg = os.path.basename(sct.add_suffix(fdata[0], '_seg'))  # remove path, only keep file name
-    fgmseg = os.path.basename(sct.add_suffix(fdata[0], '_gmseg'))
+    fdata = ['data1.nii.gz', 'data2.nii.gz']
+    fseg = 'data1_seg.nii.gz'
+    fgmseg = 'data1_gmseg.nii.gz'
 
     # Parse arguments
     # if not args:
