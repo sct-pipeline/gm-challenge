@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 #
-# Make figures to assess metrics sensitivity to image quality. Run after process_folder.py
+# Make figures to assess metrics sensitivity to image quality. Run after simu_process_data.py
 #
 # USAGE:
 # The script should be launched using SCT's python:
 #   PATH_GMCHALLENGE="PATH TO THIS REPOSITORY"
-#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}make_figures.py -i results_all.csv
+#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}simu_make_figures.py -i results_all.csv
 #
 # OUTPUT:
 # Figs
 #
 # Authors: Julien Cohen-Adad
-# License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
 import os, sys, csv
 import argparse

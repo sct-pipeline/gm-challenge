@@ -5,7 +5,7 @@
 # USAGE:
 # The script should be launched using SCT's python:
 #   PATH_GMCHALLENGE="PATH TO THIS REPOSITORY"
-#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}generate_wmgm_phantom.py folder_out
+#   ${SCT_DIR}/python/bin/python ${PATH_GMCHALLENGE}simu_create_phantom.py folder_out
 #
 # Ranges of GM and noise STD can be changed inside the code. They are hard-coded so that a specific version of the code
 # can be tagged, and will always produce the same results (whereas if we allow users to enter params, the output will
@@ -15,7 +15,6 @@
 # The script generates a collection of files under specified folder.
 #
 # Authors: Stephanie Alley, Julien Cohen-Adad
-# License: https://github.com/neuropoly/gm_challenge/blob/master/LICENSE
 
 # TODO: generated cord mask is too large!
 # TODO: remove input params and set them as list inside code
