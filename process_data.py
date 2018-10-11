@@ -154,13 +154,12 @@ def compute_sharpness(file_data, file_mask_gm):
     return pickle.load(io.open("laplacian.pickle"))["Metric value"][0]
 
 
-def main(file_input, file_seg, file_gmseg, register=1, num=None, output_dir=None, create_txt_output=False, verbose=1):
+def main(file_input, file_seg, file_gmseg, num=None, output_dir=None, create_txt_output=False, verbose=1):
     """
     Compute metrics to assess the quality of spinal cord images.
     :param file_data:
     :param file_seg:
     :param file_gmseg:
-    :param register:
     :param num:
     :param output_dir:
     :param create_txt_output: Bool: Create output txt file for Niftyweb server
@@ -192,7 +191,11 @@ def main(file_input, file_seg, file_gmseg, register=1, num=None, output_dir=None
     # copy to output directory and convert to nii.gz
     print("Copy data...")
     sct.copy(fdata[0], os.path.join(output_dir, fdata[0]))
-    sct.copy(fdata[1], os.path.join(output_dir, fdata[1]))
+    if os.path.isfile(fdata[1]):
+        sct.copy(fdata[1], os.path.join(output_dir, fdata[1]))
+        run_diff_method = True
+    else:
+        run_diff_method = False
     if file_seg is not None:
         sct.copy(file_seg, os.path.join(output_dir, fseg))
     if file_gmseg is not None:
@@ -221,7 +224,7 @@ def main(file_input, file_seg, file_gmseg, register=1, num=None, output_dir=None
     print("Erode white matter mask...")
     sct.run("sct_maths -i data1_wmseg.nii.gz -erode 1 -o data1_wmseg_erode.nii.gz", verbose=verbose)
 
-    if register:
+    if run_diff_method:
         print("Register data2 to data1...")
         # Create mask around the cord for more accurate registration
         sct.run("sct_create_mask -i " + fdata[0] + " -p centerline," + fseg + " -size 35mm", verbose=verbose)
@@ -235,9 +238,10 @@ def main(file_input, file_seg, file_gmseg, register=1, num=None, output_dir=None
     results = pd.DataFrame(0, index=['SNR_diff', 'SNR_single', 'Contrast'], columns=['Metric Value'])
 
     # Compute metrics
-    results.loc['SNR_diff'] = compute_snr_diff(fdata[0], fdata[1], "data1_wmseg_erode.nii.gz")
     results.loc['SNR_single'] = compute_snr_single(fdata[0], "data1_wmseg_erode.nii.gz")
     results.loc['Contrast'] = compute_contrast(fdata[0], "data1_wmseg.nii.gz", fgmseg)
+    if run_diff_method:
+        results.loc['SNR_diff'] = compute_snr_diff(fdata[0], fdata[1], "data1_wmseg_erode.nii.gz")
     # results.loc['Sharpness'] = compute_sharpness("data1.nii.gz", "data1_gmseg.nii.gz")
 
     # Save DataFrame as CSV
@@ -307,4 +311,4 @@ if __name__ == "__main__":
     import sct_utils as sct
     from spinalcordtoolbox.image import Image
 
-    main(args.input, args.seg, args.gmseg, register=args.register, num=args.num, output_dir=args.output_dir, verbose=args.verbose)
+    main(args.input, args.seg, args.gmseg, num=args.num, output_dir=args.output_dir, verbose=args.verbose)
