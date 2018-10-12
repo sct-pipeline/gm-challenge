@@ -22,7 +22,7 @@ def get_parameters():
     parser = argparse.ArgumentParser(description='Generate a figure which compares the two SNR methods : SNR_single VS'
                                                  'SNR_diff . Run after simu_process_data.py')
     parser.add_argument("-i", "--input",
-                        help="List here the path to the data, which should include ",
+                        help="List here the path to the data, which should include all the patients directory",
                         required=True)
     args = parser.parse_args()
     return args
