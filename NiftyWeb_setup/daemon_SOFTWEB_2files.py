@@ -5,6 +5,14 @@
 #
 #  NifTK: A software platform for medical image computing.
 #
+# Some doc (added by Julien Cohen-Adad):
+# This soft will look at the presence of a file data_dir/PROGRAM-parameters.txt,
+# which is supposed to be copied on the station through the Niftyweb interface.
+# If the file is found, the data is processed. Once processed successfully, the
+# file is renamed: data_dir/PROGRAM-parameters-done.txt (so that the process 
+# does not run another time).
+#
+#
 #  Copyright (c) University College London (UCL). All rights reserved.
 #
 #  This software is distributed WITHOUT ANY WARRANTY; without even
@@ -38,9 +46,9 @@ import json
 import requests
 
 ###### DEFAULT OPTIONS #######
-dir_data=os.path.join('/home','tigweb','tmp')
+dir_data=os.path.join('/home','niftyweb_sct','data_tmp')
 URL='http://cmictig.cs.ucl.ac.uk/softweb/'
-PATH='/home/ferran/bin/softweb'+os.pathsep+os.environ.get('PATH')
+PATH='/home/niftyweb_sct/gm_challenge'+os.pathsep+'/home/niftyweb_sct/bin'+os.pathsep+os.environ.get('PATH')
 
 # Begin of cleanup function
 def cleanup():
@@ -96,6 +104,7 @@ def check_program_exists(program):
 			result=1
 			final_path=program+".exe"
 		final_path=os.path.abspath(final_path)
+		print "final_path="+final_path
 
 	if result == 0:
 		for path in PATH.split(os.pathsep):
@@ -386,20 +395,26 @@ if arg <= 1:
 
 # Prepare the needed name files
 program=argv[1].strip().upper()
+print "Program: " + program
 lock_file=os.path.join(dir_data,'lock-'+program)
+print "lock_file: " + lock_file
 log_file=os.path.abspath('log-'+program+'.txt')
 
 # Check if the program to execute exists
 execute=check_program_exists(program)
 
 # If exists a queue of this program
+print "Check if a queue of this program already exists..."
 if not os.path.isfile(lock_file) or ("CHALLENGE" in program):
+	print "--> Nope!"
 	# Change to the data directory
 	os.chdir(dir_data)
 
 	# Take the files that need to be processed sorted by date
 	files_to_be_processed=glob('*'+program+'-parameters.txt')
 	files_to_be_processed.sort(key=lambda x: os.path.getmtime(x))
+	print "List of files to process:"
+	print files_to_be_processed
 
 	# While there are files to be processed
 	while len(files_to_be_processed)>0:
@@ -417,7 +432,7 @@ if not os.path.isfile(lock_file) or ("CHALLENGE" in program):
 		writeLog("["+datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")+"] Start: "+file_processed)
 		init=datetime.datetime.now().strftime("%H:%M:%S %d-%m-%Y");
 		initsql=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S");
-		exit_value=execute_command_or_else_stop(execute+" "+idname+" "+parameters)
+		exit_value=execute_command_or_else_stop(execute+" "+idname+" "+parameters, output='ON')
 		writeLog("["+datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")+"] Finish: "+file_processed)
 		finish=datetime.datetime.now().strftime("%H:%M:%S %d-%m-%Y")
 
@@ -444,7 +459,7 @@ if not os.path.isfile(lock_file) or ("CHALLENGE" in program):
 	removeFile(lock_file)
 	idname=''
 else:
-	print "["+datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")+"] "+program+" is already running !!!!"
+	print "--> Yup! ["+datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")+"] "+program+" is already running !!!!"
 	lock_file=''
 
 exit(0)
