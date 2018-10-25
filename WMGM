@@ -12,8 +12,7 @@
 #
 # USAGE:
 # The script is launched by the daemon using SCT's python:
-#   ${SCT_DIR}/python/bin/python PATH_TO_DAEMON/daemon_SOFTWEB_2files.py WMGM <ID> PATH_TO_IMAGE1/image1 PATH_TO_IMAGE2/image2 PATH_TO_PDF/PDF -field <field strength> -coil <coil type> -sequence <sequence> -data <type of data>
-#
+#   ${SCT_DIR}/python/bin/python PATH_TO_DAEMON/daemon_SOFTWEB_2files.py WMGM <ID> PATH_TO_IMAGE1/image1 PATH_TO_IMAGE2/image2
 #
 # WMGM extracts the two NIfTI files, and calls process_data.py to process and analyze the data. WMGM then waits for these results files to be returned:
 #   ID_WMGM.txt: text file containing metric results
@@ -21,9 +20,7 @@
 #
 # Once the results files have been generated, they are returned to the user by the daemon.
 #
-#
-# Author: Stephanie Alley, Julien Cohen-Adad
-# Copyright: see:
+# Authors: Stephanie Alley, Julien Cohen-Adad
 #
 ##############################################################
 
