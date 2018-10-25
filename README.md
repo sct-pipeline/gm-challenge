@@ -60,7 +60,10 @@ Contrast = abs(mean(WM) - mean(GM)) / min{mean(WM),mean(GM)}
 
 ## Configuration of Niftyweb server
 - make sure the script WMGM is declared in `PATH`
-
+- add an entry to the crontab that points to the Daemon. Example (to edit, use `crontab -e`):
+~~~
+python /home/niftyweb_sct/gm_challenge/NiftyWeb_setup/daemon_SOFTWEB_2files.py WMGM
+~~~
 
 ## Contributors
 Stephanie Alley, Ferran Prados, Julien Cohen-Adad
