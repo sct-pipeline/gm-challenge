@@ -49,7 +49,7 @@ def main():
 
     # Send email notification of request
     mail = 'mutt -s "Request received for {}"jcohen@polymtl.ca,f.carrasco@ucl.ac.uk < /dev/null'.format(num)
-    subprocess.check_call(mail, shell=True)
+    # subprocess.check_call(mail, shell=True)
     
     os.chdir(dir_data)
 
