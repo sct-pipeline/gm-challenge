@@ -58,6 +58,10 @@ The mean signal is computed in the white matter and gray matter of image 1. The 
 Contrast = abs(mean(WM) - mean(GM)) / min{mean(WM),mean(GM)}
 ~~~
 
+## Configuration of Niftyweb server
+- make sure the script WMGM is declared in `PATH`
+
+
 ## Contributors
 Stephanie Alley, Ferran Prados, Julien Cohen-Adad
 
