@@ -339,9 +339,9 @@ def uploadResults(idname,init,finish,initsql):
 				writeLog("["+datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")+"] File size: "+"{:.3f}".format(os.path.getsize(result_file)/(1024*1024))+ "Mb")
 				r = requests.post(URL+'file.php', data=data, files=files)
 				writeLog(r.text)
-				decodedzip=json.loads(r.text.strip())
+				decoded=json.loads(r.text.strip())
 				# We analyze what happend during the upload process
-				if  r.status_code != 200 or decodedzip['result']!="OK":
+				if  r.status_code != 200 or decoded['result']!="OK":
 					writeLog("["+datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")+"] Upload 2 fails: "+str(r.status_code)+os.linesep+"ID:"+idname+os.linesep+"RESPONSE:"+r.text)
 					error=True
 				else:
