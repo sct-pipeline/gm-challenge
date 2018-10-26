@@ -224,21 +224,29 @@ def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=N
         print("Segment gray matter...")
         sct.run("sct_deepseg_gm -i " + fdata[0], verbose=verbose)
 
+    # Crop data (for faster processing)
+    print("Crop data (for faster processing)...")
+    sct.run("sct_create_mask -i " + fdata[0] + " -p centerline," + fseg + " -size 35mm", verbose=verbose)
+    sct.run("sct_crop_image -i " + fdata[0] + " -m mask_" + fdata[0] + " -o " + sct.add_suffix(fdata[0], 'c'))
+    fdata[0] = sct.add_suffix(fdata[0], 'c')
+    sct.run("sct_crop_image -i " + fseg + " -m mask_" + fdata[0] + " -o " + sct.add_suffix(fseg, 'c'))
+    fseg = sct.add_suffix(fseg, 'c')
+    sct.run("sct_crop_image -i " + fgmseg + " -m mask_" + fdata[0] + " -o " + sct.add_suffix(fgmseg, 'c'))
+    fgmseg = sct.add_suffix(fgmseg, 'c')
+
     # Generate white matter segmentation
     print("Generate white matter segmentation...")
-    sct.run("sct_maths -i " + fseg + " -sub " + fgmseg + " -o data1_wmseg.nii.gz", verbose=verbose)
+    sct.run("sct_maths -i " + fseg + " -sub " + fgmseg + " -o " + fdata[0] + "_wmseg.nii.gz", verbose=verbose)
 
     # Erode white matter mask to minimize partial volume effect
     # Note: we cannot erode the gray matter because it is too thin (most of the time, only one voxel)
     print("Erode white matter mask...")
-    sct.run("sct_maths -i data1_wmseg.nii.gz -erode 1 -o data1_wmseg_erode.nii.gz", verbose=verbose)
+    sct.run("sct_maths -i " + fdata[0] + "_wmseg.nii.gz -erode 1 -o " + fdata[0] + "_wmseg_erode.nii.gz", verbose=verbose)
 
     if run_diff_method and register:
         print("Register data2 to data1...")
-        # Create mask around the cord for more accurate registration
-        sct.run("sct_create_mask -i " + fdata[0] + " -p centerline," + fseg + " -size 35mm", verbose=verbose)
         # Register image 2 to image 1
-        sct.run("sct_register_multimodal -i " + fdata[1] + " -d " + fdata[0] + " -param step=2,type=im,algo=rigid,metric=MeanSquares,smooth=1,iter=50,slicewise=1 -m mask_data1.nii.gz -x nn", verbose=verbose)
+        sct.run("sct_register_multimodal -i " + fdata[1] + " -d " + fdata[0] + " -param step=2,type=im,algo=rigid,metric=MeanSquares,smooth=1,iter=50,slicewise=1 -x nn", verbose=verbose)
         # Add suffix to file name
         fdata[1] = sct.add_suffix(fdata[1], "_reg")
 
@@ -247,10 +255,10 @@ def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=N
     results = pd.DataFrame(0, index=['SNR_diff', 'SNR_single', 'Contrast'], columns=['Metric Value'])
 
     # Compute metrics
-    results.loc['Contrast'] = compute_contrast(fdata[0], "data1_wmseg.nii.gz", fgmseg)
-    results.loc['SNR_single'] = compute_snr_single(fdata[0], "data1_wmseg_erode.nii.gz")
+    results.loc['Contrast'] = compute_contrast(fdata[0], fdata[0] + "_wmseg.nii.gz", fgmseg)
+    results.loc['SNR_single'] = compute_snr_single(fdata[0], fdata[0] + "_wmseg_erode.nii.gz")
     if run_diff_method:
-        results.loc['SNR_diff'] = compute_snr_diff(fdata[0], fdata[1], "data1_wmseg_erode.nii.gz")
+        results.loc['SNR_diff'] = compute_snr_diff(fdata[0], fdata[1], fdata[0] + "_wmseg_erode.nii.gz")
     # results.loc['Sharpness'] = compute_sharpness("data1.nii.gz", "data1_gmseg.nii.gz")
 
     # Save DataFrame as CSV
@@ -261,19 +269,18 @@ def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=N
     if create_txt_output:
         # Build text file for user
         results_to_return = open(file_output + ".txt", 'w')
-        results_to_return.write('The following metric values were calculated:\n')
+        results_to_return.write('The following metrics were calculated:\n')
         results_to_return.write(results.__repr__())
         results_to_return.write('\n\nA text file containing this information, as well as the image segmentations, are '
                                 'available for download through the link below. Please note that these are the intermediate '
                                 'results (automatically processed). We acknowledge that manual adjustment of the cord and '
-                                'gray matter segmentations might be necessary. They will be performed in the next few days, '
-                                'and the final results will be sent back to you.\n')
+                                'gray matter segmentations might be necessary. Please check carefully, adjust the '
+                                'segmentations if necessary, and contact us for recalculating the metrics with the '
+                                'corrected segmentations.\n')
         results_to_return.close()
         print("--> created file: " + file_output + ".txt")
 
-    # Package results inside folder
-    # TODO
-    #Package results for daemon
+    # Package results for daemon
     if num:
         # Create folder for segmentations
         segmentations = 'segmentations'
