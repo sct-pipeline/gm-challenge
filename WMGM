@@ -1,37 +1,38 @@
 #!/usr/bin/env python
-
-##############################################################
 #
 # This script is initiated by daemon_SOFTWEB_2files.py, which communicates with the data submission on NiftyWeb.
 # WMGM is run without an extension.
 #
-# Three inputs are provided to NiftyWeb. Two are NIfTI files: an initial scan (image1) and a re-scan without repositioning (image2).
-# The third input is a PDF containing protocol information. In addition, 4 parameters are provided (field strength, coil type, sequence, and data type).
-# Each NiftyWeb submission is assigned an ID when it is added to the queue for processing.
+# Three inputs are provided to NiftyWeb. Two are NIfTI files: an initial scan (image1) and a re-scan without
+# repositioning (image2). The third input is a PDF containing protocol information. In addition, 4 parameters are
+# provided (field strength, coil type, sequence, and data type). Each NiftyWeb submission is assigned an ID when it is
+# added to the queue for processing.
 #
+# Dependency:
+# - SCT's Python
 #
-# USAGE:
-# The script is launched by the daemon using SCT's python:
-#   ${SCT_DIR}/python/bin/python PATH_TO_DAEMON/daemon_SOFTWEB_2files.py WMGM <ID> PATH_TO_IMAGE1/image1 PATH_TO_IMAGE2/image2
+# USAGE (normal launch through the daemon):
+#   ${SCT_DIR}/python/bin/python PATH_TO_DAEMON/daemon_SOFTWEB_2files.py WMGM <ID> <IMAGE1> <IMAGE2>
 #
-# WMGM extracts the two NIfTI files, and calls process_data.py to process and analyze the data. WMGM then waits for these results files to be returned:
+# USAGE (for debugging):
+#   ${SCT_DIR}/python/bin/python WMGM <ID> <IMAGE1> <IMAGE2>
+#
+# WMGM extracts the two NIfTI files, and calls process_data.py to process and analyze the data. WMGM then waits for
+# these results files to be returned:
 #   ID_WMGM.txt: text file containing metric results
 #   ID_WMGM.zip: folder containing text file with results as well as cord and gray matter segmentations
 #
 # Once the results files have been generated, they are returned to the user by the daemon.
 #
 # Authors: Stephanie Alley, Julien Cohen-Adad
-#
-##############################################################
 
 
-import sys, os, shutil, subprocess, time, argparse
-import numpy as np
-import pandas as pd
+import os, subprocess, time, argparse
 
 
 def get_parameters():
-    parser = argparse.ArgumentParser(description='Extract the two NIfTI images and submission ID, and use them to call process_data.py.')
+    parser = argparse.ArgumentParser(description='Extract the two NIfTI images and submission ID, and use them to call '
+                                                 'process_data.py.')
     parser.add_argument('num',
                         help='NiftyWeb ID')
     parser.add_argument('image_1',
@@ -54,7 +55,7 @@ def main():
     os.chdir(dir_data)
 
     # Initiate processing script
-#    subprocess.call(["${SCT_DIR}/python/bin/python", "/home/niftyweb_sct/gm_challenge/process_data.py", "-i", image_1, image_2, "-n", num, "-o","{}_WMGM".format(num)])
+    # subprocess.call(["${SCT_DIR}/python/bin/python", "/home/niftyweb_sct/gm_challenge/process_data.py", "-i", image_1, image_2, "-n", num, "-o","{}_WMGM".format(num)])
     subprocess.call(["${SCT_DIR}/python/bin/python", "process_data.py", "-i", image_1, image_2, "-n", num, "-o","{}_WMGM".format(num)])
 
     # Check for output files to return to user
@@ -62,7 +63,7 @@ def main():
     final_zip = os.path.join(dir_data + '/' + num + '_WMGM.zip')
 
     if (os.path.isfile(final_txt)) and (os.path.isfile(final_zip)):
-	exit()
+    exit()
 
     done = 0
     while(done == 0):
