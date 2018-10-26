@@ -227,11 +227,12 @@ def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=N
     # Crop data (for faster processing)
     print("Crop data (for faster processing)...")
     sct.run("sct_create_mask -i " + fdata[0] + " -p centerline," + fseg + " -size 35mm", verbose=verbose)
-    sct.run("sct_crop_image -i " + fdata[0] + " -m mask_" + fdata[0] + " -o " + sct.add_suffix(fdata[0], 'c'))
+    fmask = "mask_" + fdata[0]
+    sct.run("sct_crop_image -i " + fdata[0] + " -m " + fmask + " -o " + sct.add_suffix(fdata[0], 'c'))
     fdata[0] = sct.add_suffix(fdata[0], 'c')
-    sct.run("sct_crop_image -i " + fseg + " -m mask_" + fdata[0] + " -o " + sct.add_suffix(fseg, 'c'))
+    sct.run("sct_crop_image -i " + fseg + " -m " + fmask + " -o " + sct.add_suffix(fseg, 'c'))
     fseg = sct.add_suffix(fseg, 'c')
-    sct.run("sct_crop_image -i " + fgmseg + " -m mask_" + fdata[0] + " -o " + sct.add_suffix(fgmseg, 'c'))
+    sct.run("sct_crop_image -i " + fgmseg + " -m " + fmask + " -o " + sct.add_suffix(fgmseg, 'c'))
     fgmseg = sct.add_suffix(fgmseg, 'c')
 
     # Generate white matter segmentation
