@@ -41,6 +41,10 @@ def get_parameters():
     parser.add_argument('num', help='NiftyWeb ID')
     parser.add_argument('image_1', help='Initial scan')
     parser.add_argument('image_2', help='Re-scan')
+    parser.add_argument('-field', help='Field strength [T]', required=False)
+    parser.add_argument('-coil', help='Type of coil', required=False)
+    parser.add_argument('-sequence', help='Type of sequence', required=False)
+    parser.add_argument('-data', help='Name of dataset', required=False)
     args = parser.parse_args()
     return args
 
