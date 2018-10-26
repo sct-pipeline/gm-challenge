@@ -41,6 +41,7 @@ def get_parameters():
     parser.add_argument('num', help='NiftyWeb ID')
     parser.add_argument('image_1', help='Initial scan')
     parser.add_argument('image_2', help='Re-scan')
+    parser.add_argument('pdf', help='File name of pdf protocol.')
     parser.add_argument('-field', help='Field strength [T]', required=False)
     parser.add_argument('-coil', help='Type of coil', required=False)
     parser.add_argument('-sequence', help='Type of sequence', required=False)
