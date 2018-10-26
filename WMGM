@@ -44,6 +44,7 @@ def get_parameters():
     args = parser.parse_args()
     return args
 
+
 def main():
     # get arguments
     num = args.num
@@ -65,7 +66,7 @@ def main():
     final_zip = os.path.join(dir_data + '/' + num + '_WMGM.zip')
 
     if (os.path.isfile(final_txt)) and (os.path.isfile(final_zip)):
-        exit()
+        return
 
     done = 0
     while(done == 0):
@@ -73,6 +74,7 @@ def main():
             done = 1
         else:
             time.sleep(60)
+
 
 if __name__ == "__main__":
     args = get_parameters()
