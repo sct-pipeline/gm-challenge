@@ -33,12 +33,9 @@ import os, subprocess, time, argparse
 def get_parameters():
     parser = argparse.ArgumentParser(description='Extract the two NIfTI images and submission ID, and use them to call '
                                                  'process_data.py.')
-    parser.add_argument('num',
-                        help='NiftyWeb ID')
-    parser.add_argument('image_1',
-                        help='Initial scan')
-    parser.add_argument('image_2',
-                        help='Re-scan')
+    parser.add_argument('num', help='NiftyWeb ID')
+    parser.add_argument('image_1', help='Initial scan')
+    parser.add_argument('image_2', help='Re-scan')
     args = parser.parse_args()
     return args
 
@@ -46,7 +43,7 @@ def main():
     num = args.num
     image_1 = os.path.basename(args.image_1)
     image_2 = os.path.basename(args.image_2)
-    dir_data = os.path.dirname(args.image_1)
+    dir_data = os.path.abspath(os.path.dirname(args.image_1))
 
     # Send email notification of request
     mail = 'mutt -s "Request received for {}"jcohen@polymtl.ca,f.carrasco@ucl.ac.uk < /dev/null'.format(num)
@@ -63,7 +60,7 @@ def main():
     final_zip = os.path.join(dir_data + '/' + num + '_WMGM.zip')
 
     if (os.path.isfile(final_txt)) and (os.path.isfile(final_zip)):
-    exit()
+        exit()
 
     done = 0
     while(done == 0):
