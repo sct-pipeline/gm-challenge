@@ -58,27 +58,29 @@ def main():
     dir_data = os.path.abspath(os.path.dirname(args.image_1))
 
     # Send email notification of request
-    mail = 'mutt -s "Request received for {}"jcohen@polymtl.ca,f.carrasco@ucl.ac.uk < /dev/null'.format(num)
+    #mail = 'mutt -s "Request received for {}"jcohen@polymtl.ca,f.carrasco@ucl.ac.uk < /dev/null'.format(num)
     # subprocess.check_call(mail, shell=True)
     
     os.chdir(dir_data)
-
     # Initiate processing script
-    process_data.main([image_1, image_2], None, None, num=num, create_txt_output=True)
+    #process_data.main([image_1, image_2], None, None, num=num, create_txt_output=True)
+    subprocess.call(["/home/niftyweb_sct/sct/python/bin/python", "/home/niftyweb_sct/gm_challenge/process_data.py", "-i", image_1, image_2, "-n", num, "-o","{}_WMGM".format(num)])
+    #sys.exit(0)
 
     # Check for output files to return to user
     final_txt = os.path.join(dir_data + '/' + num + '_WMGM.txt')
     final_zip = os.path.join(dir_data + '/' + num + '_WMGM.zip')
-
     if (os.path.isfile(final_txt)) and (os.path.isfile(final_zip)):
-        return
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
-    done = 0
-    while(done == 0):
-        if (os.path.isfile(final_txt)) and (os.path.isfile(final_zip)):
-            done = 1
-        else:
-            time.sleep(60)
+#    done = 0
+#    while(done == 0):
+#        if (os.path.isfile(final_txt)) and (os.path.isfile(final_zip)):
+#            done = 1
+#        else:
+#            time.sleep(60)
 
 
 if __name__ == "__main__":
