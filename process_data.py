@@ -161,7 +161,8 @@ def compute_sharpness(file_data, file_mask_gm):
     return pickle.load(io.open("laplacian.pickle"))["Metric value"][0]
 
 
-def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=None, create_txt_output=False, verbose=1):
+def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=None, create_txt_output=False,
+         vol_contrast=0, interp='nn', do_crop=True, do_erode=True, verbose=1):
     """
     Compute metrics to assess the quality of spinal cord images.
     :param file_data:
@@ -171,6 +172,10 @@ def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=N
     :param register: Bool: Register data2 to data1. Could be skipped if data are already registered (e.g. simulations)
     :param output_dir:
     :param create_txt_output: Bool: Create output txt file for Niftyweb server
+    :param: vol_contrast: int: index of the file_input volume to compute contrast
+    :param: interp: str: nn, linear, spline: type of interpolation for the registration
+    :param: do_crop: Bool
+    :param: do_erode: Bool
     :param verbose:
     :return: results: pandas dataframe with results
     """
@@ -224,30 +229,32 @@ def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=N
         print("Segment gray matter...")
         sct.run("sct_deepseg_gm -i " + fdata[0], verbose=verbose)
 
-    # Crop data (for faster processing)
-    print("Crop data (for faster processing)...")
-    sct.run("sct_create_mask -i " + fdata[0] + " -p centerline," + fseg + " -size 35mm", verbose=verbose)
-    fmask = "mask_" + fdata[0]
-    sct.run("sct_crop_image -i " + fdata[0] + " -m " + fmask + " -o " + sct.add_suffix(fdata[0], 'c'))
-    fdata[0] = sct.add_suffix(fdata[0], 'c')
-    sct.run("sct_crop_image -i " + fseg + " -m " + fmask + " -o " + sct.add_suffix(fseg, 'c'))
-    fseg = sct.add_suffix(fseg, 'c')
-    sct.run("sct_crop_image -i " + fgmseg + " -m " + fmask + " -o " + sct.add_suffix(fgmseg, 'c'))
-    fgmseg = sct.add_suffix(fgmseg, 'c')
+    if do_crop:
+        # Crop data (for faster processing)
+        print("Crop data (for faster processing)...")
+        sct.run("sct_create_mask -i " + fdata[0] + " -p centerline," + fseg + " -size 35mm", verbose=verbose)
+        fmask = "mask_" + fdata[0]
+        sct.run("sct_crop_image -i " + fdata[0] + " -m " + fmask + " -o " + sct.add_suffix(fdata[0], 'c'))
+        fdata[0] = sct.add_suffix(fdata[0], 'c')
+        sct.run("sct_crop_image -i " + fseg + " -m " + fmask + " -o " + sct.add_suffix(fseg, 'c'))
+        fseg = sct.add_suffix(fseg, 'c')
+        sct.run("sct_crop_image -i " + fgmseg + " -m " + fmask + " -o " + sct.add_suffix(fgmseg, 'c'))
+        fgmseg = sct.add_suffix(fgmseg, 'c')
 
-    # Generate white matter segmentation
-    print("Generate white matter segmentation...")
-    sct.run("sct_maths -i " + fseg + " -sub " + fgmseg + " -o " + fdata[0] + "_wmseg.nii.gz", verbose=verbose)
+    if do_erode:
+        # Generate white matter segmentation
+        print("Generate white matter segmentation...")
+        sct.run("sct_maths -i " + fseg + " -sub " + fgmseg + " -o " + fdata[0] + "_wmseg.nii.gz", verbose=verbose)
 
-    # Erode white matter mask to minimize partial volume effect
-    # Note: we cannot erode the gray matter because it is too thin (most of the time, only one voxel)
-    print("Erode white matter mask...")
-    sct.run("sct_maths -i " + fdata[0] + "_wmseg.nii.gz -erode 1 -o " + fdata[0] + "_wmseg_erode.nii.gz", verbose=verbose)
+        # Erode white matter mask to minimize partial volume effect
+        # Note: we cannot erode the gray matter because it is too thin (most of the time, only one voxel)
+        print("Erode white matter mask...")
+        sct.run("sct_maths -i " + fdata[0] + "_wmseg.nii.gz -erode 1 -o " + fdata[0] + "_wmseg_erode.nii.gz", verbose=verbose)
 
     if run_diff_method and register:
         print("Register data2 to data1...")
         # Register image 2 to image 1
-        sct.run("sct_register_multimodal -i " + fdata[1] + " -d " + fdata[0] + " -param step=2,type=im,algo=rigid,metric=MeanSquares,smooth=1,iter=50,slicewise=1 -x nn", verbose=verbose)
+        sct.run("sct_register_multimodal -i " + fdata[1] + " -d " + fdata[0] + " -param step=2,type=im,algo=rigid,metric=MeanSquares,smooth=1,iter=50,slicewise=1 -x "+interp, verbose=verbose)
         # Add suffix to file name
         fdata[1] = sct.add_suffix(fdata[1], "_reg")
 
@@ -289,8 +296,8 @@ def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=N
             os.makedirs(segmentations)
 
         # Copy data1_seg.nii.gz and data1_gmseg.nii.gz to segmentations folder
-        shutil.copy2("data1_seg.nii.gz", segmentations)
-        shutil.copy2("data1_gmseg.nii.gz", segmentations)
+        shutil.copy2("data1_seg.nii", segmentations)
+        shutil.copy2("data1_gmseg.nii", segmentations)
 
         # Rename text file for interaction with daemon
         os.rename(file_output + '.txt', num + '_WMGM.txt')
