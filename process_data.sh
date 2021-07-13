@@ -127,6 +127,13 @@ file_2=${file_2}_reg
 sct_image -i ${file_1}${ext} ${file_2}${ext} -concat t -o data_concat.nii.gz
 sct_compute_snr -i data_concat.nii.gz -method diff -m data1_crop_wmseg_erode.nii.gz > snr_diff.txt 
 sct_compute_snr -i data_concat.nii.gz -method mult -m data1_crop_wmseg_erode.nii.gz > snr_mult.txt
+# Compute average value in WM and GM to subsequently compute contrast
+sct_extract_metric -i ${file_1}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv
+sct_extract_metric -i ${file_2}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv -append 1
+sct_extract_metric -i ${file_1}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv
+sct_extract_metric -i ${file_2}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv -append 1
+sct.run("sct_extract_metric -i " + file_data + " -f " + file_mask2 + " -method bin -o mean_mask2.pickle")
+
 
 # Verify presence of output files and write log file if error
 # ------------------------------------------------------------------------------
@@ -134,6 +141,8 @@ FILES_TO_CHECK=(
   "data1_seg_manual${ext}"
 	"data1_gmseg_manual${ext}"
 	"data1_crop_wmseg_erode${ext}"
+	"signal_wm.csv"
+	"signal_gm.csv"
 )
 for file in ${FILES_TO_CHECK[@]}; do
   if [[ ! -e $file ]]; then
