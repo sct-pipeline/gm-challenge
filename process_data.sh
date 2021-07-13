@@ -123,6 +123,10 @@ sct_maths -i ${file_1}_wmseg${ext} -erode 1 -o ${file_1}_wmseg_erode${ext}
 # Note: We use NearestNeighboor for final interpolation to not alter noise distribution
 sct_register_multimodal -i ${file_2}${ext} -d ${file_1}${ext} -dseg ${file_1_seg}${ext} -param step=1,type=im,algo=rigid,metric=MeanSquares,smooth=1,slicewise=1,iter=50 -x nn -qc ${PATH_QC} -qc-subject ${SUBJECT}
 file_2=${file_2}_reg
+# Compute SNR using both methods
+sct_image -i ${file_1}${ext} ${file_2}${ext} -concat t -o data_concat.nii.gz
+sct_compute_snr -i data_concat.nii.gz -method diff -m data1_crop_wmseg_erode.nii.gz > snr_diff.txt 
+sct_compute_snr -i data_concat.nii.gz -method mult -m data1_crop_wmseg_erode.nii.gz > snr_mult.txt
 
 # Verify presence of output files and write log file if error
 # ------------------------------------------------------------------------------
