@@ -49,17 +49,17 @@ segment_if_does_not_exist(){
   fi
   # Update global variable with segmentation file name
   FILESEG="${file}_seg"
-  FILESEGMANUAL="${PATH_DATA}/derivatives/labels/${SUBJECT}/${folder_contrast}/${FILESEG}-manual.nii.gz"
+  FILESEGMANUAL="${PATH_DATA}/derivatives/labels/${SUBJECT}/${folder_contrast}/${FILESEG}-manual${ext}"
   echo
   echo "Looking for manual segmentation: $FILESEGMANUAL"
   if [[ -e $FILESEGMANUAL ]]; then
     echo "Found! Using manual segmentation."
-    rsync -avzh $FILESEGMANUAL ${FILESEG}.nii.gz
-    sct_qc -i ${file}.nii.gz -s ${FILESEG}.nii.gz -p sct_deepseg_sc -qc ${PATH_QC} -qc-subject ${SUBJECT}
+    rsync -avzh $FILESEGMANUAL ${FILESEG}${ext}
+    sct_qc -i ${file}${ext} -s ${FILESEG}${ext} -p sct_deepseg_sc -qc ${PATH_QC} -qc-subject ${SUBJECT}
   else
     echo "Not found. Proceeding with automatic segmentation."
     # Segment spinal cord
-    sct_deepseg_sc -i ${file}.nii.gz -c $contrast -qc ${PATH_QC} -qc-subject ${SUBJECT}
+    sct_deepseg_sc -i ${file}${ext} -c $contrast -qc ${PATH_QC} -qc-subject ${SUBJECT}
   fi
 }
 
@@ -70,16 +70,16 @@ segment_gm_if_does_not_exist(){
   local contrast="$2"
   # Update global variable with segmentation file name
   FILESEG="${file}_gmseg"
-  FILESEGMANUAL="${PATH_DATA}/derivatives/labels/${SUBJECT}/anat/${FILESEG}-manual.nii.gz"
+  FILESEGMANUAL="${PATH_DATA}/derivatives/labels/${SUBJECT}/anat/${FILESEG}-manual${ext}"
   echo "Looking for manual segmentation: $FILESEGMANUAL"
   if [[ -e $FILESEGMANUAL ]]; then
     echo "Found! Using manual segmentation."
-    rsync -avzh $FILESEGMANUAL ${FILESEG}.nii.gz
-    sct_qc -i ${file}.nii.gz -s ${FILESEG}.nii.gz -p sct_deepseg_gm -qc ${PATH_QC} -qc-subject ${SUBJECT}
+    rsync -avzh $FILESEGMANUAL ${FILESEG}${ext}
+    sct_qc -i ${file}${ext} -s ${FILESEG}${ext} -p sct_deepseg_gm -qc ${PATH_QC} -qc-subject ${SUBJECT}
   else
     echo "Not found. Proceeding with automatic segmentation."
     # Segment spinal cord
-    sct_deepseg_gm -i ${file}.nii.gz -qc ${PATH_QC} -qc-subject ${SUBJECT}
+    sct_deepseg_gm -i ${file}${ext} -qc ${PATH_QC} -qc-subject ${SUBJECT}
   fi
 }
 
@@ -94,22 +94,42 @@ sct_check_dependencies -short
 cd $PATH_DATA_PROCESSED
 # Copy source images
 rsync -avzh $PATH_DATA/$SUBJECT .
-# Go to anat folder where all structural data are located
+# Go to folder
 cd ${SUBJECT}
-
 file_1="data1"
+file_2="data2"
+ext=".nii.gz"
 # Segment spinal cord
 segment_if_does_not_exist $file_1 "t2s"
 file_1_seg=$FILESEG
 # Segment gray matter
 segment_gm_if_does_not_exist $file_1
-file_1_seg=$FILESEG
+file_1_gmseg=$FILESEG
+# Crop data (for faster processing)
+sct_create_mask -i ${file_1}${ext} -p centerline,${file_1_seg}${ext} -size 35mm
+file_mask=mask_${file_1}
+sct_crop_image -i ${file_1}${ext} -m ${file_mask}${ext} -o ${file_1}_crop${ext}
+file_1=${file_1}_crop
+sct_crop_image -i ${file_1_seg}${ext} -m ${file_mask}${ext} -o ${file_1_seg}_crop${ext}
+file_1_seg=${file_1_seg}_crop
+sct_crop_image -i ${file_1_gmseg}${ext} -m ${file_mask}${ext} -o ${file_1_gmseg}_crop${ext}
+file_1_gmseg=${file_1_gmseg}_crop
+# Generate white matter segmentation
+sct_maths -i ${file_1_seg}${ext} -sub ${file_1_gmseg}${ext} -o ${file_1}_wmseg${ext}
+# Erode white matter mask to minimize partial volume effect
+# Note: we cannot erode the gray matter because it is too thin (most of the time, only one voxel)
+sct_maths -i ${file_1}_wmseg${ext} -erode 1 -o ${file_1}_wmseg_erode${ext}
+# Register data2 on data1
+# Note: We use NearestNeighboor for final interpolation to not alter noise distribution
+sct_register_multimodal -i ${file_2}${ext} -d ${file_1}${ext} -dseg ${file_1_seg}${ext} -param step=1,type=im,algo=rigid,metric=MeanSquares,smooth=1,slicewise=1,iter=50 -x nn -qc ${PATH_QC} -qc-subject ${SUBJECT}
+file_2=${file_2}_reg
 
 # Verify presence of output files and write log file if error
 # ------------------------------------------------------------------------------
 FILES_TO_CHECK=(
-  "data1_seg_manual.nii.gz"
-  "data1_gmseg_manual.nii.gz"
+  "data1_seg_manual${ext}"
+	"data1_gmseg_manual${ext}"
+	"data1_crop_wmseg_erode${ext}"
 )
 for file in ${FILES_TO_CHECK[@]}; do
   if [[ ! -e $file ]]; then

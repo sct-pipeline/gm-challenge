@@ -174,14 +174,14 @@ def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=N
     :param verbose:
     :return: results: pandas dataframe with results
     """
-
-    # Params
-    if not output_dir:
-        output_dir = "./results"
-    file_output = "results"  # no prefix
-    fdata = ['data1.nii.gz', 'data2.nii.gz']
-    fseg = 'data1_seg.nii.gz'
-    fgmseg = 'data1_gmseg.nii.gz'
+    # 
+    # # Params
+    # if not output_dir:
+    #     output_dir = "./results"
+    # file_output = "results"  # no prefix
+    # fdata = ['data1.nii.gz', 'data2.nii.gz']
+    # fseg = 'data1_seg.nii.gz'
+    # fgmseg = 'data1_gmseg.nii.gz'
 
     # Parse arguments
     # if not args:
@@ -192,64 +192,64 @@ def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=N
     # register = args.register
     # num = args.num
     # verbose = args.verbose
+    # 
+    # # Make output dir
+    # if not os.path.isdir(output_dir):
+    #     os.makedirs(output_dir)
+    # 
+    # # copy to output directory and convert to nii.gz
+    # print("Copy data...")
+    # sct.copy(file_input[0], os.path.join(output_dir, fdata[0]))
+    # if os.path.isfile(file_input[1]):
+    #     sct.copy(file_input[1], os.path.join(output_dir, fdata[1]))
+    #     run_diff_method = True
+    # else:
+    #     run_diff_method = False
+    # if file_seg is not None:
+    #     sct.copy(file_seg, os.path.join(output_dir, fseg))
+    # if file_gmseg is not None:
+    #     sct.copy(file_gmseg, os.path.join(output_dir, fgmseg))
+    # 
+    # # move to results directory
+    # curdir = os.getcwd()
+    # os.chdir(output_dir)
+    # 
+    # # Segment spinal cord
+    # if file_seg is None:
+    #     print("Segment spinal cord...")
+    #     sct.run("sct_deepseg_sc -i " + fdata[0] + " -c t2s", verbose=verbose)
+    # 
+    # # Segment gray matter
+    # if file_gmseg is None:
+    #     print("Segment gray matter...")
+    #     sct.run("sct_deepseg_gm -i " + fdata[0], verbose=verbose)
 
-    # Make output dir
-    if not os.path.isdir(output_dir):
-        os.makedirs(output_dir)
+    # # Crop data (for faster processing)
+    # print("Crop data (for faster processing)...")
+    # sct.run("sct_create_mask -i " + fdata[0] + " -p centerline," + fseg + " -size 35mm", verbose=verbose)
+    # fmask = "mask_" + fdata[0]
+    # sct.run("sct_crop_image -i " + fdata[0] + " -m " + fmask + " -o " + sct.add_suffix(fdata[0], 'c'))
+    # fdata[0] = sct.add_suffix(fdata[0], 'c')
+    # sct.run("sct_crop_image -i " + fseg + " -m " + fmask + " -o " + sct.add_suffix(fseg, 'c'))
+    # fseg = sct.add_suffix(fseg, 'c')
+    # sct.run("sct_crop_image -i " + fgmseg + " -m " + fmask + " -o " + sct.add_suffix(fgmseg, 'c'))
+    # fgmseg = sct.add_suffix(fgmseg, 'c')
+    # 
+    # # Generate white matter segmentation
+    # print("Generate white matter segmentation...")
+    # sct.run("sct_maths -i " + fseg + " -sub " + fgmseg + " -o " + fdata[0] + "_wmseg.nii.gz", verbose=verbose)
+    # 
+    # # Erode white matter mask to minimize partial volume effect
+    # # Note: we cannot erode the gray matter because it is too thin (most of the time, only one voxel)
+    # print("Erode white matter mask...")
+    # sct.run("sct_maths -i " + fdata[0] + "_wmseg.nii.gz -erode 1 -o " + fdata[0] + "_wmseg_erode.nii.gz", verbose=verbose)
 
-    # copy to output directory and convert to nii.gz
-    print("Copy data...")
-    sct.copy(file_input[0], os.path.join(output_dir, fdata[0]))
-    if os.path.isfile(file_input[1]):
-        sct.copy(file_input[1], os.path.join(output_dir, fdata[1]))
-        run_diff_method = True
-    else:
-        run_diff_method = False
-    if file_seg is not None:
-        sct.copy(file_seg, os.path.join(output_dir, fseg))
-    if file_gmseg is not None:
-        sct.copy(file_gmseg, os.path.join(output_dir, fgmseg))
-
-    # move to results directory
-    curdir = os.getcwd()
-    os.chdir(output_dir)
-
-    # Segment spinal cord
-    if file_seg is None:
-        print("Segment spinal cord...")
-        sct.run("sct_deepseg_sc -i " + fdata[0] + " -c t2s", verbose=verbose)
-
-    # Segment gray matter
-    if file_gmseg is None:
-        print("Segment gray matter...")
-        sct.run("sct_deepseg_gm -i " + fdata[0], verbose=verbose)
-
-    # Crop data (for faster processing)
-    print("Crop data (for faster processing)...")
-    sct.run("sct_create_mask -i " + fdata[0] + " -p centerline," + fseg + " -size 35mm", verbose=verbose)
-    fmask = "mask_" + fdata[0]
-    sct.run("sct_crop_image -i " + fdata[0] + " -m " + fmask + " -o " + sct.add_suffix(fdata[0], 'c'))
-    fdata[0] = sct.add_suffix(fdata[0], 'c')
-    sct.run("sct_crop_image -i " + fseg + " -m " + fmask + " -o " + sct.add_suffix(fseg, 'c'))
-    fseg = sct.add_suffix(fseg, 'c')
-    sct.run("sct_crop_image -i " + fgmseg + " -m " + fmask + " -o " + sct.add_suffix(fgmseg, 'c'))
-    fgmseg = sct.add_suffix(fgmseg, 'c')
-
-    # Generate white matter segmentation
-    print("Generate white matter segmentation...")
-    sct.run("sct_maths -i " + fseg + " -sub " + fgmseg + " -o " + fdata[0] + "_wmseg.nii.gz", verbose=verbose)
-
-    # Erode white matter mask to minimize partial volume effect
-    # Note: we cannot erode the gray matter because it is too thin (most of the time, only one voxel)
-    print("Erode white matter mask...")
-    sct.run("sct_maths -i " + fdata[0] + "_wmseg.nii.gz -erode 1 -o " + fdata[0] + "_wmseg_erode.nii.gz", verbose=verbose)
-
-    if run_diff_method and register:
-        print("Register data2 to data1...")
-        # Register image 2 to image 1
-        sct.run("sct_register_multimodal -i " + fdata[1] + " -d " + fdata[0] + " -param step=2,type=im,algo=rigid,metric=MeanSquares,smooth=1,iter=50,slicewise=1 -x nn", verbose=verbose)
-        # Add suffix to file name
-        fdata[1] = sct.add_suffix(fdata[1], "_reg")
+    # if run_diff_method and register:
+    #     print("Register data2 to data1...")
+    #     # Register image 2 to image 1
+    #     sct.run("sct_register_multimodal -i " + fdata[1] + " -d " + fdata[0] + " -param step=2,type=im,algo=rigid,metric=MeanSquares,smooth=1,iter=50,slicewise=1 -x nn", verbose=verbose)
+    #     # Add suffix to file name
+    #     fdata[1] = sct.add_suffix(fdata[1], "_reg")
 
     # Analysis: compute metrics
     # Initialize data frame for reporting results
