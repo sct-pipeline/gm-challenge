@@ -132,8 +132,6 @@ sct_extract_metric -i ${file_1}${ext} -f ${file_1}_wmseg${ext} -method bin -o si
 sct_extract_metric -i ${file_2}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv -append 1
 sct_extract_metric -i ${file_1}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv
 sct_extract_metric -i ${file_2}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv -append 1
-sct.run("sct_extract_metric -i " + file_data + " -f " + file_mask2 + " -method bin -o mean_mask2.pickle")
-
 
 # Verify presence of output files and write log file if error
 # ------------------------------------------------------------------------------
