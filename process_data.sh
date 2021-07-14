@@ -141,6 +141,8 @@ FILES_TO_CHECK=(
 	"data1_crop_wmseg_erode${ext}"
 	"signal_wm.csv"
 	"signal_gm.csv"
+  "snr_diff.txt"
+  "snr_mult.txt"
 )
 for file in ${FILES_TO_CHECK[@]}; do
   if [[ ! -e $file ]]; then
