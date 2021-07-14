@@ -13,16 +13,16 @@ This pipeline was tested on [SCT v3.2.5](https://github.com/neuropoly/spinalcord
 
 - Download (or `git clone`) this repository.
 - Download dataset of the challenge: https://osf.io/5dqen/
-- run: `./run_pipeline.sh PATH_TO_DATA` with `PATH_TO_DATA`the path to the directory where you stored the dataset of the challenge
+- Run:
+  ```
+  sct_run_batch -script process_data.sh -j -1 -path-data <PATH_DATA> -subject-prefix "" -path-output <PATH_OUT>
+  ```
+  with
+    - PATH_DATA: The path to the downloaded dataset
+    - PATH_OUTPUT: The path where results will be output.
 
 ## Description of the scripts
 
-* [run_pipeline.sh](./run_pipeline.sh): Batch script that loops across subjects
-and process them. By default, the script will process all subjects under
-PATH_TO_DATA. If you wish to only process one subject, add the folder name as a
-2nd argument.
-* [process_data.py](./process_data.py): Process data using SCT and compute image
-quality metrics. More details [here](#analysis).
 * [simu_create_phantom.py](./simu_create_phantom.py): Generate synthetic phantom
 of WM and GM that can be used to validate the proposed evaluation metrics. The phantoms are generated with random noise,
  so running the script multiple times will not produce the same output.
