@@ -23,8 +23,6 @@ This pipeline was tested on [SCT v3.2.5](https://github.com/neuropoly/spinalcord
 
 ## Description of the scripts
 
-* [process_data.py](./process_data.py): Process data using SCT and compute image
-quality metrics. More details [here](#analysis).
 * [simu_create_phantom.py](./simu_create_phantom.py): Generate synthetic phantom
 of WM and GM that can be used to validate the proposed evaluation metrics. The phantoms are generated with random noise,
  so running the script multiple times will not produce the same output.
