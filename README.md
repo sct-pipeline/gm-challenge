@@ -7,7 +7,7 @@ please see: https://goo.gl/2owcL7.
 
 ## Dependencies
 
-This pipeline was tested on [SCT v3.2.5](https://github.com/neuropoly/spinalcordtoolbox/releases/tag/v3.2.5).
+This pipeline was tested on [SCT v5.3.0](https://github.com/spinalcordtoolbox/spinalcordtoolbox/releases/tag/5.3.0).
 
 ## Getting started
 
