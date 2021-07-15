@@ -1,7 +1,7 @@
 ![](https://github.com/neuropoly/gm_challenge/blob/master/doc/logo_challenge.png)
 
-# Gray Matter Challenge (2018)
-Spinal cord gray matter imaging challenge for the [5th Spinal Cord Workshop (June 22<sup>nd</sup>, Paris)](http://www.spinalcordmri.org/2018/06/22/workshop.html).
+# Spinal Cord Gray Matter Imaging Challenge
+Spinal cord gray matter imaging challenge for the [5th Spinal Cord Workshop (June 22<sup>nd</sup> 2018, Paris)](http://www.spinalcordmri.org/2018/06/22/workshop.html).
 The objective for this challenge is to propose a protocol that will generate the best image quality. For more details,
 please see: https://goo.gl/2owcL7.
 
