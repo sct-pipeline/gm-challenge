@@ -11,9 +11,16 @@ This pipeline was tested on [SCT v5.3.0](https://github.com/spinalcordtoolbox/sp
 
 ## Getting started
 
-- Download (or `git clone`) this repository.
-- Download dataset of the challenge: https://osf.io/5dqen/
-- Run:
+- Download the dataset of the challenge:
+  ~~~
+  git clone https://github.com/sct-pipeline/gm-challenge-data
+  ~~~
+- Download this repository and go in it:
+  ~~~
+  git clone https://github.com/sct-pipeline/gm-challenge.git
+  cd gm-challenge
+  ~~~
+- Run (you need to have SCT installed):
   ```
   sct_run_batch -script process_data.sh -j -1 -path-data <PATH_DATA> -subject-prefix "" -path-output <PATH_OUT>
   ```
