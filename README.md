@@ -34,6 +34,14 @@ At the end of the processing, you can review:
 - **<PATH_OUT>/qc/index.html**: Quality Control report
 - **<PATH_OUT>/results/results.csv**: CSV file containing the results. Example:
 
+  |Subject|SNR_diff          |SNR_mult          |Contrast          |
+  |-------|------------------|------------------|------------------|
+  |9604   |16.418544978421163|11.191525890141964|1.153235837859744 |
+  |9605   |23.651120016640174|29.48051021596357 |1.1238874277356785|
+  |9584   |17.143453301063012|21.092693041826486|1.1247654335215769|
+  |9418   |19.558182966645223|19.61176661536486 |1.1093208813636863|
+
+
 ## Description of the scripts
 
 * [simu_create_phantom.py](./simu_create_phantom.py): Generate synthetic phantom
