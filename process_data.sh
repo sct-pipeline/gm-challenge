@@ -18,7 +18,7 @@
 # PATH_QC="~/qc"
 
 # Uncomment for full verbose
-set -x
+#set -x
 
 # Immediately exit if error
 set -e -o pipefail
@@ -127,11 +127,13 @@ file_2=${file_2}_reg
 sct_image -i ${file_1}${ext} ${file_2}${ext} -concat t -o data_concat.nii.gz
 sct_compute_snr -i data_concat.nii.gz -method diff -m data1_crop_wmseg_erode.nii.gz > snr_diff.txt 
 sct_compute_snr -i data_concat.nii.gz -method mult -m data1_crop_wmseg_erode.nii.gz > snr_mult.txt
-# Compute average value in WM and GM to subsequently compute contrast
+# Compute average value in WM and GM on a slice-by-slice basis
 sct_extract_metric -i ${file_1}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv
 sct_extract_metric -i ${file_2}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv -append 1
 sct_extract_metric -i ${file_1}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv
 sct_extract_metric -i ${file_2}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv -append 1
+# Compute contrast slicewise and average across slices. Output in file: contrast.txt
+python -c "import pandas; pd_gm = pandas.read_csv('signal_gm.csv'); pd_wm = pandas.read_csv('signal_wm.csv'); pd = pd_gm['BIN()'] / pd_wm['BIN()']; print(f'{pd.mean()}')" > contrast.txt
 
 # Verify presence of output files and write log file if error
 # ------------------------------------------------------------------------------
@@ -143,6 +145,7 @@ FILES_TO_CHECK=(
 	"signal_gm.csv"
   "snr_diff.txt"
   "snr_mult.txt"
+  "contrast.txt"
 )
 for file in ${FILES_TO_CHECK[@]}; do
   if [[ ! -e $file ]]; then
@@ -158,4 +161,7 @@ echo "~~~"
 echo "SCT version: `sct_version`"
 echo "Ran on:      `uname -nsr`"
 echo "Duration:    $(($runtime / 3600))hrs $((($runtime / 60) % 60))min $(($runtime % 60))sec"
+echo "snr_diff:    `cat snr_diff.txt`"
+echo "snr_mult:    `cat snr_mult.txt`"
+echo "contrast:    `cat contrast.txt`"
 echo "~~~"

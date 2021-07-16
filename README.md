@@ -7,7 +7,8 @@ please see: https://goo.gl/2owcL7.
 
 ## Dependencies
 
-This pipeline was tested on [SCT v5.3.0](https://github.com/spinalcordtoolbox/spinalcordtoolbox/releases/tag/5.3.0).
+- Python 3.9 with [pandas](https://pandas.pydata.org/) library
+- [SCT v5.3.0](https://github.com/spinalcordtoolbox/spinalcordtoolbox/releases/tag/5.3.0).
 
 ## Getting started
 
