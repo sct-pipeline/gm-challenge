@@ -43,7 +43,7 @@ segment_if_does_not_exist(){
   local contrast="$2"
   # Update global variable with segmentation file name
   FILESEG="${file}_seg"
-  FILESEGMANUAL="${PATH_DATA}/${SUBJECT}/${FILESEG}-manual${ext}"
+  FILESEGMANUAL="${PATH_DATA}/${SUBJECT}/${FILESEG}_manual${ext}"
   echo
   echo "Looking for manual segmentation: $FILESEGMANUAL"
   if [[ -e $FILESEGMANUAL ]]; then
@@ -64,7 +64,7 @@ segment_gm_if_does_not_exist(){
   local contrast="$2"
   # Update global variable with segmentation file name
   FILESEG="${file}_gmseg"
-  FILESEGMANUAL="${PATH_DATA}/${SUBJECT}/${FILESEG}-manual${ext}"
+  FILESEGMANUAL="${PATH_DATA}/${SUBJECT}/${FILESEG}_manual${ext}"
   echo "Looking for manual segmentation: $FILESEGMANUAL"
   if [[ -e $FILESEGMANUAL ]]; then
     echo "Found! Using manual segmentation."
