@@ -118,8 +118,8 @@ sct_register_multimodal -i ${file_2}${ext} -d ${file_1}${ext} -dseg ${file_1_seg
 file_2=${file_2}_reg
 # Compute SNR using both methods
 sct_image -i ${file_1}${ext} ${file_2}${ext} -concat t -o data_concat.nii.gz
-sct_compute_snr -i data_concat.nii.gz -method diff -m data1_crop_wmseg_erode.nii.gz > snr_diff.txt 
-sct_compute_snr -i data_concat.nii.gz -method mult -m data1_crop_wmseg_erode.nii.gz > snr_mult.txt
+sct_compute_snr -i data_concat.nii.gz -method diff -m data1_crop_wmseg_erode.nii.gz -o snr_diff.txt
+sct_compute_snr -i data_concat.nii.gz -method mult -m data1_crop_wmseg_erode.nii.gz -o snr_mult.txt
 # Compute average value in WM and GM on a slice-by-slice basis
 sct_extract_metric -i ${file_1}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv
 sct_extract_metric -i ${file_2}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv -append 1
