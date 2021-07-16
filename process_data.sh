@@ -127,6 +127,13 @@ sct_extract_metric -i ${file_1}${ext} -f ${file_1_gmseg}${ext} -method bin -o si
 sct_extract_metric -i ${file_2}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv -append 1
 # Compute contrast slicewise and average across slices. Output in file: contrast.txt
 python -c "import pandas; pd_gm = pandas.read_csv('signal_gm.csv'); pd_wm = pandas.read_csv('signal_wm.csv'); pd = pd_gm['BIN()'] / pd_wm['BIN()']; print(f'{pd.mean()}')" > contrast.txt
+# Aggregate results in single CSV file
+file_results="${PATH_RESULTS}/results.csv"
+if [[ ! -e $file_results ]]; then
+  # add a header in case the file does not exist yet
+  echo "Subject,SNR_diff,SNR_mult,Contrast" >> $file_results
+fi
+echo "${SUBJECT},`cat snr_diff.txt`,`cat snr_mult.txt`,`cat contrast.txt`" >> ${PATH_RESULTS}/results.csv
 
 # Verify presence of output files and write log file if error
 # ------------------------------------------------------------------------------
