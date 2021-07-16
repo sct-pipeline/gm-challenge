@@ -41,15 +41,9 @@ start=`date +%s`
 segment_if_does_not_exist(){
   local file="$1"
   local contrast="$2"
-  # Find contrast
-  if [[ $contrast == "dwi" ]]; then
-    folder_contrast="dwi"
-  else
-    folder_contrast="anat"
-  fi
   # Update global variable with segmentation file name
   FILESEG="${file}_seg"
-  FILESEGMANUAL="${PATH_DATA}/derivatives/labels/${SUBJECT}/${folder_contrast}/${FILESEG}-manual${ext}"
+  FILESEGMANUAL="${PATH_DATA}/${SUBJECT}/${FILESEG}-manual${ext}"
   echo
   echo "Looking for manual segmentation: $FILESEGMANUAL"
   if [[ -e $FILESEGMANUAL ]]; then
@@ -70,7 +64,7 @@ segment_gm_if_does_not_exist(){
   local contrast="$2"
   # Update global variable with segmentation file name
   FILESEG="${file}_gmseg"
-  FILESEGMANUAL="${PATH_DATA}/derivatives/labels/${SUBJECT}/anat/${FILESEG}-manual${ext}"
+  FILESEGMANUAL="${PATH_DATA}/${SUBJECT}/${FILESEG}-manual${ext}"
   echo "Looking for manual segmentation: $FILESEGMANUAL"
   if [[ -e $FILESEGMANUAL ]]; then
     echo "Found! Using manual segmentation."
@@ -82,7 +76,6 @@ segment_gm_if_does_not_exist(){
     sct_deepseg_gm -i ${file}${ext} -qc ${PATH_QC} -qc-subject ${SUBJECT}
   fi
 }
-
 
 
 # SCRIPT STARTS HERE
