@@ -29,6 +29,11 @@ please see: https://goo.gl/2owcL7.
     - PATH_DATA: The path to the downloaded dataset
     - PATH_OUTPUT: The path where results will be output.
 
+At the end of the processing, you can review:
+- **<PATH_OUT>/log/**: Log files of the processing for each subject.
+- **<PATH_OUT>/qc/index.html**: Quality Control report
+- **<PATH_OUT>/results/results.csv**: CSV file containing the results. Example:
+
 ## Description of the scripts
 
 * [simu_create_phantom.py](./simu_create_phantom.py): Generate synthetic phantom
