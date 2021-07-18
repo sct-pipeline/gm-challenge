@@ -18,7 +18,7 @@
 # PATH_QC="~/qc"
 
 # Uncomment for full verbose
-#set -x
+set -x
 
 # Immediately exit if error
 set -e -o pipefail
@@ -43,8 +43,7 @@ segment_if_does_not_exist(){
   local contrast="$2"
   # Update global variable with segmentation file name
   FILESEG="${file}_seg"
-  FILESEGMANUAL="${PATH_DATA}/${SUBJECT}/${FILESEG}_manual${ext}"
-  echo
+  FILESEGMANUAL="${PATH_DATA}/derivatives/labels/${SUBJECT}/anat/${FILESEG}-manual${ext}"
   echo "Looking for manual segmentation: $FILESEGMANUAL"
   if [[ -e $FILESEGMANUAL ]]; then
     echo "Found! Using manual segmentation."
@@ -64,7 +63,7 @@ segment_gm_if_does_not_exist(){
   local contrast="$2"
   # Update global variable with segmentation file name
   FILESEG="${file}_gmseg"
-  FILESEGMANUAL="${PATH_DATA}/${SUBJECT}/${FILESEG}_manual${ext}"
+  FILESEGMANUAL="${PATH_DATA}/derivatives/labels/${SUBJECT}/anat/${FILESEG}-manual${ext}"
   echo "Looking for manual segmentation: $FILESEGMANUAL"
   if [[ -e $FILESEGMANUAL ]]; then
     echo "Found! Using manual segmentation."
@@ -88,9 +87,9 @@ cd $PATH_DATA_PROCESSED
 # Copy source images
 rsync -avzh $PATH_DATA/$SUBJECT .
 # Go to folder
-cd ${SUBJECT}
-file_1="data1"
-file_2="data2"
+cd ${SUBJECT}/anat
+file_1="${SUBJECT}_run-1_T2starw"
+file_2="${SUBJECT}_run-2_T2starw"
 ext=".nii.gz"
 # Segment spinal cord
 segment_if_does_not_exist $file_1 "t2s"
@@ -118,8 +117,8 @@ sct_register_multimodal -i ${file_2}${ext} -d ${file_1}${ext} -dseg ${file_1_seg
 file_2=${file_2}_reg
 # Compute SNR using both methods
 sct_image -i ${file_1}${ext} ${file_2}${ext} -concat t -o data_concat.nii.gz
-sct_compute_snr -i data_concat.nii.gz -method diff -m data1_crop_wmseg_erode.nii.gz -o snr_diff.txt
-sct_compute_snr -i data_concat.nii.gz -method mult -m data1_crop_wmseg_erode.nii.gz -o snr_mult.txt
+sct_compute_snr -i data_concat.nii.gz -method diff -m ${file_1}_wmseg_erode.nii.gz -o snr_diff.txt
+sct_compute_snr -i data_concat.nii.gz -method mult -m ${file_1}_wmseg_erode.nii.gz -o snr_mult.txt
 # Compute average value in WM and GM on a slice-by-slice basis
 sct_extract_metric -i ${file_1}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv
 sct_extract_metric -i ${file_2}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv -append 1
@@ -138,9 +137,6 @@ echo "${SUBJECT},`cat snr_diff.txt`,`cat snr_mult.txt`,`cat contrast.txt`" >> ${
 # Verify presence of output files and write log file if error
 # ------------------------------------------------------------------------------
 FILES_TO_CHECK=(
-  "data1_seg_manual${ext}"
-	"data1_gmseg_manual${ext}"
-	"data1_crop_wmseg_erode${ext}"
 	"signal_wm.csv"
 	"signal_gm.csv"
   "snr_diff.txt"
