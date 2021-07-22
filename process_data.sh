@@ -118,7 +118,7 @@ file_2=${file_2}_reg
 # Compute SNR using both methods
 sct_image -i ${file_1}${ext} ${file_2}${ext} -concat t -o data_concat.nii.gz
 sct_compute_snr -i data_concat.nii.gz -method diff -m ${file_1}_wmseg_erode.nii.gz -o snr_diff.txt
-sct_compute_snr -i data_concat.nii.gz -method mult -m ${file_1}_wmseg_erode.nii.gz -o snr_mult.txt
+sct_compute_snr -i data_concat.nii.gz -method single -m ${file_1}_wmseg_erode.nii.gz -m-noise ${file_1}_wmseg_erode.nii.gz -rayleigh 0 -o snr_single.txt
 # Compute average value in WM and GM on a slice-by-slice basis
 sct_extract_metric -i ${file_1}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv
 sct_extract_metric -i ${file_2}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv -append 1
@@ -130,9 +130,9 @@ python -c "import pandas; pd_gm = pandas.read_csv('signal_gm.csv'); pd_wm = pand
 file_results="${PATH_RESULTS}/results.csv"
 if [[ ! -e $file_results ]]; then
   # add a header in case the file does not exist yet
-  echo "Subject,SNR_diff,SNR_mult,Contrast" >> $file_results
+  echo "Subject,SNR_diff,SNR_single,Contrast" >> $file_results
 fi
-echo "${SUBJECT},`cat snr_diff.txt`,`cat snr_mult.txt`,`cat contrast.txt`" >> ${PATH_RESULTS}/results.csv
+echo "${SUBJECT},`cat snr_diff.txt`,`cat snr_single.txt`,`cat contrast.txt`" >> ${PATH_RESULTS}/results.csv
 
 # Verify presence of output files and write log file if error
 # ------------------------------------------------------------------------------
@@ -140,7 +140,7 @@ FILES_TO_CHECK=(
 	"signal_wm.csv"
 	"signal_gm.csv"
   "snr_diff.txt"
-  "snr_mult.txt"
+  "snr_single.txt"
   "contrast.txt"
 )
 for file in ${FILES_TO_CHECK[@]}; do
@@ -158,6 +158,6 @@ echo "SCT version: `sct_version`"
 echo "Ran on:      `uname -nsr`"
 echo "Duration:    $(($runtime / 3600))hrs $((($runtime / 60) % 60))min $(($runtime % 60))sec"
 echo "snr_diff:    `cat snr_diff.txt`"
-echo "snr_mult:    `cat snr_mult.txt`"
+echo "snr_single:    `cat snr_single.txt`"
 echo "contrast:    `cat contrast.txt`"
 echo "~~~"
