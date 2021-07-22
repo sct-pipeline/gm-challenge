@@ -23,7 +23,7 @@ please see: https://goo.gl/2owcL7.
   ~~~
 - Run (you need to have SCT installed):
   ```
-  sct_run_batch -script process_data.sh -j -1 -path-data <PATH_DATA> -subject-prefix "" -path-output <PATH_OUT>
+  sct_run_batch -script process_data.sh -j -1 -path-data <PATH_DATA> -path-output <PATH_OUT>
   ```
   with
     - PATH_DATA: The path to the downloaded dataset
