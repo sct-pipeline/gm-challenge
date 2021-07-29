@@ -14,7 +14,7 @@ please see: https://goo.gl/2owcL7.
 
 - Download the dataset of the challenge:
   ~~~
-  git clone https://github.com/sct-pipeline/gm-challenge-data
+  git clone https://github.com/sct-pipeline/gm-challenge-data.git
   ~~~
 - Download this repository and go in it:
   ~~~
@@ -34,7 +34,7 @@ At the end of the processing, you can review:
 - **<PATH_OUT>/qc/index.html**: Quality Control report
 - **<PATH_OUT>/results/results.csv**: CSV file containing the results. Example:
 
-  |Subject|SNR_diff          |SNR_mult          |Contrast          |
+  |Subject|SNR_diff          |SNR_single        |Contrast          |
   |-------|------------------|------------------|------------------|
   |9604   |16.418544978421163|11.191525890141964|1.153235837859744 |
   |9605   |23.651120016640174|29.48051021596357 |1.1238874277356785|
