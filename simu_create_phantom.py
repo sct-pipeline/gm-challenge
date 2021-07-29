@@ -4,7 +4,7 @@
 #
 # USAGE:
 # The script should be launched using SCT's python:
-#   ${SCT_DIR}/python/bin/python simu_create_phantom.py phantom
+#   python simu_create_phantom.py [-o output_folder]
 #
 # Ranges of GM and noise STD can be changed inside the code. They are hard-coded so that a specific version of the code
 # can be tagged, and will always produce the same results (whereas if we allow users to enter params, the output will
@@ -18,7 +18,7 @@
 # TODO: generated cord mask is too large!
 # TODO: remove input params and set them as list inside code
 # TODO: download PAM50 by default, and have option to set path to atlas
-# TDOD: param for selecting z
+# TODO: param for selecting z
 
 import os, sys
 import argparse
@@ -149,7 +149,7 @@ def main(argv=None):
     data_gm[np.where(data_gm < 0.5)] = 0
     save_nifti(data_gm, os.path.join(folder_out, "mask_gm.nii.gz"))
     # display
-    sct.log.info("Done!")
+    print("Done!")
 
 
 if __name__ == "__main__":
