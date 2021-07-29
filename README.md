@@ -46,11 +46,12 @@ At the end of the processing, you can review:
 Two NIfTI files are required: an initial scan and a re-scan without repositioning. The analysis script `process_data.sh`
 includes the following steps:
 
-- Check if a mask for the spinal cord and/or gray matter already exists. If not, segment them automatically.
+- Check if a mask for the spinal cord and/or gray matter (GM) already exists. If not, segment them automatically.
 - Register the second scan to the first one. Use nearest-neighbour interpolation to preserve noise properties.
-- Compute white matter mask by subtracting the spinal cord and the gray matter masks. 
-- Compute `SNR_diff` using the two-image subtraction method (Dietrich et al. J Magn Reson Imaging, 2007).
-- Compute `SNR_mult` using the first scan (Griffanti et al., Biomed Sign Proc and Control, 2012).
+- Compute white matter (WM) mask by subtracting the spinal cord and the GM masks.
+- Erode the WM mask to mitigate partial volume, yielding the WMe mask.
+- Compute `SNR_diff` using the two-image subtraction method (Dietrich et al. J Magn Reson Imaging, 2007) in the WMe mask.
+- Compute `SNR_single` using the first scan, by dividing the mean in the WMe mask and the STD in the WMe masks. 
 - Compute `Contrast` by dividing the mean signal in the GM by that in the WM, on a slice-by-slice basis and then 
   average across slices.
 
