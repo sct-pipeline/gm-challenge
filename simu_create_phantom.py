@@ -25,20 +25,18 @@ import argparse
 import numpy as np
 import nibabel as nib
 import scipy.ndimage as ndimage
-# append path to useful SCT scripts
-path_sct = os.getenv('SCT_DIR')
-sys.path.append(os.path.join(path_sct, 'scripts'))
-import sct_utils as sct
-from spinalcordtoolbox.image import Image
-from spinalcordtoolbox.metadata import read_label_file
 import pandas as pd
 
-def get_parameters():
-    parser = argparse.ArgumentParser(description='Generate a synthetic spinal cord phantom with various values of gray '
-                                                 'matter and Gaussian noise amplitude.')
-    parser.add_argument('folder_out', help='Name of the output folder')
-    args = parser.parse_args()
-    return args
+
+def get_parser():
+    parser = argparse.ArgumentParser(
+        description="Generate a synthetic spinal cord phantom with various values of gray matter and Gaussian "
+                    "noise amplitude.")
+    parser.add_argument(
+        '-o',
+        help='Name of the output folder',
+        default='./')
+    return parser
 
 
 def get_tracts(folder_atlas, zslice=500, num_slice=10):
@@ -81,8 +79,7 @@ def save_nifti(data, fname):
     nib.save(im_phantom, fname)
 
 
-def main():
-    sct.init_sct()  # start logger
+def main(argv=None):
     # default params
     wm_value = 100
     gm_values = [120, 140, 160, 180]
@@ -92,11 +89,17 @@ def main():
     num_slice = 10  # number of slices in z direction
     range_tract = 0  # we do not want heterogeneity within WM and within GM. All tracts should have the same value.
 
+    # user params
+    parser = get_parser()
+    args = parser.parse_args(argv)
+    folder_out = args.o
+
     # create output folder
     if not os.path.exists(folder_out):
         os.makedirs(folder_out)
 
-    # Extract the tracts from the atlas folder
+    # Open white and gray matter masks from SCT
+    path_sct = os.getenv('SCT_DIR')
     folder_atlas = os.path.join(path_sct, "data/PAM50/atlas/")
     data_tracts = get_tracts(folder_atlas, zslice=zslice, num_slice=num_slice)
     nx, ny, nz, nb_tracts = data_tracts.shape
@@ -150,6 +153,4 @@ def main():
 
 
 if __name__ == "__main__":
-    args = get_parameters()
-    folder_out = args.folder_out
-    main()
+    main(sys.argv[1:])
