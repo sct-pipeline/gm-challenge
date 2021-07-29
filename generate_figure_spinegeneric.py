@@ -25,7 +25,7 @@ def get_parameters():
     return arguments
 
 
-def generate_figure(data_in, column, path_output, figure_filename):
+def generate_figure(data_in, column, path_output):
     # Hue Input for Subgroups
     dx = np.ones(len(data_in[column]))
     dy = column
@@ -37,8 +37,15 @@ def generate_figure(data_in, column, path_output, figure_filename):
 
     ax = pt.RainCloud(x=dx, y=dy, hue=dhue, data=data_in, palette=pal, bw=sigma,
                       width_viol=.5, ax=ax, orient=ort, alpha=.65, dodge=True)
-
-    plt.savefig(os.path.join(path_output, figure_filename), bbox_inches='tight')
+    plt.xlabel(column)
+    plt.ylabel('')
+    plt.tick_params(
+        axis='x',  # changes apply to the x-axis
+        which='both',  # both major and minor ticks are affected
+        bottom=False,  # ticks along the bottom edge are off
+        top=False,  # ticks along the top edge are off
+        labelbottom=False)
+    plt.savefig(os.path.join(path_output, 'figure_' + column), bbox_inches='tight')
 
 
 def main(path_input_results, path_input_participants, path_output):
@@ -57,9 +64,9 @@ def main(path_input_results, path_input_participants, path_output):
         content_results_csv.loc[rowIndexResults, 'manufacturer'] = content_participants_tsv.loc[rowIndex][
             'manufacturer']
 
-    generate_figure(content_results_csv, 'SNR_diff', path_output, 'figure_snr_diff')
-    generate_figure(content_results_csv, 'SNR_mult', path_output, 'figure_snr_mult')
-    generate_figure(content_results_csv, 'Contrast', path_output, 'figure_contrast')
+    generate_figure(content_results_csv, 'SNR_diff', path_output)
+    generate_figure(content_results_csv, 'SNR_mult', path_output)
+    generate_figure(content_results_csv, 'Contrast', path_output)
 
 
 if __name__ == "__main__":
