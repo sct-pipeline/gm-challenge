@@ -82,7 +82,7 @@ cd $PATH_DATA_PROCESSED
 rsync -avzh $PATH_DATA/$SUBJECT .
 # Go to folder
 cd ${SUBJECT}/anat
-file_1="${SUBJECT}_T2s"
+file_1="${SUBJECT}_T2star"
 ext=".nii.gz"
 # Segment spinal cord
 segment_if_does_not_exist $file_1 "t2s"
