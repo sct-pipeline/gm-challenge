@@ -105,7 +105,7 @@ sct_maths -i ${file_1_seg}${ext} -sub ${file_1_gmseg}${ext} -o ${file_1}_wmseg${
 # Note: we cannot erode the gray matter because it is too thin (most of the time, only one voxel)
 sct_maths -i ${file_1}_wmseg${ext} -erode 1 -o ${file_1}_wmseg_erode${ext}
 # Compute SNR
-sct_compute_snr -i ${file_1_seg}${ext} -method single -m ${file_1}_wmseg_erode.nii.gz -m-noise ${file_1}_wmseg_erode.nii.gz -rayleigh 0 -o snr_single.txt
+sct_compute_snr -i ${file_1}${ext} -method single -m ${file_1}_wmseg_erode.nii.gz -m-noise ${file_1}_wmseg_erode.nii.gz -rayleigh 0 -o snr_single.txt
 # Compute average value in WM and GM on a slice-by-slice basis
 sct_extract_metric -i ${file_1}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv
 sct_extract_metric -i ${file_1}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv
