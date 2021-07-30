@@ -5,6 +5,7 @@ import seaborn as sns
 import os
 import matplotlib.pyplot as plt
 import ptitprince as pt
+from matplotlib.patches import PathPatch
 
 sns.set(style="whitegrid", font_scale=1)
 
@@ -25,6 +26,42 @@ def get_parameters():
     return arguments
 
 
+def adjust_box_widths(g, fac):
+    # From https://github.com/mwaskom/seaborn/issues/1076#issuecomment-634541579
+
+    """
+    Adjust the widths of a seaborn-generated boxplot.
+    """
+
+    # iterating through Axes instances
+    for ax in g.axes:
+
+        # iterating through axes artists:
+        for c in ax.get_children():
+
+            # searching for PathPatches
+            if isinstance(c, PathPatch):
+                # getting current width of box:
+                p = c.get_path()
+                verts = p.vertices
+                verts_sub = verts[:-1]
+                xmin = np.min(verts_sub[:, 0])
+                xmax = np.max(verts_sub[:, 0])
+                xmid = 0.5*(xmin+xmax)
+                xhalf = 0.5*(xmax - xmin)
+
+                # setting new width of box
+                xmin_new = xmid-fac*xhalf
+                xmax_new = xmid+fac*xhalf
+                verts_sub[verts_sub[:, 0] == xmin, 0] = xmin_new
+                verts_sub[verts_sub[:, 0] == xmax, 0] = xmax_new
+
+                # setting new width of median line
+                for l in ax.lines:
+                    if np.all(l.get_xdata() == [xmin, xmax]):
+                        l.set_xdata([xmin_new, xmax_new])
+
+
 def generate_figure(data_in, column, path_output):
     # Hue Input for Subgroups
     dx = np.ones(len(data_in[column]))
@@ -35,15 +72,23 @@ def generate_figure(data_in, column, path_output):
     colors = ["#1E90FF", "#32CD32", "#FF0000"]
     pal = colors
     sigma = .2
-    f, ax = plt.subplots(figsize=(4, 12))
+    f, ax = plt.subplots(figsize=(4, 6))
 
     ax = pt.RainCloud(x=dx, y=dy, hue=dhue, data=data_in, palette=pal, bw=sigma,
-                      width_viol=.5, ax=ax, orient=ort, alpha=.65, dodge=True)
+                      width_viol=.5, ax=ax, orient=ort, alpha=.4, dodge=True, width_box=.15)
     handles, labels = ax.get_legend_handles_labels()
-    labels = labels[0:3]
-    handles = handles[0:3]
+    labels_new = []
+    labels_new.append(labels[1])
+    labels_new.append(labels[0])
+    labels_new.append(labels[2])
+    handles_new = []
+    handles_new.append(handles[1])
+    handles_new.append(handles[0])
+    handles_new.append(handles[2])
     #  bbox_to_anchor to move the position of the legend
-    ax.legend(reversed(handles), reversed(labels),  bbox_to_anchor = (1.5, 1.0))
+    ax.legend(reversed(handles), reversed(labels_new), title="Manufacturer" , bbox_to_anchor = (1.5, 1.0))
+    #adjust boxplot width
+    adjust_box_widths(f, 0.4)
     plt.xlabel(column)
     # remove ylabel
     plt.ylabel('')
