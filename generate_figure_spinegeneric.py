@@ -16,7 +16,7 @@ def get_parameters():
                         required=True)
     parser.add_argument("-ip", "--path-input-participants",
                         help="Path to participants.tsv",
-                        required=False)
+                        required=True)
     parser.add_argument("-o", "--path-output",
                         help="Path to save images",
                         required=True,
