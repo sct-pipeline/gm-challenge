@@ -39,6 +39,11 @@ def generate_figure(data_in, column, path_output):
 
     ax = pt.RainCloud(x=dx, y=dy, hue=dhue, data=data_in, palette=pal, bw=sigma,
                       width_viol=.5, ax=ax, orient=ort, alpha=.65, dodge=True)
+    handles, labels = ax.get_legend_handles_labels()
+    labels = labels[0:3]
+    handles = handles[0:3]
+    #  bbox_to_anchor to move the position of the legend
+    ax.legend(reversed(handles), reversed(labels),  bbox_to_anchor = (1.5, 1.0))
     plt.xlabel(column)
     # remove ylabel
     plt.ylabel('')
@@ -49,6 +54,7 @@ def generate_figure(data_in, column, path_output):
         bottom=False,
         top=False,
         labelbottom=False)
+    # plt.legend(title="Line", loc='upper left', handles=handles[::-1])
     plt.savefig(os.path.join(path_output, 'figure_' + column), bbox_inches='tight')
 
 
