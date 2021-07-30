@@ -100,35 +100,34 @@ def main(argv=None):
 
     # Open white and gray matter masks from SCT
     path_sct = os.getenv('SCT_DIR')
-    folder_atlas = os.path.join(path_sct, "data/PAM50/atlas/")
-    data_tracts = get_tracts(folder_atlas, zslice=zslice, num_slice=num_slice)
-    nx, ny, nz, nb_tracts = data_tracts.shape
-
-    # TODO: get WM and GM indexes from info_label.txt
-    ind_wm = range(0, 30)
-    ind_gm = range(30, 36)
+    folder_template = os.path.join(path_sct, 'data', 'PAM50', 'template')
+    nii_atlas_wm = nib.load(os.path.join(folder_template, 'PAM50_wm.nii.gz'))
+    nii_atlas_gm = nib.load(os.path.join(folder_template, 'PAM50_gm.nii.gz'))
 
     print("\nGenerate phantom...")
     # loop across gm_value and std_values and generate phantom
     for gm_value in gm_values:
         for std_noise in std_noises:
             for smooth in smoothing:
-                data_tracts_modif = data_tracts.copy()
+                data_wm = nii_atlas_wm.get_fdata()
+                data_gm = nii_atlas_gm.get_fdata()
                 # Add values to each tract
-                data_tracts_modif[:, :, :, ind_wm] *= wm_value
-                data_tracts_modif[:, :, :, ind_gm] *= gm_value
+                data_wm *= wm_value
+                data_gm *= gm_value
                 # sum across labels
-                data_phantom = np.sum(data_tracts_modif, axis=3)
+                data_phantom = data_wm + data_gm
                 # Add blurring
                 if smooth:
                     data_phantom = ndimage.gaussian_filter(data_phantom, sigma=(smooth), order=0)
                 # add noise
                 if std_noise:
-                    data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny, nz))
+                    data_phantom += np.random.normal(loc=0, scale=std_noise, size=data_phantom.shape)
                 # build file name
-                file_out = "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_Noise" + str(std_noise) + "_Smooth" + str(smooth)
-                # save as nifti file
-                save_nifti(data_phantom, os.path.join(folder_out, file_out + ".nii.gz"))
+                file_out = "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_Noise" + str(std_noise) + \
+                           "_Smooth" + str(smooth)
+                # save as NIfTI file
+                nii_phantom = nib.Nifti1Image(data_phantom, nii_atlas_wm.affine)
+                nib.save(nii_phantom, os.path.join(folder_out, file_out + ".nii.gz"))
                 # save metadata
                 metadata = pd.Series({'WM': wm_value,
                                       'GM': gm_value,
