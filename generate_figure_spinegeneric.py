@@ -75,9 +75,9 @@ def generate_figure(data_in, column, path_output):
     f, ax = plt.subplots(figsize=(4, 6))
 
     ax = pt.RainCloud(x=dx, y=dy, hue=dhue, data=data_in, palette=pal, bw=sigma,
-                      width_viol=.5, ax=ax, orient=ort, alpha=.4, dodge=True, width_box=.15,
+                      width_viol=.5, ax=ax, orient=ort, alpha=.4, dodge=True, width_box=.35,
                       box_showmeans=True,
-                      box_meanprops={"marker":"^", "markerfacecolor":"black", "markeredgecolor":"black", "markersize":"5"},
+                      box_meanprops={"marker":"^", "markerfacecolor":"black", "markeredgecolor":"black", "markersize":"10"},
                       box_notch=True)
     f.gca().invert_xaxis()
     #adjust boxplot width
