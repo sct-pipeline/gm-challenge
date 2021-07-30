@@ -68,6 +68,8 @@ segment_gm_if_does_not_exist(){
     # Segment spinal cord
     sct_deepseg_gm -i ${file}${ext} -qc ${PATH_QC} -qc-subject ${SUBJECT}
   fi
+  # Converts GM segmentation to UINT8. See: https://github.com/spinalcordtoolbox/spinalcordtoolbox/issues/3488
+  sct_image -i ${FILESEG}${ext} -type uint8 -o ${FILESEG}${ext}
 }
 
 
