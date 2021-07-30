@@ -55,6 +55,13 @@ includes the following steps:
 - Compute `Contrast` by dividing the mean signal in the GM by that in the WM, on a slice-by-slice basis and then 
   average across slices.
 
+## Analysis on the spine-generic dataset
+
+A similar analysis can also be run on the spine-generic dataset. However, given that only one scan was available, the
+processing script is slightly different and was called: `process_data_spinegeneric.sh`.
+
+After running this script, figures can be generated using: XXX [TODO]
+
 ## Simulations
 
 * [simu_create_phantom.py](./simu_create_phantom.py): Generate synthetic phantom
