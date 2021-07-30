@@ -68,25 +68,18 @@ def generate_figure(data_in, column, path_output):
     dy = column
     dhue = "Manufacturer"
     ort = "v"
-    # dodge blue, limegreen, red
-    colors = ["#1E90FF", "#32CD32", "#FF0000"]
+    #  dodge blue, limegreen, red
+    colors = [  "#1E90FF", "#32CD32","#FF0000"  ]
     pal = colors
     sigma = .2
     f, ax = plt.subplots(figsize=(4, 6))
 
     ax = pt.RainCloud(x=dx, y=dy, hue=dhue, data=data_in, palette=pal, bw=sigma,
-                      width_viol=.5, ax=ax, orient=ort, alpha=.4, dodge=True, width_box=.15)
-    handles, labels = ax.get_legend_handles_labels()
-    labels_new = []
-    labels_new.append(labels[1])
-    labels_new.append(labels[0])
-    labels_new.append(labels[2])
-    handles_new = []
-    handles_new.append(handles[1])
-    handles_new.append(handles[0])
-    handles_new.append(handles[2])
-    #  bbox_to_anchor to move the position of the legend
-    ax.legend(reversed(handles), reversed(labels_new), title="Manufacturer" , bbox_to_anchor = (1.5, 1.0))
+                      width_viol=.5, ax=ax, orient=ort, alpha=.4, dodge=True, width_box=.15,
+                      box_showmeans=True,
+                      box_meanprops={"marker":"^", "markerfacecolor":"black", "markeredgecolor":"black", "markersize":"5"},
+                      box_notch=True)
+    f.gca().invert_xaxis()
     #adjust boxplot width
     adjust_box_widths(f, 0.4)
     plt.xlabel(column)
