@@ -29,7 +29,7 @@ def generate_figure(data_in, column, path_output):
     # Hue Input for Subgroups
     dx = np.ones(len(data_in[column]))
     dy = column
-    dhue = "manufacturer"
+    dhue = "Manufacturer"
     ort = "v"
     pal = "Set2"
     sigma = .2
@@ -38,12 +38,14 @@ def generate_figure(data_in, column, path_output):
     ax = pt.RainCloud(x=dx, y=dy, hue=dhue, data=data_in, palette=pal, bw=sigma,
                       width_viol=.5, ax=ax, orient=ort, alpha=.65, dodge=True)
     plt.xlabel(column)
+    # remove ylabel
     plt.ylabel('')
+    # hide xtick
     plt.tick_params(
-        axis='x',  # changes apply to the x-axis
-        which='both',  # both major and minor ticks are affected
-        bottom=False,  # ticks along the bottom edge are off
-        top=False,  # ticks along the top edge are off
+        axis='x',
+        which='both',
+        bottom=False,
+        top=False,
         labelbottom=False)
     plt.savefig(os.path.join(path_output, 'figure_' + column), bbox_inches='tight')
 
@@ -61,11 +63,9 @@ def main(path_input_results, path_input_participants, path_output):
     for subj in list_subjects_results:
         rowIndex = content_participants_tsv[content_participants_tsv['participant_id'] == subj].index
         rowIndexResults = content_results_csv[content_results_csv['Subject'] == subj].index
-        content_results_csv.loc[rowIndexResults, 'manufacturer'] = content_participants_tsv.loc[rowIndex][
-            'manufacturer']
+        content_results_csv.loc[rowIndexResults, 'Manufacturer'] = content_participants_tsv.loc[rowIndex]['manufacturer'].values[0]
 
-    generate_figure(content_results_csv, 'SNR_diff', path_output)
-    generate_figure(content_results_csv, 'SNR_mult', path_output)
+    generate_figure(content_results_csv, 'SNR_single', path_output)
     generate_figure(content_results_csv, 'Contrast', path_output)
 
 
