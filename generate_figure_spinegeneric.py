@@ -31,9 +31,11 @@ def generate_figure(data_in, column, path_output):
     dy = column
     dhue = "Manufacturer"
     ort = "v"
-    pal = "Set2"
+    # dodge blue, limegreen, red
+    colors = ["#1E90FF", "#32CD32", "#FF0000"]
+    pal = colors
     sigma = .2
-    f, ax = plt.subplots(figsize=(10, 5))
+    f, ax = plt.subplots(figsize=(4, 12))
 
     ax = pt.RainCloud(x=dx, y=dy, hue=dhue, data=data_in, palette=pal, bw=sigma,
                       width_viol=.5, ax=ax, orient=ort, alpha=.65, dodge=True)
