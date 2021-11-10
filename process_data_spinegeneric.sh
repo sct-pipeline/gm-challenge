@@ -2,6 +2,18 @@
 #
 # This file is a copy of process_data.sh, but adapted to the spine-generic data.
 #
+# Usage:
+#  process_data_spinegeneric.sh <SUBJECT> <PATH_TO_SCRIPT>
+#
+# Where <PATH_TO_SCRIPT> is the path to the folder that contains the script compute_contrast.py
+#
+# So, the command with sct_run_batch would look like this:
+#
+#  sct_run_batch -path-data /Users/julien/code/spine-generic/data-multi-subject \
+#                -path-output gmchallenge_spinegeneric_20211110_162254 \
+#                -script /Users/julien/code/gm-challenge/process_data_spinegeneric.sh \
+#                -script-args "/Users/julien/code/gm-challenge"
+#
 # Author: Julien Cohen-Adad
 
 # The following global variables are retrieved from the caller sct_run_batch
@@ -22,6 +34,7 @@ trap "echo Caught Keyboard Interrupt within script. Exiting now.; exit" INT
 
 # Retrieve input params
 SUBJECT=$1
+PATH_TO_SCRIPT=$2
 
 # get starting time:
 start=`date +%s`
@@ -112,7 +125,7 @@ sct_compute_snr -i ${file_1}${ext} -method single -m ${file_1}_wmseg_erode.nii.g
 sct_extract_metric -i ${file_1}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv
 sct_extract_metric -i ${file_1}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv
 # Compute contrast slicewise and average across slices. Output in file: contrast.txt
-python compute_contrast.py > contrast.txt
+python ${PATH_TO_SCRIPT}/compute_contrast.py > contrast.txt
 # Aggregate results in single CSV file
 file_results="${PATH_RESULTS}/results.csv"
 if [[ ! -e $file_results ]]; then
