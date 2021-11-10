@@ -112,7 +112,7 @@ sct_compute_snr -i ${file_1}${ext} -method single -m ${file_1}_wmseg_erode.nii.g
 sct_extract_metric -i ${file_1}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv
 sct_extract_metric -i ${file_1}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv
 # Compute contrast slicewise and average across slices. Output in file: contrast.txt
-python -c "import pandas; pd_gm = pandas.read_csv('signal_gm.csv'); pd_wm = pandas.read_csv('signal_wm.csv'); pd = abs(pd_gm['BIN()'] - pd_wm['BIN()']) / pandas.DataFrame([pd_gm['BIN()'], pd_wm['BIN()']]).min(); print(f'{pd.mean()}')" > contrast.txt
+python compute_contrast.py > contrast.txt
 # Aggregate results in single CSV file
 file_results="${PATH_RESULTS}/results.csv"
 if [[ ! -e $file_results ]]; then
