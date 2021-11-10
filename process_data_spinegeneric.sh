@@ -99,6 +99,9 @@ rsync -avzh $PATH_DATA/$SUBJECT .
 cd ${SUBJECT}/anat
 file_1="${SUBJECT}_T2star"
 ext=".nii.gz"
+# Compute root-mean square across 4th dimension (if it exists), corresponding to all echoes in Philips scans.
+sct_maths -i ${file_1}${ext} -rms t -o ${file_1}_rms${ext}
+file_1="${file_1}_rms"
 # Segment spinal cord
 segment_if_does_not_exist $file_1 "t2s"
 file_1_seg=$FILESEG
