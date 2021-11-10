@@ -16,4 +16,4 @@ pd_wm = pandas.to_numeric(pd_wm['BIN()'], errors='coerce', downcast='float')
 
 # Compute contrast
 pd = abs(pd_gm[ind] - pd_wm[ind]) / pandas.DataFrame([pd_gm[ind], pd_wm[ind]]).min()
-print(f'{pd.mean()}')
+print(f'{pd.mean()*100}')
