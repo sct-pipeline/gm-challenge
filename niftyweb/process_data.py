@@ -2,6 +2,9 @@
 #
 # Compute metrics to assess the quality of spinal cord images.
 #
+# This script is "old" and was replaced by process_data.sh. However, the portion specific to niftiweb was kept
+# uncommented and requires some digging before being used.
+#
 # USAGE:
 # The script should be launched using SCT's python:
 #   PATH_GMCHALLENGE="PATH TO THIS REPOSITORY"
@@ -64,101 +67,101 @@ def get_parameters():
     args = parser.parse_args()
     return args
 
-
-def compute_snr_diff(file_data1, file_data2, file_mask):
-    """
-    Compute SNR based on two input data and a mask
-    :param file_data1: image 1
-    :param file_data2: image 2
-    :param file_mask: mask where to compute SNR
-    :return: float: SNR_diff rounded at 2 decimals
-    """
-    print("Compute SNR_diff...")
-    sct.run("sct_image -i " + file_data1 + "," + file_data2 + " -concat t -o data_concat.nii.gz")
-    status, output = sct.run("sct_compute_snr -i data_concat.nii.gz -vol 0,1 -m " + file_mask)
-    # parse SNR info
-    # TODO: run sct_compute_snr as Python module
-    try:
-        outstring = output[output.index("SNR_diff =") + 11:]
-        snr_diff = np.float(outstring[: outstring.index("\n")])
-    except Exception as e:
-        print(e)
-    return round(snr_diff, 2)  # round at 2 decimals
-
-
-def compute_snr_single(file_data, file_mask):
-    """
-    Compute SNR based on a single image and a mask
-    :param file_data: image
-    :param file_mask: mask for ROI_body
-    :return: float: SNR_single rounded at 2 decimals
-    """
-    print("Compute SNR_single...")
-    # Convert image to array
-    data = Image(file_data).data
-    # Convert mask to array
-    wm_mask = Image(file_mask).data
-    # Use mask to select data in ROI_body
-    roi_data = np.where(wm_mask == 1, data, 0)
-    # Compute SNR slice-wise
-    # snr_slices = np.zeros((roi_data.shape[2]))
-    snr_slices = []
-    for i in range(roi_data.shape[2]):
-        ind_nonzero = np.where(roi_data[:, :, i] > 0)
-        # check if there is non-null voxel on this slice
-        if len(ind_nonzero[0]):
-            mean_slice = np.mean(roi_data[:, :, i][ind_nonzero])
-            std_slice = np.std(roi_data[:, :, i][ind_nonzero])
-            snr_slice = mean_slice / std_slice
-            # snr_slices[i] = snr_slice
-            snr_slices.append(snr_slice)
-    snr_single = np.mean(snr_slices)
-    return round(snr_single, 2)
-
-
-def compute_contrast(file_data, file_mask1, file_mask2):
-    """
-    Compute contrast in image between two regions
-    :param file_data: image
-    :param file_mask1: mask for region 1
-    :param file_mask2: mask for region 2
-    :return: float: contrast in percent (rounded at 2 decimals)
-    """
-    print("Compute contrast...")
-    # Get mean value within mask
-    sct.run("sct_extract_metric -i " + file_data + " -f " + file_mask1 + " -method bin -o mean_mask1.pickle")
-    sct.run("sct_extract_metric -i " + file_data + " -f " + file_mask2 + " -method bin -o mean_mask2.pickle")
-    # Retrieve values from saved pickle
-    mean_mask1 = pickle.load(io.open("mean_mask1.pickle"))["Metric value"][0]
-    mean_mask2 = pickle.load(io.open("mean_mask2.pickle"))["Metric value"][0]
-    # Compute contrast in percentage
-    contrast = abs(mean_mask1 - mean_mask2) / min(mean_mask1, mean_mask2) * 100
-    return round(contrast, 2)  # round at 2 decimals
-
-
-def compute_sharpness(file_data, file_mask_gm):
-    """
-    Compute sharpness at GM/WM interface. The mask of GM is dilated, and then subtracted from the GM mask, in order to
-    produce a mask at the GM/WM interfact. This mask is then used to extract the Laplacian value of the image. The
-    sharper the transition, the higher the Laplacian. Note that the Laplacian will also be affected by the underlying
-    WM/GM contrast, hence the WM and GM values need to be normalized before computing the Laplacian.
-    :param file_data:
-    :param file_mask_gm:
-    :return: float: sharpness
-    """
-    print("Compute sharpness...")
-    # Dilate GM mask
-    sct.run("sct_maths -i data1_gmseg.nii.gz -dilate 1 -o data1_gmseg_dil.nii.gz")
-    # Subtract to get mask at WM/GM interface
-    sct.run("sct_maths -i data1_gmseg_dil.nii.gz -sub data1_gmseg.nii.gz -o mask_interface.nii.gz")
-    # Compute Laplacian on image
-    sct.run("sct_maths -i data1.nii.gz -laplacian 0.5,0.5,0 -o data1_lapl.nii.gz")
-    # Normalize WM/GM before computing Laplacian
-    # TODO
-    # Extract Laplacian at WM/GM interface
-    sct.run("sct_extract_metric -i data1_lapl.nii.gz -f mask_interface.nii.gz -o laplacian.pickle")
-    # return
-    return pickle.load(io.open("laplacian.pickle"))["Metric value"][0]
+#
+# def compute_snr_diff(file_data1, file_data2, file_mask):
+#     """
+#     Compute SNR based on two input data and a mask
+#     :param file_data1: image 1
+#     :param file_data2: image 2
+#     :param file_mask: mask where to compute SNR
+#     :return: float: SNR_diff rounded at 2 decimals
+#     """
+#     print("Compute SNR_diff...")
+#     sct.run("sct_image -i " + file_data1 + "," + file_data2 + " -concat t -o data_concat.nii.gz")
+#     status, output = sct.run("sct_compute_snr -i data_concat.nii.gz -vol 0,1 -m " + file_mask)
+#     # parse SNR info
+#     # TODO: run sct_compute_snr as Python module
+#     try:
+#         outstring = output[output.index("SNR_diff =") + 11:]
+#         snr_diff = np.float(outstring[: outstring.index("\n")])
+#     except Exception as e:
+#         print(e)
+#     return round(snr_diff, 2)  # round at 2 decimals
+#
+#
+# def compute_snr_single(file_data, file_mask):
+#     """
+#     Compute SNR based on a single image and a mask
+#     :param file_data: image
+#     :param file_mask: mask for ROI_body
+#     :return: float: SNR_single rounded at 2 decimals
+#     """
+#     print("Compute SNR_single...")
+#     # Convert image to array
+#     data = Image(file_data).data
+#     # Convert mask to array
+#     wm_mask = Image(file_mask).data
+#     # Use mask to select data in ROI_body
+#     roi_data = np.where(wm_mask == 1, data, 0)
+#     # Compute SNR slice-wise
+#     # snr_slices = np.zeros((roi_data.shape[2]))
+#     snr_slices = []
+#     for i in range(roi_data.shape[2]):
+#         ind_nonzero = np.where(roi_data[:, :, i] > 0)
+#         # check if there is non-null voxel on this slice
+#         if len(ind_nonzero[0]):
+#             mean_slice = np.mean(roi_data[:, :, i][ind_nonzero])
+#             std_slice = np.std(roi_data[:, :, i][ind_nonzero])
+#             snr_slice = mean_slice / std_slice
+#             # snr_slices[i] = snr_slice
+#             snr_slices.append(snr_slice)
+#     snr_single = np.mean(snr_slices)
+#     return round(snr_single, 2)
+#
+#
+# def compute_contrast(file_data, file_mask1, file_mask2):
+#     """
+#     Compute contrast in image between two regions
+#     :param file_data: image
+#     :param file_mask1: mask for region 1
+#     :param file_mask2: mask for region 2
+#     :return: float: contrast in percent (rounded at 2 decimals)
+#     """
+#     print("Compute contrast...")
+#     # Get mean value within mask
+#     sct.run("sct_extract_metric -i " + file_data + " -f " + file_mask1 + " -method bin -o mean_mask1.pickle")
+#     sct.run("sct_extract_metric -i " + file_data + " -f " + file_mask2 + " -method bin -o mean_mask2.pickle")
+#     # Retrieve values from saved pickle
+#     mean_mask1 = pickle.load(io.open("mean_mask1.pickle"))["Metric value"][0]
+#     mean_mask2 = pickle.load(io.open("mean_mask2.pickle"))["Metric value"][0]
+#     # Compute contrast in percentage
+#     contrast = abs(mean_mask1 - mean_mask2) / min(mean_mask1, mean_mask2) * 100
+#     return round(contrast, 2)  # round at 2 decimals
+#
+#
+# def compute_sharpness(file_data, file_mask_gm):
+#     """
+#     Compute sharpness at GM/WM interface. The mask of GM is dilated, and then subtracted from the GM mask, in order to
+#     produce a mask at the GM/WM interfact. This mask is then used to extract the Laplacian value of the image. The
+#     sharper the transition, the higher the Laplacian. Note that the Laplacian will also be affected by the underlying
+#     WM/GM contrast, hence the WM and GM values need to be normalized before computing the Laplacian.
+#     :param file_data:
+#     :param file_mask_gm:
+#     :return: float: sharpness
+#     """
+#     print("Compute sharpness...")
+#     # Dilate GM mask
+#     sct.run("sct_maths -i data1_gmseg.nii.gz -dilate 1 -o data1_gmseg_dil.nii.gz")
+#     # Subtract to get mask at WM/GM interface
+#     sct.run("sct_maths -i data1_gmseg_dil.nii.gz -sub data1_gmseg.nii.gz -o mask_interface.nii.gz")
+#     # Compute Laplacian on image
+#     sct.run("sct_maths -i data1.nii.gz -laplacian 0.5,0.5,0 -o data1_lapl.nii.gz")
+#     # Normalize WM/GM before computing Laplacian
+#     # TODO
+#     # Extract Laplacian at WM/GM interface
+#     sct.run("sct_extract_metric -i data1_lapl.nii.gz -f mask_interface.nii.gz -o laplacian.pickle")
+#     # return
+#     return pickle.load(io.open("laplacian.pickle"))["Metric value"][0]
 
 
 def main(file_input, file_seg, file_gmseg, num=None, register=True, output_dir=None, create_txt_output=False, verbose=1):

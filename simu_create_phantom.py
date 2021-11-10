@@ -4,7 +4,7 @@
 #
 # USAGE:
 # The script should be launched using SCT's python:
-#   ${SCT_DIR}/python/bin/python simu_create_phantom.py phantom
+#   python simu_create_phantom.py [-o output_folder]
 #
 # Ranges of GM and noise STD can be changed inside the code. They are hard-coded so that a specific version of the code
 # can be tagged, and will always produce the same results (whereas if we allow users to enter params, the output will
@@ -18,27 +18,25 @@
 # TODO: generated cord mask is too large!
 # TODO: remove input params and set them as list inside code
 # TODO: download PAM50 by default, and have option to set path to atlas
-# TDOD: param for selecting z
+# TODO: param for selecting z
 
 import os, sys
 import argparse
 import numpy as np
 import nibabel as nib
 import scipy.ndimage as ndimage
-# append path to useful SCT scripts
-path_sct = os.getenv('SCT_DIR')
-sys.path.append(os.path.join(path_sct, 'scripts'))
-import sct_utils as sct
-from spinalcordtoolbox.image import Image
-from spinalcordtoolbox.metadata import read_label_file
 import pandas as pd
 
-def get_parameters():
-    parser = argparse.ArgumentParser(description='Generate a synthetic spinal cord phantom with various values of gray '
-                                                 'matter and Gaussian noise amplitude.')
-    parser.add_argument('folder_out', help='Name of the output folder')
-    args = parser.parse_args()
-    return args
+
+def get_parser():
+    parser = argparse.ArgumentParser(
+        description="Generate a synthetic spinal cord phantom with various values of gray matter and Gaussian "
+                    "noise amplitude.")
+    parser.add_argument(
+        '-o',
+        help='Name of the output folder',
+        default='./')
+    return parser
 
 
 def get_tracts(folder_atlas, zslice=500, num_slice=10):
@@ -81,8 +79,7 @@ def save_nifti(data, fname):
     nib.save(im_phantom, fname)
 
 
-def main():
-    sct.init_sct()  # start logger
+def main(argv=None):
     # default params
     wm_value = 100
     gm_values = [120, 140, 160, 180]
@@ -92,40 +89,45 @@ def main():
     num_slice = 10  # number of slices in z direction
     range_tract = 0  # we do not want heterogeneity within WM and within GM. All tracts should have the same value.
 
+    # user params
+    parser = get_parser()
+    args = parser.parse_args(argv)
+    folder_out = args.o
+
     # create output folder
     if not os.path.exists(folder_out):
         os.makedirs(folder_out)
 
-    # Extract the tracts from the atlas folder
-    folder_atlas = os.path.join(path_sct, "data/PAM50/atlas/")
-    data_tracts = get_tracts(folder_atlas, zslice=zslice, num_slice=num_slice)
-    nx, ny, nz, nb_tracts = data_tracts.shape
-
-    # TODO: get WM and GM indexes from info_label.txt
-    ind_wm = range(0, 30)
-    ind_gm = range(30, 36)
+    # Open white and gray matter masks from SCT
+    path_sct = os.getenv('SCT_DIR')
+    folder_template = os.path.join(path_sct, 'data', 'PAM50', 'template')
+    nii_atlas_wm = nib.load(os.path.join(folder_template, 'PAM50_wm.nii.gz'))
+    nii_atlas_gm = nib.load(os.path.join(folder_template, 'PAM50_gm.nii.gz'))
 
     print("\nGenerate phantom...")
     # loop across gm_value and std_values and generate phantom
     for gm_value in gm_values:
         for std_noise in std_noises:
             for smooth in smoothing:
-                data_tracts_modif = data_tracts.copy()
+                data_wm = nii_atlas_wm.get_fdata()
+                data_gm = nii_atlas_gm.get_fdata()
                 # Add values to each tract
-                data_tracts_modif[:, :, :, ind_wm] *= wm_value
-                data_tracts_modif[:, :, :, ind_gm] *= gm_value
+                data_wm *= wm_value
+                data_gm *= gm_value
                 # sum across labels
-                data_phantom = np.sum(data_tracts_modif, axis=3)
+                data_phantom = data_wm + data_gm
                 # Add blurring
                 if smooth:
                     data_phantom = ndimage.gaussian_filter(data_phantom, sigma=(smooth), order=0)
                 # add noise
                 if std_noise:
-                    data_phantom += np.random.normal(loc=0, scale=std_noise, size=(nx, ny, nz))
+                    data_phantom += np.random.normal(loc=0, scale=std_noise, size=data_phantom.shape)
                 # build file name
-                file_out = "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_Noise" + str(std_noise) + "_Smooth" + str(smooth)
-                # save as nifti file
-                save_nifti(data_phantom, os.path.join(folder_out, file_out + ".nii.gz"))
+                file_out = "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_Noise" + str(std_noise) + \
+                           "_Smooth" + str(smooth)
+                # save as NIfTI file
+                nii_phantom = nib.Nifti1Image(data_phantom, nii_atlas_wm.affine)
+                nib.save(nii_phantom, os.path.join(folder_out, file_out + ".nii.gz"))
                 # save metadata
                 metadata = pd.Series({'WM': wm_value,
                                       'GM': gm_value,
@@ -146,10 +148,8 @@ def main():
     data_gm[np.where(data_gm < 0.5)] = 0
     save_nifti(data_gm, os.path.join(folder_out, "mask_gm.nii.gz"))
     # display
-    sct.log.info("Done!")
+    print("Done!")
 
 
 if __name__ == "__main__":
-    args = get_parameters()
-    folder_out = args.folder_out
-    main()
+    main(sys.argv[1:])
