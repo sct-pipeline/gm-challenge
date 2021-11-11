@@ -49,7 +49,8 @@ def get_tracts(folder_atlas, zslice=500, num_slice=10):
     # parameters
     file_info_label = 'info_label.txt'
     # read info labels
-    indiv_labels_ids, indiv_labels_names, indiv_labels_files, combined_labels_ids, combined_labels_names, combined_labels_id_groups, ml_clusters = read_label_file(
+    indiv_labels_ids, indiv_labels_names, indiv_labels_files, combined_labels_ids, combined_labels_names, \
+    combined_labels_id_groups, ml_clusters = read_label_file(
         folder_atlas, file_info_label)
 
     # fname_tracts = glob.glob(folder_atlas + '/*' + '.nii.gz')
@@ -63,7 +64,9 @@ def get_tracts(folder_atlas, zslice=500, num_slice=10):
     for i in range(nb_tracts):
         sct.no_new_line_log('Load each atlas label: {}/{}'.format(i + 1, nb_tracts))
         # TODO: display counter
-        data_tracts[:, :, :, i] = Image(os.path.join(folder_atlas, indiv_labels_files[i])).data[:, :, zslice-(num_slice/2):zslice+(num_slice/2)]
+        # TODO: remove usage of Image
+        data_tracts[:, :, :, i] = \
+            Image(os.path.join(folder_atlas, indiv_labels_files[i])).data[:, :, zslice-(num_slice/2):zslice+(num_slice/2)]
     return data_tracts
 
 
