@@ -7,7 +7,7 @@ please see: https://goo.gl/2owcL7.
 
 ## Dependencies
 
-- Python 3.9 with [pandas](https://pandas.pydata.org/) library
+- Python 3.8+
 - [SCT v5.3.0](https://github.com/spinalcordtoolbox/spinalcordtoolbox/releases/tag/5.3.0).
 
 ## Getting started
@@ -20,6 +20,11 @@ please see: https://goo.gl/2owcL7.
   ~~~
   git clone https://github.com/sct-pipeline/gm-challenge.git
   cd gm-challenge
+  ~~~
+- Create virtual environment and install dependencies:
+  ~~~
+  virtualenv venv
+  pip install -r requirements.txt
   ~~~
 - Run (you need to have SCT installed):
   ```
