@@ -60,7 +60,11 @@ includes the following steps:
 A similar analysis can also be run on the spine-generic dataset. However, given that only one scan was available, the
 processing script is slightly different and was called: `process_data_spinegeneric.sh`.
 
-After running this script, figures can be generated using: XXX [TODO]
+After running this script, figures can be generated as follows:
+
+~~~
+python generate_figure_spinegeneric.py -ip <PATH_DATA>/participants.tsv -ir cd <PATH_OUT>/results/results.csv -o fig
+~~~
 
 ## Simulations
 
