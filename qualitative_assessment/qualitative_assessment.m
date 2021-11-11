@@ -15,8 +15,19 @@ function qualitative_assessment(xlsx_file)
 
 [~, ~, raw] = xlsread(xlsx_file);
 
-subid = raw(2:end,16);
+center = raw(2:end,16);
+
+subid = raw(2:end,1);
 subid_unique = unique(subid);
+subid_unique = subid_unique([4:end 1:3],1);
+
+center_unique = cell(1,1);
+for ind = 1:size(subid_unique,1)
+    tmp2 = center(strcmp(subid,subid_unique{ind,1}),1);
+    center_unique{ind,1} = tmp2{1,1};
+end
+clear tmp tmp2
+
 
 field = raw(2:end,9);
 fieldid=ones(size(field));
@@ -40,6 +51,9 @@ score7t = [];
 subid1t = cell(1,1);
 subid3t = cell(1,1);
 subid7t = cell(1,1);
+center1t = cell(1,1);
+center3t = cell(1,1);
+center7t = cell(1,1);
 
 for ind = 1:size(subid_unique,1)
     pos = strcmp(subid,subid_unique(ind));
@@ -49,6 +63,7 @@ for ind = 1:size(subid_unique,1)
         subid1t{ind1t,1} = subid_unique{ind};
         scorerid1t(:,ind1t) = scorerid(pos);
         field1t(ind1t,1) = 1.5;
+        center1t{ind1t,1} = center_unique{ind};
         
         ind1t = ind1t+1;
     elseif fld == 2
@@ -56,6 +71,7 @@ for ind = 1:size(subid_unique,1)
         subid3t{ind3t,1} = subid_unique{ind};
         scorerid3t(:,ind3t) = scorerid(pos);
         field3t(ind3t,1) = 3;
+        center3t{ind3t,1} = center_unique{ind};
         
         ind3t = ind3t+1;
     elseif fld == 3
@@ -63,6 +79,7 @@ for ind = 1:size(subid_unique,1)
         subid7t{ind7t,1} = subid_unique{ind};
         scorerid7t(:,ind7t) = scorerid(pos);
         field7t(ind7t,1) = 7;
+        center7t{ind7t,1} = center_unique{ind};
         
         ind7t = ind7t + 1;
     end 
@@ -72,12 +89,14 @@ score = cat(3,score1t,score3t);
 score = cat(3,score,score7t);
 
 subid = [subid1t; subid3t; subid7t];
+center = [center1t; center3t; center7t];
 
 scorer = [scorerid1t scorerid3t scorerid7t];
 
 field = [field1t; field3t; field7t]';
 clear score1t score3t score7t subid1t subid3t subid7t scorerid1t scorerid3t scorerid7t field1t field3t field7t ind1t ind3t ind7t ind fld
 clear scorerid fieldid subid_unique
+clear center1t center3t center7t
 
 grp = 1:size(score,3);
 grp = repmat(grp,size(score,1),1);
@@ -85,15 +104,13 @@ grp = repmat(grp,size(score,1),1);
 pos3T = find(field==3,1);
 pos7T = find(field==7,1);
 
+spearman = zeros(size(score,2),1);
+p_spearman = zeros(size(score,2),1);
 h.fig = figure(1);
 set(h.fig,'Position',[50 50 2200 1200])
 for ind = 1:size(score,2)
     data = squeeze(score(:,ind,:));
     [spearman(ind), p_spearman(ind)]=corr(data(scorer==1),data(scorer==2),'Type','Spearman');
-    
-    [rmp, pmp] = corrcoef(data(scorer==1),data(scorer==2));
-    pearson(ind)=rmp(1,2);
-    p_pearson(ind)=pmp(1,2);
     
     if ind < size(score,2)
         subplot(3,2,ind+2)
@@ -119,7 +136,11 @@ for ind = 1:size(score,2)
     
     axis([0.5 13.5 0.7 5.3])
     grid on
-    set(gca,'FontSize',14,'LineWidth',2,'Xtick',1:size(score,3),'XTickLabel',subid')
+    if ind == size(score,2)
+        set(gca,'FontSize',14,'LineWidth',2,'Xtick',1:size(score,3),'XTickLabel',center','Color',[255 255 224]/255)
+    else
+        set(gca,'FontSize',14,'LineWidth',2,'Xtick',1:size(score,3),'XTickLabel',center')
+    end
     xtickangle(45)
 end
 
