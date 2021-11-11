@@ -2,3 +2,5 @@
 *.pyc
 results*
 .DS_Store
+venv/
+
