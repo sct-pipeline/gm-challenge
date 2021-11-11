@@ -58,8 +58,9 @@ def adjust_box_widths(g, fac):
 
                 # setting new width of median line
                 for l in ax.lines:
-                    if np.all(l.get_xdata() == [xmin, xmax]):
-                        l.set_xdata([xmin_new, xmax_new])
+                    if not l.get_xdata().size == 0:
+                        if np.all(np.equal(l.get_xdata(), [xmin, xmax])):
+                            l.set_xdata([xmin_new, xmax_new])
 
 
 def generate_figure(data_in, column, path_output):
