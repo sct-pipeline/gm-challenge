@@ -114,6 +114,7 @@ def main(path_input_results, path_input_participants, path_output):
 
     generate_figure(content_results_csv, 'SNR_single', path_output)
     generate_figure(content_results_csv, 'Contrast', path_output)
+    generate_figure(content_results_csv, 'CNR', path_output)
 
 
 if __name__ == "__main__":
