@@ -2,6 +2,18 @@
 #
 # This file is a copy of process_data.sh, but adapted to the spine-generic data.
 #
+# Usage:
+#  process_data_spinegeneric.sh <SUBJECT> <PATH_TO_SCRIPT>
+#
+# Where <PATH_TO_SCRIPT> is the path to the folder that contains the script compute_contrast.py
+#
+# So, the command with sct_run_batch would look like this:
+#
+#  sct_run_batch -path-data /Users/julien/code/spine-generic/data-multi-subject \
+#                -path-output gmchallenge_spinegeneric_20211110_162254 \
+#                -script /Users/julien/code/gm-challenge/process_data_spinegeneric.sh \
+#                -script-args "/Users/julien/code/gm-challenge"
+#
 # Author: Julien Cohen-Adad
 
 # The following global variables are retrieved from the caller sct_run_batch
@@ -22,6 +34,7 @@ trap "echo Caught Keyboard Interrupt within script. Exiting now.; exit" INT
 
 # Retrieve input params
 SUBJECT=$1
+PATH_TO_SCRIPT=$2
 
 # get starting time:
 start=`date +%s`
@@ -86,6 +99,9 @@ rsync -avzh $PATH_DATA/$SUBJECT .
 cd ${SUBJECT}/anat
 file_1="${SUBJECT}_T2star"
 ext=".nii.gz"
+# Compute root-mean square across 4th dimension (if it exists), corresponding to all echoes in Philips scans.
+sct_maths -i ${file_1}${ext} -rms t -o ${file_1}_rms${ext}
+file_1="${file_1}_rms"
 # Segment spinal cord
 segment_if_does_not_exist $file_1 "t2s"
 file_1_seg=$FILESEG
@@ -112,14 +128,17 @@ sct_compute_snr -i ${file_1}${ext} -method single -m ${file_1}_wmseg_erode.nii.g
 sct_extract_metric -i ${file_1}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv
 sct_extract_metric -i ${file_1}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv
 # Compute contrast slicewise and average across slices. Output in file: contrast.txt
-python -c "import pandas; pd_gm = pandas.read_csv('signal_gm.csv'); pd_wm = pandas.read_csv('signal_wm.csv'); pd = abs(pd_gm['BIN()'] - pd_wm['BIN()']) / pandas.DataFrame([pd_gm['BIN()'], pd_wm['BIN()']]).min(); print(f'{pd.mean()}')" > contrast.txt
+python ${PATH_TO_SCRIPT}/compute_contrast.py > contrast.txt
 # Aggregate results in single CSV file
 file_results="${PATH_RESULTS}/results.csv"
 if [[ ! -e $file_results ]]; then
   # add a header in case the file does not exist yet
-  echo "Subject,SNR_single,Contrast" >> $file_results
+  echo "Subject,SNR_single,Contrast,CNR" >> $file_results
 fi
-echo "${SUBJECT},`cat snr_single.txt`,`cat contrast.txt`" >> ${PATH_RESULTS}/results.csv
+snr=`cat snr_single.txt`
+contrast=`cat contrast.txt`
+cnr=`python ${PATH_TO_SCRIPT}/compute_cnr.py ${snr} ${contrast}`
+echo "${SUBJECT},${snr},${contrast},${cnr}" >> ${PATH_RESULTS}/results.csv
 
 # Verify presence of output files and write log file if error
 # ------------------------------------------------------------------------------
