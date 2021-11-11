@@ -57,11 +57,14 @@ includes the following steps:
 
 ## Analysis on the spine-generic dataset
 
-A similar analysis can also be run on the spine-generic dataset. However, given that only one scan was available, the
-processing script is slightly different and was called: `process_data_spinegeneric.sh`.
+A similar analysis can also be run on the spine-generic dataset. However, given that only one scan was available, 
+SNR_diff could not be calculated and as a result the processing script is slightly different. Moreover, the location
+of the repository needs to be input into the shell script. The command looks like this:
+~~~
+sct_run_batch -script <PATH_REPOSITORY>/process_data_spinegeneric.sh -path-data <PATH_DATA> -path-out <PATH_OUTPUT> -script-args <PATH_REPOSITORY>
+~~~
 
 After running this script, figures can be generated as follows:
-
 ~~~
 python generate_figure_spinegeneric.py -ip <PATH_DATA>/participants.tsv -ir cd <PATH_OUT>/results/results.csv -o fig
 ~~~
