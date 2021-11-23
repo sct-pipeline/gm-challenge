@@ -26,6 +26,7 @@ import numpy as np
 import nibabel as nib
 import scipy.ndimage as ndimage
 import pandas as pd
+import tqdm
 
 
 def get_parser():
@@ -107,6 +108,7 @@ def main(argv=None):
     nii_atlas_gm = nib.load(os.path.join(folder_template, 'PAM50_gm.nii.gz'))
 
     print("\nGenerate phantom...")
+    pbar = tqdm.tqdm(total=len(gm_values)*len(std_noises)*len(smoothing))
     # loop across gm_value and std_values and generate phantom
     for gm_value in gm_values:
         for std_noise in std_noises:
@@ -139,6 +141,8 @@ def main(argv=None):
                                       'Smooth': smooth,
                                       'File': file_out + ".nii.gz"})
                 metadata.to_csv(os.path.join(folder_out, file_out + ".csv"))
+                pbar.update(1)
+    pbar.close()
 
 
     # generate mask of spinal cord
