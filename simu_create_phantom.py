@@ -40,14 +40,17 @@ def get_parser():
     return parser
 
 
+def crop_data(data):
+    """Crop around the spinal cord"""
+    return data[53:89, 58:82, 845:855]
+
+
 def main(argv=None):
     # default params
     wm_value = 100
     gm_values = [120, 140, 160, 180]
     std_noises = [1, 5, 10]
     smoothing = [0, 0.5, 1]  # standard deviation values for Gaussian kernel
-    zslice = 850  # 850: corresponds to mid-C4 level (enlargement)
-    num_slice = 10  # number of slices in z direction
 
     # user params
     parser = get_parser()
@@ -83,13 +86,11 @@ def main(argv=None):
                 # add noise
                 if std_noise:
                     data_phantom += np.random.normal(loc=0, scale=std_noise, size=data_phantom.shape)
-                # Only select few slices
-                data_phantom_small = data_phantom[53:89, 58:82, zslice - int(num_slice / 2):int(zslice + num_slice / 2)]
                 # build file name
                 file_out = "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_Noise" + str(std_noise) + \
                            "_Smooth" + str(smooth)
                 # save as NIfTI file
-                nii_phantom = nib.Nifti1Image(data_phantom_small, nii_atlas_wm.affine)
+                nii_phantom = nib.Nifti1Image(crop_data(data_phantom), nii_atlas_wm.affine)
                 nib.save(nii_phantom, os.path.join(folder_out, file_out + ".nii.gz"))
                 # save metadata
                 metadata = pd.Series({'WM': wm_value,
@@ -105,18 +106,16 @@ def main(argv=None):
     data_gm = nii_atlas_gm.get_fdata()
     data_wm = nii_atlas_wm.get_fdata()
     data_cord = data_gm + data_wm
-    data_cord = data_cord[53: 89, 58: 82, zslice - int(num_slice / 2): int(zslice + num_slice / 2)]
     data_cord[np.where(data_cord >= 0.5)] = 1
     data_cord[np.where(data_cord < 0.5)] = 0
     # save as NIfTI file
-    nii_phantom = nib.Nifti1Image(data_cord, nii_atlas_wm.affine)
+    nii_phantom = nib.Nifti1Image(crop_data(data_cord), nii_atlas_wm.affine)
     nib.save(nii_phantom, os.path.join(folder_out, "mask_cord.nii.gz"))
 
     # generate mask of gray matter
     data_gm[np.where(data_gm >= 0.5)] = 1
     data_gm[np.where(data_gm < 0.5)] = 0
-    data_gm = data_gm[53: 89, 58: 82, zslice - int(num_slice / 2): int(zslice + num_slice / 2)]
-    nii_phantom = nib.Nifti1Image(data_gm, nii_atlas_wm.affine)
+    nii_phantom = nib.Nifti1Image(crop_data(data_gm), nii_atlas_wm.affine)
     nib.save(nii_phantom, os.path.join(folder_out, "mask_gm.nii.gz"))
     # display
     print("Done!")
