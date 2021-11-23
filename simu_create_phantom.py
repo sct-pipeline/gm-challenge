@@ -127,7 +127,7 @@ def main(argv=None):
                 if std_noise:
                     data_phantom += np.random.normal(loc=0, scale=std_noise, size=data_phantom.shape)
                 # Only select few slices
-                data_phantom_small = data_phantom[:, :, zslice - int(num_slice / 2):int(zslice + num_slice / 2)]
+                data_phantom_small = data_phantom[53:89, 58:82, zslice - int(num_slice / 2):int(zslice + num_slice / 2)]
                 # build file name
                 file_out = "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_Noise" + str(std_noise) + \
                            "_Smooth" + str(smooth)
@@ -144,17 +144,23 @@ def main(argv=None):
                 pbar.update(1)
     pbar.close()
 
-
     # generate mask of spinal cord
-    data_cord = np.sum(data_tracts[:, :, :, ind_wm+ind_gm], axis=3)
+    data_gm = nii_atlas_gm.get_fdata()
+    data_wm = nii_atlas_wm.get_fdata()
+    data_cord = data_gm + data_wm
+    data_cord = data_cord[53: 89, 58: 82, zslice - int(num_slice / 2): int(zslice + num_slice / 2)]
     data_cord[np.where(data_cord >= 0.5)] = 1
     data_cord[np.where(data_cord < 0.5)] = 0
-    save_nifti(data_cord, os.path.join(folder_out, "mask_cord.nii.gz"))
+    # save as NIfTI file
+    nii_phantom = nib.Nifti1Image(data_cord, nii_atlas_wm.affine)
+    nib.save(nii_phantom, os.path.join(folder_out, "mask_cord.nii.gz"))
+
     # generate mask of gray matter
-    data_gm = np.sum(data_tracts[:, :, :, ind_gm], axis=3)
     data_gm[np.where(data_gm >= 0.5)] = 1
     data_gm[np.where(data_gm < 0.5)] = 0
-    save_nifti(data_gm, os.path.join(folder_out, "mask_gm.nii.gz"))
+    data_gm = data_gm[53: 89, 58: 82, zslice - int(num_slice / 2): int(zslice + num_slice / 2)]
+    nii_phantom = nib.Nifti1Image(data_gm, nii_atlas_wm.affine)
+    nib.save(nii_phantom, os.path.join(folder_out, "mask_gm.nii.gz"))
     # display
     print("Done!")
 
