@@ -35,7 +35,7 @@ def get_parser():
     parser.add_argument(
         '-o',
         help='Name of the output folder',
-        default='./')
+        default='phantom')
     return parser
 
 
@@ -90,7 +90,6 @@ def main(argv=None):
     smoothing = [0, 0.5, 1]  # standard deviation values for Gaussian kernel
     zslice = 850  # 850: corresponds to mid-C4 level (enlargement)
     num_slice = 10  # number of slices in z direction
-    range_tract = 0  # we do not want heterogeneity within WM and within GM. All tracts should have the same value.
 
     # user params
     parser = get_parser()
@@ -125,11 +124,13 @@ def main(argv=None):
                 # add noise
                 if std_noise:
                     data_phantom += np.random.normal(loc=0, scale=std_noise, size=data_phantom.shape)
+                # Only select few slices
+                data_phantom_small = data_phantom[:, :, zslice - int(num_slice / 2):int(zslice + num_slice / 2)]
                 # build file name
                 file_out = "phantom_WM" + str(wm_value) + "_GM" + str(gm_value) + "_Noise" + str(std_noise) + \
                            "_Smooth" + str(smooth)
                 # save as NIfTI file
-                nii_phantom = nib.Nifti1Image(data_phantom, nii_atlas_wm.affine)
+                nii_phantom = nib.Nifti1Image(data_phantom_small, nii_atlas_wm.affine)
                 nib.save(nii_phantom, os.path.join(folder_out, file_out + ".nii.gz"))
                 # save metadata
                 metadata = pd.Series({'WM': wm_value,
