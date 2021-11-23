@@ -15,10 +15,6 @@
 #
 # Authors: Stephanie Alley, Julien Cohen-Adad
 
-# TODO: generated cord mask is too large!
-# TODO: remove input params and set them as list inside code
-# TODO: download PAM50 by default, and have option to set path to atlas
-# TODO: param for selecting z
 
 import os, sys
 import argparse
