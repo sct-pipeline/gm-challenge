@@ -3,4 +3,7 @@
 results*
 .DS_Store
 venv/
-phantom/
+
+# output
+simu_*
+
