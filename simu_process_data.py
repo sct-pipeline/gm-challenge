@@ -11,7 +11,7 @@
 #
 # Authors: Julien Cohen-Adad
 
-# TODO: remove verbose
+# TODO: remove verbose: https://stackoverflow.com/questions/500477/in-python-how-to-execute-system-command-with-no-output
 # TODO: add progress bar
 # TODO: fix wrong SNR_diff value
 
