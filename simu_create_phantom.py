@@ -117,9 +117,7 @@ def main(argv=None):
     nib.save(nii_phantom, os.path.join(folder_out, "mask_gm.nii.gz"))
 
     # generate mask of white matter
-    data_wm[np.where(data_wm >= 0.5)] = 1
-    data_wm[np.where(data_wm < 0.5)] = 0
-    nii_phantom = nib.Nifti1Image(crop_data(data_wm), nii_atlas_wm.affine)
+    nii_phantom = nib.Nifti1Image(crop_data(data_cord - data_gm), nii_atlas_wm.affine)
     nib.save(nii_phantom, os.path.join(folder_out, "mask_wm.nii.gz"))
 
     # display

@@ -55,8 +55,8 @@ def main():
         fig, ax = plt.subplots()
         ind = np.arange(N)  # the x locations for the groups
         width = 0.20  # the width of the bars
-        fontsize = 20
-        fontsize_axes = 16
+        fontsize = 16
+        fontsize_axes = 14
         p2 = ax.bar(ind - width, data[:, 2], width, color='b')
         p1 = ax.bar(ind, data[:, 1], width, color='y')
         p3 = ax.bar(ind + width, data[:, 0], width, color='r')
