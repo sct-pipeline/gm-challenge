@@ -15,6 +15,7 @@ import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 
 
 def get_parameters():
@@ -66,6 +67,7 @@ def main():
         ax.set_ylabel("Measured " + metric, fontsize=fontsize)
         # ax.set_ylim(0, 80)
         yticklabels = ax.get_yticks().astype(int)
+        ax.yaxis.set_major_locator(mticker.FixedLocator(yticklabels))
         ax.set_yticklabels(yticklabels, fontsize=fontsize_axes)
         plt.grid(axis='y')
         ax.autoscale_view()
