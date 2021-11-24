@@ -50,7 +50,7 @@ def get_parameters():
 
 def compute_metrics(file_1, file_2):
     # Compute SNR using both methods
-    call(f'sct_image -i ${file_1} ${file_2} -concat t -o data_concat.nii.gz')
+    call(f'sct_image -i {file_1} {file_2} -concat t -o data_concat.nii.gz'.split(' '))
     # call(f'sct_compute_snr -i data_concat.nii.gz -method diff -m ${file_1}_wmseg_erode.nii.gz -o snr_diff.txt'
     return 0
 
