@@ -11,7 +11,6 @@
 #
 # Authors: Julien Cohen-Adad
 
-# TODO: add progress bar
 # TODO: fix wrong SNR_diff value
 
 import os
@@ -19,6 +18,7 @@ import argparse
 import glob
 from subprocess import call
 import pandas
+import tqdm
 
 
 def get_parameters():
@@ -104,6 +104,7 @@ def main():
 
     # loop and process
     os.makedirs(path_output, exist_ok=True)
+    pbar = tqdm.tqdm(total=len(fname_csv_list))
     for fname_csv in fname_csv_list:
         # get file name
         metadata = pandas.read_csv(fname_csv, index_col=0).to_dict()['0']
@@ -111,9 +112,6 @@ def main():
         # get fname of each nifti file
         fname1 = os.path.join(folder1, file_data)
         fname2 = os.path.join(folder2, file_data)
-        # display
-        print("\nData #1: " + fname1)
-        print("Data #2: " + fname2)
         # process pair of data
         results = compute_metrics(fname1, fname2, file_wm, file_gm, path_output)
         # append to dataframe
@@ -125,6 +123,8 @@ def main():
                                           'SNR_diff': results['SNR_diff'],
                                           'Contrast': results['Contrast'],
                                           'CNR': results['CNR']},ignore_index=True)
+        pbar.update(1)
+    pbar.close()
     results_all.to_csv(file_output)
 
 
