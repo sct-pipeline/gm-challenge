@@ -11,7 +11,6 @@
 #
 # Authors: Julien Cohen-Adad
 
-# TODO: remove verbose: https://stackoverflow.com/questions/500477/in-python-how-to-execute-system-command-with-no-output
 # TODO: add progress bar
 # TODO: fix wrong SNR_diff value
 
@@ -51,20 +50,23 @@ def get_parameters():
     return args
 
 
+def run(cmd):
+    """Wrapper to run Unix commands"""
+    call(cmd.split(' '), stdout=open(os.devnull, "w"))
+
+
 def compute_metrics(file_1, file_2, file_wm, file_gm, path_out):
     # Compute SNR using both methods
-    call(f'sct_image -i {file_1} {file_2} -concat t -o {path_out}data_concat.nii.gz'.split(' '))
-    call(f'sct_compute_snr -i {path_out}data_concat.nii.gz -method diff -m {file_wm} -o {path_out}snr_diff.txt'.
-         split(' '))
-    snr_diff = float(open(f'{path_out}snr_diff.txt', 'r').readline())
-    call(f'sct_compute_snr -i {path_out}data_concat.nii.gz -method single -m {file_wm} -m-noise {file_wm} '
-         f'-rayleigh 0 -o {path_out}snr_single.txt'.split(' '))
+    run(f'sct_image -i {file_1} {file_2} -concat t -o {path_out}data_concat.nii.gz')
+    run(f'sct_compute_snr -i {path_out}data_concat.nii.gz -method diff -m {file_wm} -o {path_out}snr_diff.txt')
+    run(f'sct_compute_snr -i {path_out}data_concat.nii.gz -method single -m {file_wm} -m-noise {file_wm} -rayleigh 0 '
+        f'-o {path_out}snr_single.txt')
     snr_single = float(open(f'{path_out}snr_single.txt', 'r').readline())
     # Compute average value in WM and GM on a slice-by-slice basis
-    call(f'sct_extract_metric -i {file_1} -f {file_wm} -method bin -o {path_out}signal_wm.csv'.split(' '))
-    call(f'sct_extract_metric -i {file_2} -f {file_wm} -method bin -o {path_out}signal_wm.csv -append 1'.split(' '))
-    call(f'sct_extract_metric -i {file_1} -f {file_gm} -method bin -o {path_out}signal_gm.csv'.split(' '))
-    call(f'sct_extract_metric -i {file_2} -f {file_gm} -method bin -o {path_out}signal_gm.csv -append 1'.split(' '))
+    run(f'sct_extract_metric -i {file_1} -f {file_wm} -method bin -o {path_out}signal_wm.csv')
+    run(f'sct_extract_metric -i {file_2} -f {file_wm} -method bin -o {path_out}signal_wm.csv -append 1')
+    run(f'sct_extract_metric -i {file_1} -f {file_gm} -method bin -o {path_out}signal_gm.csv')
+    run(f'sct_extract_metric -i {file_2} -f {file_gm} -method bin -o {path_out}signal_gm.csv -append 1')
     # Compute contrast slicewise and average across slices
     pd_gm = pandas.read_csv(f'{path_out}signal_gm.csv')
     pd_wm = pandas.read_csv(f'{path_out}signal_wm.csv')
