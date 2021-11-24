@@ -61,9 +61,10 @@ def main():
         width = 0.20  # the width of the bars
         fontsize = 16
         fontsize_axes = 14
-        p2 = ax.bar(ind - width, data[:, 2], width, color='b')
-        p1 = ax.bar(ind, data[:, 1], width, color='y')
-        p3 = ax.bar(ind + width, data[:, 0], width, color='r')
+        linewidth = 1  # linewidth of bar contour
+        p2 = ax.bar(ind - width, data[:, 2], width, color='b', linewidth=linewidth, edgecolor='k')
+        p1 = ax.bar(ind, data[:, 1], width, color='y', linewidth=linewidth, edgecolor='k')
+        p3 = ax.bar(ind + width, data[:, 0], width, color='r', linewidth=linewidth, edgecolor='k')
         ax.set_title(metric, fontsize=fontsize)
         ax.set_xlabel("Simulated Contrast (in %)", fontsize=fontsize)
         ax.set_xticks(ind + width / 2)
@@ -75,10 +76,10 @@ def main():
         yticklabels = ax.get_yticks().astype(int)
         ax.yaxis.set_major_locator(mticker.FixedLocator(yticklabels))
         ax.set_yticklabels(yticklabels, fontsize=fontsize_axes)
-        plt.grid(axis='y')
+        plt.grid(axis='y', linestyle="dashed")
         ax.autoscale_view()
         # plt.show()
-        plt.savefig(os.path.join(path_output, "results_" + metric + "_smooth" + str(smooth) + ".png"))
+        plt.savefig(os.path.join(path_output, "results_" + metric + "_smooth" + str(smooth) + ".png"), dpi=300)
 
         # save csv for importing as table
         with open(os.path.join(path_output, "results_" + metric + "_smooth" + str(smooth) + ".csv"), "w") as f:
