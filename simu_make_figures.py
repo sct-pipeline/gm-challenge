@@ -75,10 +75,10 @@ def main():
         plt.savefig("results_" + metric + "_smooth" + str(smooth) + ".png")
 
         # save csv for importing as table
-        with open("results_" + metric + "_smooth" + str(smooth) + ".csv", "wb") as f:
+        with open("results_" + metric + "_smooth" + str(smooth) + ".csv", "w") as f:
             writer = csv.writer(f)
             for row in data.transpose():
-                row = ["%.2f" % f for f in row]  # we need to do this otherwise float conversion gives e.g. 23.00000001
+                row = [f"%.2f" % f for f in row]  # we need to do this otherwise float conversion gives e.g. 23.00000001
                 writer.writerow(row)
 
 
