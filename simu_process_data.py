@@ -12,7 +12,9 @@
 # Authors: Julien Cohen-Adad
 
 
-import sys, os, shutil, argparse, pickle, io, glob
+import os
+import argparse
+import glob
 from subprocess import call
 import pandas
 
@@ -78,7 +80,6 @@ def compute_metrics(file_1, file_2, file_wm, file_gm, path_out):
 def main():
     path_output = 'simu_results/'
     file_output = "results_all.csv"  # csv output
-    # fdata2 = "data2.nii.gz"
 
     # Get list of files in folder1
     folder1, folder2 = folder_data
@@ -98,7 +99,6 @@ def main():
 
     # loop and process
     os.makedirs(path_output, exist_ok=True)
-    i = 0
     for fname_csv in fname_csv_list:
         # get file name
         metadata = pandas.read_csv(fname_csv, index_col=0).to_dict()['0']
