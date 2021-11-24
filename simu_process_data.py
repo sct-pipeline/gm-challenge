@@ -48,10 +48,11 @@ def get_parameters():
     return args
 
 
-def compute_metrics(file_1, file_2, path_out):
+def compute_metrics(file_1, file_2, file_wm, path_out):
     # Compute SNR using both methods
     call(f'sct_image -i {file_1} {file_2} -concat t -o {path_out}data_concat.nii.gz'.split(' '))
-    # call(f'sct_compute_snr -i data_concat.nii.gz -method diff -m ${file_1}_wmseg_erode.nii.gz -o snr_diff.txt'
+    call(f'sct_compute_snr -i {path_out}data_concat.nii.gz -method diff -m {file_wm} -o {path_out}snr_diff.txt'.
+         split(' '))
     return 0
 
 
@@ -73,6 +74,8 @@ def main():
                                         'Contrast',
                                         'Sharpness'})
 
+    file_wm = os.path.join(folder1, 'mask_wm.nii.gz')
+
     # loop and process
     os.makedirs(path_output, exist_ok=True)
     i = 0
@@ -87,7 +90,7 @@ def main():
         print("\nData #1: " + fname1)
         print("Data #2: " + fname2)
         # process pair of data
-        results = compute_metrics(fname1, fname2, path_output)
+        results = compute_metrics(fname1, fname2, file_wm, path_output)
         # append to dataframe
         results_all = results_all.append({'WM': metadata['WM'],
                                           'GM': metadata['GM'],
