@@ -63,14 +63,14 @@ def compute_metrics(file_1, file_2, file_wm, file_gm, path_out):
         f'-o {path_out}snr_single.txt')
     snr_single = float(open(f'{path_out}snr_single.txt', 'r').readline())
     # Compute average value in WM and GM on a slice-by-slice basis
-    run(f'sct_extract_metric -i {file_1} -f {file_wm} -method bin -o {path_out}signal_wm.csv')
-    run(f'sct_extract_metric -i {file_2} -f {file_wm} -method bin -o {path_out}signal_wm.csv -append 1')
-    run(f'sct_extract_metric -i {file_1} -f {file_gm} -method bin -o {path_out}signal_gm.csv')
-    run(f'sct_extract_metric -i {file_2} -f {file_gm} -method bin -o {path_out}signal_gm.csv -append 1')
+    run(f'sct_extract_metric -i {file_1} -f {file_wm} -method wa -o {path_out}signal_wm.csv')
+    run(f'sct_extract_metric -i {file_2} -f {file_wm} -method wa -o {path_out}signal_wm.csv -append 1')
+    run(f'sct_extract_metric -i {file_1} -f {file_gm} -method wa -o {path_out}signal_gm.csv')
+    run(f'sct_extract_metric -i {file_2} -f {file_gm} -method wa -o {path_out}signal_gm.csv -append 1')
     # Compute contrast slicewise and average across slices
     pd_gm = pandas.read_csv(f'{path_out}signal_gm.csv')
     pd_wm = pandas.read_csv(f'{path_out}signal_wm.csv')
-    pd_contrast = 100 * abs(pd_gm['BIN()'] - pd_wm['BIN()']) / pandas.DataFrame([pd_gm['BIN()'], pd_wm['BIN()']]).min()
+    pd_contrast = 100 * abs(pd_gm['WA()'] - pd_wm['WA()']) / pandas.DataFrame([pd_gm['WA()'], pd_wm['WA()']]).min()
     contrast = pd_contrast.mean()
     # Build dict
     dict_out = {

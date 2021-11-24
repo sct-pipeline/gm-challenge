@@ -10,6 +10,10 @@
 #
 # Authors: Julien Cohen-Adad
 
+# TODO: center xticklabel in the middle of the mid-column
+# TODO: add black contour on bars
+
+
 import os
 import csv
 import argparse

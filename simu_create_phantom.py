@@ -47,6 +47,7 @@ def main(argv=None):
     gm_values = [120, 140, 160, 180]
     std_noises = [1, 5, 10]
     smoothing = [0, 0.5, 1]  # standard deviation values for Gaussian kernel
+    thr_mask = 0.9  # Set threshold for masks
 
     # user params
     parser = get_parser()
@@ -100,24 +101,18 @@ def main(argv=None):
                 pbar.update(1)
     pbar.close()
 
-    # generate mask of spinal cord
-    data_gm = nii_atlas_gm.get_fdata()
-    data_wm = nii_atlas_wm.get_fdata()
-    data_cord = data_gm + data_wm
-    data_cord[np.where(data_cord >= 0.5)] = 1
-    data_cord[np.where(data_cord < 0.5)] = 0
-    # save as NIfTI file
-    nii_phantom = nib.Nifti1Image(crop_data(data_cord), nii_atlas_wm.affine)
-    nib.save(nii_phantom, os.path.join(folder_out, "mask_cord.nii.gz"))
-
     # generate mask of gray matter
-    data_gm[np.where(data_gm >= 0.5)] = 1
-    data_gm[np.where(data_gm < 0.5)] = 0
+    nii_atlas_gm.uncache()
+    data_gm = nii_atlas_gm.get_fdata()
+    data_gm[np.where(data_gm < thr_mask)] = 0
     nii_phantom = nib.Nifti1Image(crop_data(data_gm), nii_atlas_wm.affine)
     nib.save(nii_phantom, os.path.join(folder_out, "mask_gm.nii.gz"))
 
     # generate mask of white matter
-    nii_phantom = nib.Nifti1Image(crop_data(data_cord - data_gm), nii_atlas_wm.affine)
+    nii_atlas_wm.uncache()
+    data_wm = nii_atlas_wm.get_fdata()
+    data_wm[np.where(data_wm < thr_mask)] = 0
+    nii_phantom = nib.Nifti1Image(crop_data(data_wm), nii_atlas_wm.affine)
     nib.save(nii_phantom, os.path.join(folder_out, "mask_wm.nii.gz"))
 
     # display
