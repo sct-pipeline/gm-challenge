@@ -70,7 +70,7 @@ def compute_metrics(file_1, file_2, file_wm, file_gm, path_out):
     # Compute contrast slicewise and average across slices
     pd_gm = pandas.read_csv(f'{path_out}signal_gm.csv')
     pd_wm = pandas.read_csv(f'{path_out}signal_wm.csv')
-    pd_contrast = abs(pd_gm['BIN()'] - pd_wm['BIN()']) / pandas.DataFrame([pd_gm['BIN()'], pd_wm['BIN()']]).min()
+    pd_contrast = 100 * abs(pd_gm['BIN()'] - pd_wm['BIN()']) / pandas.DataFrame([pd_gm['BIN()'], pd_wm['BIN()']]).min()
     contrast = pd_contrast.mean()
     # Build dict
     dict_out = {
