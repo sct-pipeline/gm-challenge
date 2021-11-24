@@ -84,7 +84,7 @@ def compute_metrics(file_1, file_2, file_wm, file_gm, path_out):
 
 def main():
     path_output = 'simu_results/'
-    file_output = "results_all.csv"  # csv output
+    file_output = os.path.join(path_output, "results_all.csv")
 
     # Get list of files in folder1
     folder1, folder2 = folder_data
