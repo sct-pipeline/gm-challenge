@@ -11,6 +11,9 @@
 #
 # Authors: Julien Cohen-Adad
 
+# TODO: remove verbose
+# TODO: add progress bar
+# TODO: fix wrong SNR_diff value
 
 import os
 import argparse

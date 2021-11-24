@@ -3,23 +3,19 @@
 # Make figures to assess metrics sensitivity to image quality. Run after simu_process_data.py
 #
 # USAGE:
-# The script should be launched using SCT's python:
-#   ${SCT_DIR}/python/bin/python simu_make_figures.py -i results_all.csv
+#   python simu_make_figures.py -i simu_results/results_all.csv
 #
 # OUTPUT:
 # Figs
 #
 # Authors: Julien Cohen-Adad
 
-import os, sys, csv
+import csv
 import argparse
 import numpy as np
-# append path to useful SCT scripts
-path_sct = os.getenv('SCT_DIR')
-sys.path.append(os.path.join(path_sct, 'scripts'))
-import sct_utils as sct
 import pandas as pd
 import matplotlib.pyplot as plt
+
 
 def get_parameters():
     parser = argparse.ArgumentParser(description='Make figures to assess metrics sensitivity to image quality. Run '
@@ -36,10 +32,6 @@ def get_parameters():
     return args
 
 def main():
-    sct.init_sct()  # start logger
-    # default params
-    # smooth = 0
-    # Read CSV
     results_all = pd.read_csv(file_csv)
 
     # build index
