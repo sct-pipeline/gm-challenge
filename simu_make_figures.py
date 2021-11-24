@@ -10,6 +10,7 @@
 #
 # Authors: Julien Cohen-Adad
 
+import os
 import csv
 import argparse
 import numpy as np
@@ -33,6 +34,7 @@ def get_parameters():
     return args
 
 def main():
+    path_output = 'simu_results/'
     results_all = pd.read_csv(file_csv)
 
     # build index
@@ -72,10 +74,10 @@ def main():
         plt.grid(axis='y')
         ax.autoscale_view()
         # plt.show()
-        plt.savefig("results_" + metric + "_smooth" + str(smooth) + ".png")
+        plt.savefig(os.path.join(path_output, "results_" + metric + "_smooth" + str(smooth) + ".png"))
 
         # save csv for importing as table
-        with open("results_" + metric + "_smooth" + str(smooth) + ".csv", "w") as f:
+        with open(os.path.join(path_output, "results_" + metric + "_smooth" + str(smooth) + ".csv"), "w") as f:
             writer = csv.writer(f)
             for row in data.transpose():
                 row = [f"%.2f" % f for f in row]  # we need to do this otherwise float conversion gives e.g. 23.00000001
