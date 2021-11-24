@@ -92,7 +92,7 @@ def main():
                                             'Smooth',
                                             'SNR',
                                             'Contrast',
-                                            'Sharpness'})
+                                            'CNR'})
 
     file_wm = os.path.join(folder1, 'mask_wm.nii.gz')
     file_gm = os.path.join(folder1, 'mask_gm.nii.gz')
@@ -116,9 +116,10 @@ def main():
                                           'GM': metadata['GM'],
                                           'Noise': metadata['Noise'],
                                           'Smooth': metadata['Smooth'],
-                                          'SNR_single': results.loc['SNR_single'][0],
-                                          'SNR_diff': results.loc['SNR_diff'][0],
-                                          'Contrast': results.loc['Contrast'][0]}, ignore_index=True)
+                                          'SNR_single': results['SNR_single'],
+                                          'SNR_diff': results['SNR_diff'],
+                                          'Contrast': results['Contrast'],
+                                          'CNR': results['CNR']},ignore_index=True)
     results_all.to_csv(file_output)
 
 
