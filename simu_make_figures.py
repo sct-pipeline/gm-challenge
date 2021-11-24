@@ -10,8 +10,6 @@
 #
 # Authors: Julien Cohen-Adad
 
-# TODO: center xticklabel in the middle of the mid-column
-
 
 import os
 import csv
@@ -62,11 +60,11 @@ def main():
         fontsize_axes = 14
         linewidth = 1  # linewidth of bar contour
         p2 = ax.bar(ind - width, data[:, 2], width, color='b', linewidth=linewidth, edgecolor='k')
-        p1 = ax.bar(ind, data[:, 1], width, color='y', linewidth=linewidth, edgecolor='k')
+        p1 = ax.bar(ind, data[:, 1], width, color='y', linewidth=linewidth, edgecolor='k', align='center')
         p3 = ax.bar(ind + width, data[:, 0], width, color='r', linewidth=linewidth, edgecolor='k')
         ax.set_title(metric, fontsize=fontsize)
         ax.set_xlabel("Simulated Contrast (in %)", fontsize=fontsize)
-        ax.set_xticks(ind + width / 2)
+        ax.set_xticks(ind)
         xticklabels = [int(100 * abs(i_gm-wm) / min(i_gm, wm)) for i_gm in list_gm]
         ax.set_xticklabels(xticklabels, fontsize=fontsize_axes)
         # ax.legend((p1[0], p2[0], p3[0]), (["Noise STD = " + str(i) for i in list_noise]))
