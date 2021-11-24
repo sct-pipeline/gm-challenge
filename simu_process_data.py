@@ -48,15 +48,15 @@ def get_parameters():
     return args
 
 
-def compute_metrics(file_1, file_2):
+def compute_metrics(file_1, file_2, path_out):
     # Compute SNR using both methods
-    call(f'sct_image -i {file_1} {file_2} -concat t -o data_concat.nii.gz'.split(' '))
+    call(f'sct_image -i {file_1} {file_2} -concat t -o {path_out}data_concat.nii.gz'.split(' '))
     # call(f'sct_compute_snr -i data_concat.nii.gz -method diff -m ${file_1}_wmseg_erode.nii.gz -o snr_diff.txt'
     return 0
 
 
 def main():
-    # output_dir = "./output_wmgm"  # TODO: be able to set with argument
+    path_output = 'simu_results/'
     file_output = "results_all.csv"  # csv output
     # fdata2 = "data2.nii.gz"
 
@@ -74,6 +74,7 @@ def main():
                                         'Sharpness'})
 
     # loop and process
+    os.makedirs(path_output, exist_ok=True)
     i = 0
     for fname_csv in fname_csv_list:
         # get file name
@@ -86,7 +87,7 @@ def main():
         print("\nData #1: " + fname1)
         print("Data #2: " + fname2)
         # process pair of data
-        results = compute_metrics(fname1, fname2)
+        results = compute_metrics(fname1, fname2, path_output)
         # append to dataframe
         results_all = results_all.append({'WM': metadata['WM'],
                                           'GM': metadata['GM'],
