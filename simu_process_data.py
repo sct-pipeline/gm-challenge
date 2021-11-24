@@ -77,7 +77,7 @@ def main():
     i = 0
     for fname_csv in fname_csv_list:
         # get file name
-        metadata = pd.Series.from_csv(fname_csv, header=None).to_dict()
+        metadata = pd.read_csv(fname_csv, index_col=0).to_dict()['0']
         file_data = metadata["File"]
         # get fname of each nifti file
         fname1 = os.path.join(folder1, file_data)
