@@ -4,23 +4,18 @@
 # by simu_create_phantom.py), and will process data pairwise between folder1 and folder2.
 #
 # USAGE:
-# The script should be launched using SCT's python:
-#   ${SCT_DIR}/python/bin/python simu_process_data.py -i phantom1 phantom2 -s phantom1/mask_cord.nii.gz -g phantom1/mask_gm.nii.gz -r 0
+#   python simu_process_data.py -i phantom1 phantom2 -s phantom1/mask_cord.nii.gz -g phantom1/mask_gm.nii.gz -r 0
 #
 # OUTPUT:
-#   results_folder.csv: quantitative results in CSV format
+#   results_simu.csv: quantitative results in CSV format
 #
 # Authors: Julien Cohen-Adad
 
 
 import sys, os, shutil, argparse, pickle, io, glob
+from subprocess import call
 import numpy as np
 import pandas as pd
-# append path to useful SCT scripts
-path_sct = os.getenv('SCT_DIR')
-sys.path.append(os.path.join(path_sct, 'scripts'))
-import sct_utils as sct
-import process_data
 import pandas as pd
 
 
@@ -51,6 +46,13 @@ def get_parameters():
                         required=False)
     args = parser.parse_args()
     return args
+
+
+def compute_metrics(file_1, file_2):
+    # Compute SNR using both methods
+    call(f'sct_image -i ${file_1} ${file_2} -concat t -o data_concat.nii.gz')
+    # call(f'sct_compute_snr -i data_concat.nii.gz -method diff -m ${file_1}_wmseg_erode.nii.gz -o snr_diff.txt'
+    return 0
 
 
 def main():
@@ -84,7 +86,7 @@ def main():
         print("\nData #1: " + fname1)
         print("Data #2: " + fname2)
         # process pair of data
-        results = process_data.main([fname1, fname2], file_seg, file_gmseg, register=register, verbose=verbose)
+        results = compute_metrics(fname1, fname2)
         # append to dataframe
         results_all = results_all.append({'WM': metadata['WM'],
                                           'GM': metadata['GM'],
@@ -93,8 +95,8 @@ def main():
                                           'SNR_single': results.loc['SNR_single'][0],
                                           'SNR_diff': results.loc['SNR_diff'][0],
                                           'Contrast': results.loc['Contrast'][0]}, ignore_index=True)
-                                          # 'Sharpness': results.loc['Sharpness'][0]}, ignore_index=True)
     results_all.to_csv(file_output)
+
 
 if __name__ == "__main__":
     args = get_parameters()
