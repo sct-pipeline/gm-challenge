@@ -69,7 +69,9 @@ def main(argv=None):
     for gm_value in gm_values:
         for std_noise in std_noises:
             for smooth in smoothing:
+                nii_atlas_wm.uncache()
                 data_wm = nii_atlas_wm.get_fdata()
+                nii_atlas_gm.uncache()
                 data_gm = nii_atlas_gm.get_fdata()
                 # Add values to each tract
                 data_wm *= wm_value
