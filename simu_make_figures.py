@@ -60,7 +60,7 @@ def main():
         ax.set_title(metric, fontsize=fontsize)
         ax.set_xlabel("Simulated Contrast (in %)", fontsize=fontsize)
         ax.set_xticks(ind + width / 2)
-        xticklabels = (abs(list_gm - wm) / [float(min(i, wm)) for i in list_gm] * 100).astype(int)
+        xticklabels = [int(abs(i_gm-wm / min(i_gm, wm))) for i_gm in list_gm]
         ax.set_xticklabels(xticklabels, fontsize=fontsize_axes)
         # ax.legend((p1[0], p2[0], p3[0]), (["Noise STD = " + str(i) for i in list_noise]))
         ax.set_ylabel("Measured " + metric, fontsize=fontsize)
