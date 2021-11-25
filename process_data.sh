@@ -28,6 +28,7 @@ trap "echo Caught Keyboard Interrupt within script. Exiting now.; exit" INT
 
 # Retrieve input params
 SUBJECT=$1
+PATH_TO_SCRIPT=$2
 
 # get starting time:
 start=`date +%s`
@@ -127,7 +128,7 @@ sct_extract_metric -i ${file_2}${ext} -f ${file_1}_wmseg${ext} -method bin -o si
 sct_extract_metric -i ${file_1}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv
 sct_extract_metric -i ${file_2}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv -append 1
 # Compute contrast slicewise and average across slices. Output in file: contrast.txt
-python -c "import pandas; pd_gm = pandas.read_csv('signal_gm.csv'); pd_wm = pandas.read_csv('signal_wm.csv'); pd = abs(pd_gm['BIN()'] - pd_wm['BIN()']) / pandas.DataFrame([pd_gm['BIN()'], pd_wm['BIN()']]).min(); print(f'{pd.mean()}')" > contrast.txt
+python ${PATH_TO_SCRIPT}/compute_contrast.py > contrast.txt
 # Aggregate results in single CSV file
 file_results="${PATH_RESULTS}/results.csv"
 if [[ ! -e $file_results ]]; then
