@@ -133,9 +133,14 @@ python ${PATH_TO_SCRIPT}/compute_contrast.py > contrast.txt
 file_results="${PATH_RESULTS}/results.csv"
 if [[ ! -e $file_results ]]; then
   # add a header in case the file does not exist yet
-  echo "Subject,SNR_diff,SNR_single,Contrast" >> $file_results
+  echo "Subject,SNR_diff,SNR_single,Contrast,CNR" >> $file_results
 fi
-echo "${SUBJECT},`cat snr_diff.txt`,`cat snr_single.txt`,`cat contrast.txt`" >> ${PATH_RESULTS}/results.csv
+snr_single=`cat snr_single.txt`
+snr_diff=`cat snr_diff.txt`
+contrast=`cat contrast.txt`
+cnr=`python ${PATH_TO_SCRIPT}/compute_cnr.py ${snr_diff} ${contrast}`
+echo "${SUBJECT},${snr_single},${snr_diff},${contrast},${cnr}" >> ${PATH_RESULTS}/results.csv
+
 
 # Verify presence of output files and write log file if error
 # ------------------------------------------------------------------------------
