@@ -23,9 +23,10 @@ git clone https://github.com/sct-pipeline/gm-challenge.git
 cd gm-challenge
 ~~~
 
-Create virtual environment and install dependencies:
+Create virtual environment, activate it and install dependencies:
 ~~~
-virtualenv venv
+virtualenv venv  # You only need to run this once
+source venv/bin/activate  # You need to run this everytime you with to process the data
 pip install -r requirements.txt
 ~~~
 
