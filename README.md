@@ -8,7 +8,7 @@ please see: https://goo.gl/2owcL7.
 ## Dependencies
 
 - Python 3.8+
-- [SCT v5.4](https://github.com/spinalcordtoolbox/spinalcordtoolbox/releases/tag/5.4).
+- [SCT v5.4](https://github.com/spinalcordtoolbox/spinalcordtoolbox/releases/tag/5.4)
 
 ## Getting started
 
