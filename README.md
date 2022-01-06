@@ -12,27 +12,31 @@ please see: https://goo.gl/2owcL7.
 
 ## Getting started
 
-- Download the dataset of the challenge:
-  ~~~
-  git clone https://github.com/sct-pipeline/gm-challenge-data.git
-  ~~~
-- Download this repository and go in it:
-  ~~~
-  git clone https://github.com/sct-pipeline/gm-challenge.git
-  cd gm-challenge
-  ~~~
-- Create virtual environment and install dependencies:
-  ~~~
-  virtualenv venv
-  pip install -r requirements.txt
-  ~~~
-- Run (you need to have SCT installed):
-  ```
-  sct_run_batch -script process_data.sh -jobs -1 -path-data <PATH_DATA> -path-output <PATH_OUT>
-  ```
-  with
-    - PATH_DATA: The path to the downloaded dataset
-    - PATH_OUTPUT: The path where results will be output.
+Download the dataset of the challenge:
+~~~
+git clone https://github.com/sct-pipeline/gm-challenge-data.git
+~~~
+
+Download this repository and go in it:
+~~~
+git clone https://github.com/sct-pipeline/gm-challenge.git
+cd gm-challenge
+~~~
+
+Create virtual environment and install dependencies:
+~~~
+virtualenv venv
+pip install -r requirements.txt
+~~~
+
+Run (you need to have SCT installed):
+```
+sct_run_batch -script process_data.sh -jobs -1 -path-data <PATH_DATA> -path-output <PATH_OUT>
+```
+
+with:
+- **<PATH_DATA>**: The path to the downloaded dataset
+- **<PATH_OUT>**: The path where results will be output.
 
 At the end of the processing, you can review:
 - **<PATH_OUT>/log/**: Log files of the processing for each subject.
