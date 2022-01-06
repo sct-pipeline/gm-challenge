@@ -3,6 +3,8 @@
 # Author: Julien Cohen-Adad
 
 import argparse
+import json
+
 import nibabel
 import numpy as np
 import sys
@@ -19,8 +21,23 @@ def get_parameters():
     parser.add_argument('--mask-noise', help='Mask where to compute noise.')
     parser.add_argument('--mask-wm', help='Mask of the white matter.')
     parser.add_argument('--mask-gm', help='Mask of the gray matter.')
+    parser.add_argument('--json', help='JSON sidecar to fetch acquisition duration.')
     args = parser.parse_args()
     return args
+
+
+def fetch_acquisition_duration(fname_json):
+    """
+    Fetch the value of AcquisitionDuration in the JSON file of the same basename as fname_nifti
+    Return: float: Acquisition duration in seconds
+    """
+    # Open JSON file
+    with open(fname_json) as f:
+        dict_json = json.load(f)
+        if 'AcquisitionDuration' in dict_json
+            return dict_json['AcquisitionDuration']
+        else:
+            raise ReferenceError
 
 
 def weighted_std(values, weights):
@@ -76,6 +93,11 @@ def main():
         cnr_diff = sum(cnr_slicewise) / len(cnr_slicewise)
         # if args.acq_time is not None:
         #     cnr_diff_time = cnr_diff / args.acq_time
+
+    try:
+        fetch_acquisition_duration(args.json)
+    except ReferenceError:
+        print("Field 'AcquisitionDuration' was not found in the JSON sidecar. Cannot compute CNR per unit time.")
 
 
 if __name__ == "__main__":
