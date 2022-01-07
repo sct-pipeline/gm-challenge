@@ -119,38 +119,20 @@ sct_maths -i ${file_1}_wmseg${ext} -erode 1 -o ${file_1}_wmseg_erode${ext}
 sct_register_multimodal -i ${file_2}${ext} -d ${file_1}${ext} -dseg ${file_1_seg}${ext} -param step=1,type=im,algo=rigid,metric=MeanSquares,smooth=1,slicewise=1,iter=50 -x nn -qc ${PATH_QC} -qc-subject ${SUBJECT}
 file_2=${file_2}_reg
 # Compute SNR and CNR
-python ${PATH_TO_SCRIPT}/compute_cnr.py --data1 ${file_1}${ext} --data2 ${file_2}${ext} --mask-noise ${file_1}_wmseg_erode.nii.gz --mask-wm ${file_1}_wmseg${ext} --mask-gm ${file_1}_gmseg${ext}
-#
-#sct_compute_snr -i data_concat.nii.gz -method diff -m ${file_1}_wmseg_erode.nii.gz -o snr_diff.txt
-#sct_compute_snr -i data_concat.nii.gz -method single -m ${file_1}_wmseg_erode.nii.gz -m-noise ${file_1}_wmseg_erode.nii.gz -rayleigh 0 -o snr_single.txt
-## Compute average value in WM and GM on a slice-by-slice basis
-#sct_extract_metric -i ${file_1}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv
-#sct_extract_metric -i ${file_2}${ext} -f ${file_1}_wmseg${ext} -method bin -o signal_wm.csv -append 1
-#sct_extract_metric -i ${file_1}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv
-#sct_extract_metric -i ${file_2}${ext} -f ${file_1_gmseg}${ext} -method bin -o signal_gm.csv -append 1
-## Compute contrast slicewise and average across slices. Output in file: contrast.txt
-#python ${PATH_TO_SCRIPT}/compute_contrast.py > contrast.txt
-# Aggregate results in single CSV file
-file_results="${PATH_RESULTS}/results.csv"
-if [[ ! -e $file_results ]]; then
-  # add a header in case the file does not exist yet
-  echo "Subject,SNR_diff,SNR_single,Contrast,CNR" >> $file_results
-fi
-snr_single=`cat snr_single.txt`
-snr_diff=`cat snr_diff.txt`
-contrast=`cat contrast.txt`
-cnr=`python ${PATH_TO_SCRIPT}/compute_cnr.py ${snr_diff} ${contrast}`
-echo "${SUBJECT},${snr_single},${snr_diff},${contrast},${cnr}" >> ${PATH_RESULTS}/results.csv
-
+python ${PATH_TO_SCRIPT}/compute_cnr.py \
+  --data1 ${file_1}${ext} \
+  --data2 ${file_2}${ext} \
+  --mask-noise ${file_1}_wmseg_erode.nii.gz \
+  --mask-wm ${file_1}_wmseg${ext} \
+  --mask-gm ${file_1}_gmseg${ext} \
+  --json "${SUBJECT}_run-1_T2starw.json" \
+  --subject ${SUBJECT} \
+  --output "${PATH_RESULTS}/results.csv"
 
 # Verify presence of output files and write log file if error
 # ------------------------------------------------------------------------------
+# Nothing to check :-)
 FILES_TO_CHECK=(
-	"signal_wm.csv"
-	"signal_gm.csv"
-  "snr_diff.txt"
-  "snr_single.txt"
-  "contrast.txt"
 )
 for file in ${FILES_TO_CHECK[@]}; do
   if [[ ! -e $file ]]; then
@@ -166,7 +148,4 @@ echo "~~~"
 echo "SCT version: `sct_version`"
 echo "Ran on:      `uname -nsr`"
 echo "Duration:    $(($runtime / 3600))hrs $((($runtime / 60) % 60))min $(($runtime % 60))sec"
-echo "snr_diff:    `cat snr_diff.txt`"
-echo "snr_single:    `cat snr_single.txt`"
-echo "contrast:    `cat contrast.txt`"
 echo "~~~"
