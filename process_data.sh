@@ -115,7 +115,7 @@ sct_maths -i ${file_1_seg}${ext} -sub ${file_1_gmseg}${ext} -o ${file_1}_wmseg${
 # Note: we cannot erode the gray matter because it is too thin (most of the time, only one voxel)
 sct_maths -i ${file_1}_wmseg${ext} -erode 1 -o ${file_1}_wmseg_erode${ext}
 # Register data2 on data1
-# Note: We use NearestNeighboor for final interpolation to not alter noise distribution
+# Note: We use NearestNeighbour for final interpolation to not alter noise distribution
 sct_register_multimodal -i ${file_2}${ext} -d ${file_1}${ext} -dseg ${file_1_seg}${ext} -param step=1,type=im,algo=rigid,metric=MeanSquares,smooth=1,slicewise=1,iter=50 -x nn -qc ${PATH_QC} -qc-subject ${SUBJECT}
 file_2=${file_2}_reg
 # Compute SNR and CNR

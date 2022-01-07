@@ -4,6 +4,7 @@
 
 import argparse
 import json
+import os.path
 
 import nibabel
 import numpy as np
@@ -22,6 +23,8 @@ def get_parameters():
     parser.add_argument('--mask-wm', help='Mask of the white matter.')
     parser.add_argument('--mask-gm', help='Mask of the gray matter.')
     parser.add_argument('--json', help='JSON sidecar to fetch acquisition duration.')
+    parser.add_argument('--subject', help='Subject ID', default='sub')
+    parser.add_argument('--output', help='CSV output file.', default='results.csv')
     args = parser.parse_args()
     return args
 
@@ -34,8 +37,8 @@ def fetch_acquisition_duration(fname_json):
     # Open JSON file
     with open(fname_json) as f:
         dict_json = json.load(f)
-        if 'AcquisitionDuration' in dict_json
-            return dict_json['AcquisitionDuration']
+        if 'AcquisitionDuration' in dict_json:
+            return float(dict_json['AcquisitionDuration'])
         else:
             raise ReferenceError
 
@@ -91,13 +94,21 @@ def main():
             [np.average(data_mean[..., iz], weights=mask_gm[..., iz]) for iz in range(nz) if np.any(mask_gm[..., iz])]
         cnr_slicewise = [abs(mean_wm_slice[iz] - mean_gm_slice[iz]) / noise_diff_slice[iz] for iz in range(nz)]
         cnr_diff = sum(cnr_slicewise) / len(cnr_slicewise)
-        # if args.acq_time is not None:
-        #     cnr_diff_time = cnr_diff / args.acq_time
 
     try:
-        fetch_acquisition_duration(args.json)
+        acq_duration = fetch_acquisition_duration(args.json)
+        cnr_diff_time = cnr_diff / acq_duration
     except ReferenceError:
         print("Field 'AcquisitionDuration' was not found in the JSON sidecar. Cannot compute CNR per unit time.")
+
+    # Aggregate results in single CSV file
+    fname_out = args.output
+    if not os.path.isfile(fname_out):
+        # Add a header in case the file does not exist yet
+        with open(fname_out, 'w') as f:
+            f.write(f"Subject,SNR_diff,CNR_diff,CNR_diff/t\n")
+    with open(fname_out, 'a') as f:
+        f.write(f"{args.subject},{snr_diff},{cnr_diff},{cnr_diff_time}\n")
 
 
 if __name__ == "__main__":
