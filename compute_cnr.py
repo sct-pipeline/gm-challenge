@@ -29,6 +29,41 @@ def get_parameters():
     return args
 
 
+def compute_cnr_time(data, mask_wm, mask_gm, noise_slice, fname_json):
+    """
+    Compute CNR and CNR per unit time
+    Args:
+        data: 3d array to compute CNR from
+        mask_wm: mask of white matter
+        mask_gm: mask of gray matter
+        noise_slice: noise standard deviation per slice
+        fname_json: file name of JSON file that contains the AcquisitionDuration information. If 'None', does not
+                    compute cnr_time and output 'None' instead
+
+    Returns:
+        cnr
+        cnr_time
+    """
+    nx, ny, nz = data.shape
+    mean_wm_slice = \
+        [np.average(data[..., iz], weights=mask_wm[..., iz]) for iz in range(nz) if np.any(mask_wm[..., iz])]
+    mean_gm_slice = \
+        [np.average(data[..., iz], weights=mask_gm[..., iz]) for iz in range(nz) if np.any(mask_gm[..., iz])]
+    cnr_slice = [abs(mean_wm_slice[iz] - mean_gm_slice[iz]) / noise_slice[iz] for iz in range(nz)]
+    cnr = sum(cnr_slice) / len(cnr_slice)
+    # If no JSON file is provided, only return 'cnr'
+    if fname_json is None:
+        return cnr, None
+    # Try fetching acquisition duration. If the field is not present in the JSON file, 'ReferenceError' is raised
+    try:
+        acq_duration = fetch_acquisition_duration(fname_json)
+        cnr_time = cnr / acq_duration
+    except ReferenceError:
+        print("Field 'AcquisitionDuration' was not found in the JSON sidecar. Cannot compute CNR per unit time.")
+        cnr_time = None
+    return cnr, cnr_time
+
+
 def fetch_acquisition_duration(fname_json):
     """
     Fetch the value of AcquisitionDuration in the JSON file of the same basename as fname_nifti
@@ -82,6 +117,7 @@ def main():
         # Correcting for Rayleigh noise (see eq. A12 in Dietrich et al.)
         snr_single_slice = [snr_single_slice[iz] * np.sqrt((4 - np.pi) / 2) for iz in range(len(snr_single_slice))]
     snr_single = sum(snr_single_slice) / len(snr_single_slice)
+    cnr_single, cnr_single_time = compute_cnr_time(data1, mask_wm, mask_gm, noise_single_slice, args.json)
 
     if compute_diff:
         # Compute mean across the two volumes
@@ -100,27 +136,16 @@ def main():
         snr_diff = sum(snr_roi_slicewise) / len(snr_roi_slicewise)
 
         # Compute CNR
-        mean_wm_slice = \
-            [np.average(data_mean[..., iz], weights=mask_wm[..., iz]) for iz in range(nz) if np.any(mask_wm[..., iz])]
-        mean_gm_slice = \
-            [np.average(data_mean[..., iz], weights=mask_gm[..., iz]) for iz in range(nz) if np.any(mask_gm[..., iz])]
-        cnr_slicewise = [abs(mean_wm_slice[iz] - mean_gm_slice[iz]) / noise_diff_slice[iz] for iz in range(nz)]
-        cnr_diff = sum(cnr_slicewise) / len(cnr_slicewise)
-
-    try:
-        acq_duration = fetch_acquisition_duration(args.json)
-        cnr_diff_time = cnr_diff / acq_duration
-    except ReferenceError:
-        print("Field 'AcquisitionDuration' was not found in the JSON sidecar. Cannot compute CNR per unit time.")
+        cnr_diff, cnr_diff_time = compute_cnr_time(data_mean, mask_wm, mask_gm, noise_diff_slice, args.json)
 
     # Aggregate results in single CSV file
     fname_out = args.output
     if not os.path.isfile(fname_out):
         # Add a header in case the file does not exist yet
         with open(fname_out, 'w') as f:
-            f.write(f"Subject,SNR_single,SNR_diff,CNR_diff,CNR_diff/t\n")
+            f.write(f"Subject,SNR_single,SNR_diff,CNR_single,CNR_diff,CNR_single/t,CNR_diff/t\n")
     with open(fname_out, 'a') as f:
-        f.write(f"{args.subject},{snr_single},{snr_diff},{cnr_diff},{cnr_diff_time}\n")
+        f.write(f"{args.subject},{snr_single},{snr_diff},{cnr_single},{cnr_diff},{cnr_single_time},{cnr_diff_time}\n")
 
 
 if __name__ == "__main__":
