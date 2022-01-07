@@ -58,6 +58,7 @@ def weighted_std(values, weights):
 def main():
     # initializations
     cnr_diff_time = np.nan
+    rayleigh_correction = False  # No correction for Rician noise because the noise mask is in a region of high SNR regime (not in the background)
     # get arguments
     data1 = nibabel.load(args.data1).get_fdata()
     nx, ny, nz = data1.shape
@@ -70,6 +71,17 @@ def main():
     else:
         data2 = nibabel.load(args.data2).get_fdata()
         compute_diff = True
+
+    # Compute mean in ROI for each z-slice, if the slice in the mask is not null
+    mean_in_roi = \
+        [np.average(data1[..., iz], weights=mask[..., iz]) for iz in range(nz) if np.any(mask[..., iz])]
+    noise_single_slice = \
+        [weighted_std(data1[..., iz], weights=mask[..., iz]) for iz in range(nz) if np.any(mask[..., iz])]
+    snr_single_slice = [m / s for m, s in zip(mean_in_roi, noise_single_slice)]
+    if rayleigh_correction:
+        # Correcting for Rayleigh noise (see eq. A12 in Dietrich et al.)
+        snr_single_slice = [snr_single_slice[iz] * np.sqrt((4 - np.pi) / 2) for iz in range(len(snr_single_slice))]
+    snr_single = sum(snr_single_slice) / len(snr_single_slice)
 
     if compute_diff:
         # Compute mean across the two volumes
@@ -106,9 +118,9 @@ def main():
     if not os.path.isfile(fname_out):
         # Add a header in case the file does not exist yet
         with open(fname_out, 'w') as f:
-            f.write(f"Subject,SNR_diff,CNR_diff,CNR_diff/t\n")
+            f.write(f"Subject,SNR_single,SNR_diff,CNR_diff,CNR_diff/t\n")
     with open(fname_out, 'a') as f:
-        f.write(f"{args.subject},{snr_diff},{cnr_diff},{cnr_diff_time}\n")
+        f.write(f"{args.subject},{snr_single},{snr_diff},{cnr_diff},{cnr_diff_time}\n")
 
 
 if __name__ == "__main__":
