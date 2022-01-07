@@ -2,13 +2,14 @@
 # Compute SNR, contrast, CNR and CNR/unit time. Write output  Output values in stdout.
 # Author: Julien Cohen-Adad
 
+# TODO: use logging
+
 import argparse
 import json
 import os.path
 
 import nibabel
 import numpy as np
-import sys
 
 
 def get_parameters():
@@ -59,8 +60,9 @@ def compute_cnr_time(data, mask_wm, mask_gm, noise_slice, fname_json):
         acq_duration = fetch_acquisition_duration(fname_json)
         cnr_time = cnr / acq_duration
     except ReferenceError:
-        print("Field 'AcquisitionDuration' was not found in the JSON sidecar. Cannot compute CNR per unit time.")
-        cnr_time = None
+        print("Field 'AcquisitionDuration' was not found in the JSON sidecar. Cannot compute CNR per unit time and will"
+              "leave an empty string instead.")
+        cnr_time = ''
     return cnr, cnr_time
 
 
@@ -101,11 +103,13 @@ def main():
     mask_wm = nibabel.load(args.mask_wm).get_fdata()
     mask_gm = nibabel.load(args.mask_gm).get_fdata()
 
-    if args.data2 is None:
-        compute_diff = False
-    else:
+    # Try opening data2. If it fails, inform the user and do not compute *_diff metrics
+    try:
         data2 = nibabel.load(args.data2).get_fdata()
         compute_diff = True
+    except FileNotFoundError:
+        print("'--data2' does not exist. Will not compute *_diff metrics.")
+        compute_diff = False
 
     # Compute mean in ROI for each z-slice, if the slice in the mask is not null
     mean_in_roi = \
@@ -137,7 +141,9 @@ def main():
 
         # Compute CNR
         cnr_diff, cnr_diff_time = compute_cnr_time(data_mean, mask_wm, mask_gm, noise_diff_slice, args.json)
-
+    else:
+        # need to assign empty strings variables
+        snr_diff, cnr_diff, cnr_diff_time = '', '', ''
     # Aggregate results in single CSV file
     fname_out = args.output
     if not os.path.isfile(fname_out):
