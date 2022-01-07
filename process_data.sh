@@ -3,12 +3,17 @@
 # Process data.
 #
 # Usage:
-#   ./process_data.sh <SUBJECT>
+#  process_data_spinegeneric.sh <SUBJECT> <PATH_TO_SCRIPT>
 #
-# Manual segmentations or labels should be located under:
-# <SUBJECT>/
+# Where <PATH_TO_SCRIPT> is the path to the folder that contains the script compute_contrast.py
 #
-# Authors: Julien Cohen-Adad
+# Example when called via sct_run_batch:
+#  sct_run_batch -path-data /Users/julien/code/spine-generic/data-multi-subject \
+#                -path-output gmchallenge_spinegeneric_20211110_162254 \
+#                -script /Users/julien/code/gm-challenge/process_data_spinegeneric.sh \
+#                -script-args "/Users/julien/code/gm-challenge"
+#
+# Author: Julien Cohen-Adad
 
 # The following global variables are retrieved from the caller sct_run_batch
 # but could be overwritten by uncommenting the lines below:
@@ -91,9 +96,22 @@ cd $PATH_DATA_PROCESSED
 rsync -avzh $PATH_DATA/$SUBJECT .
 # Go to folder
 cd ${SUBJECT}/anat
-file_1="${SUBJECT}_run-1_T2starw"
-file_2="${SUBJECT}_run-2_T2starw"
+# Accommodate file naming between GM challenge data and spine-generic data
 ext=".nii.gz"
+if [[ -e "${SUBJECT}_run-1_T2starw${ext}" ]]; then
+  dataset="gm-challenge"
+  file_1="${SUBJECT}_run-1_T2starw"
+  file_2="${SUBJECT}_run-2_T2starw"
+else
+  dataset="spine-generic"
+  file_1="${SUBJECT}_T2star"
+fi
+file_json="${file_1}.json"
+# Compute root-mean square across 4th dimension (if it exists), corresponding to all echoes in Philips scans. Note: we
+# only need to do this for the first file, because this only concerns the spine-generic dataset (which does not have a
+# second scan).
+sct_maths -i ${file_1}${ext} -rms t -o ${file_1}_rms${ext}
+file_1="${file_1}_rms"
 # Segment spinal cord
 segment_if_does_not_exist $file_1 "t2s"
 file_1_seg=$FILESEG
@@ -111,21 +129,27 @@ sct_crop_image -i ${file_1_gmseg}${ext} -m ${file_mask}${ext} -o ${file_1_gmseg}
 file_1_gmseg=${file_1_gmseg}_crop
 # Generate white matter segmentation
 sct_maths -i ${file_1_seg}${ext} -sub ${file_1_gmseg}${ext} -o ${file_1}_wmseg${ext}
+file_1_wmseg=${file_1}_wmseg
 # Erode white matter mask to minimize partial volume effect
 # Note: we cannot erode the gray matter because it is too thin (most of the time, only one voxel)
 sct_maths -i ${file_1}_wmseg${ext} -erode 1 -o ${file_1}_wmseg_erode${ext}
-# Register data2 on data1
-# Note: We use NearestNeighbour for final interpolation to not alter noise distribution
-sct_register_multimodal -i ${file_2}${ext} -d ${file_1}${ext} -dseg ${file_1_seg}${ext} -param step=1,type=im,algo=rigid,metric=MeanSquares,smooth=1,slicewise=1,iter=50 -x nn -qc ${PATH_QC} -qc-subject ${SUBJECT}
-file_2=${file_2}_reg
+# Register data2 on data1 (only for gm-challenge dataset)
+if [[ $dataset == "gm-challenge" ]]; then
+  # Note: We use NearestNeighbour for final interpolation to not alter noise distribution
+  sct_register_multimodal -i ${file_2}${ext} -d ${file_1}${ext} -dseg ${file_1_seg}${ext} -param step=1,type=im,algo=rigid,metric=MeanSquares,smooth=1,slicewise=1,iter=50 -x nn -qc ${PATH_QC} -qc-subject ${SUBJECT}
+  file_2=${file_2}_reg
+else
+  # define a variable just so the syntax below will not crash. The empty variable will be dealt with by compute_cnr.py.
+  file_2=""
+fi
 # Compute SNR and CNR
 python ${PATH_TO_SCRIPT}/compute_cnr.py \
   --data1 ${file_1}${ext} \
   --data2 ${file_2}${ext} \
-  --mask-noise ${file_1}_wmseg_erode.nii.gz \
-  --mask-wm ${file_1}_wmseg${ext} \
-  --mask-gm ${file_1}_gmseg${ext} \
-  --json "${SUBJECT}_run-1_T2starw.json" \
+  --mask-noise ${file_1_wmseg}_erode.nii.gz \
+  --mask-wm ${file_1_wmseg}${ext} \
+  --mask-gm ${file_1_gmseg}${ext} \
+  --json ${file_json} \
   --subject ${SUBJECT} \
   --output "${PATH_RESULTS}/results.csv"
 
