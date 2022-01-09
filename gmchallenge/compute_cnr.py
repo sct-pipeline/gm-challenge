@@ -25,7 +25,7 @@ def get_parameters():
     parser.add_argument('--mask-gm', help='Mask of the gray matter.')
     parser.add_argument('--json', help='JSON sidecar to fetch acquisition duration.')
     parser.add_argument('--subject', help='Subject ID', default='sub')
-    parser.add_argument('--output', help='CSV output file.', default='results.csv')
+    parser.add_argument('--output', help='CSV output file.')
     return parser
 
 
@@ -144,14 +144,27 @@ def main(args=None):
     else:
         # need to assign empty strings variables
         snr_diff, cnr_diff, cnr_diff_time = '', '', ''
-    # Aggregate results in single CSV file
-    fname_out = args.output
-    if not os.path.isfile(fname_out):
-        # Add a header in case the file does not exist yet
-        with open(fname_out, 'w') as f:
-            f.write(f"Subject,SNR_single,SNR_diff,CNR_single,CNR_diff,CNR_single/t,CNR_diff/t\n")
-    with open(fname_out, 'a') as f:
-        f.write(f"{args.subject},{snr_single},{snr_diff},{cnr_single},{cnr_diff},{cnr_single_time},{cnr_diff_time}\n")
+    # If user asked for output in a CSV file, aggregate results and write file
+    if args.output is not None:
+        fname_out = args.output
+        if not os.path.isfile(fname_out):
+            # Add a header in case the file does not exist yet
+            with open(fname_out, 'w') as f:
+                f.write(f"Subject,SNR_single,SNR_diff,CNR_single,CNR_diff,CNR_single/t,CNR_diff/t\n")
+        with open(fname_out, 'a') as f:
+            f.write(f"{args.subject},{snr_single},{snr_diff},{cnr_single},{cnr_diff},{cnr_single_time},{cnr_diff_time}\n")
+    # Otherwise, return to caller function
+    else:
+        # Aggregate results into a clean dictionary
+        results = {
+            'snr_single': snr_single,
+            'snr_diff': snr_diff,
+            'cnr_single': cnr_single,
+            'cnr_diff': cnr_diff,
+            'cnr_single_time': cnr_single_time,
+            'cnr_diff_time': cnr_diff_time
+            }
+        return results
 
 
 if __name__ == "__main__":
