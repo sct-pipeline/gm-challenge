@@ -23,12 +23,12 @@ git clone https://github.com/sct-pipeline/gm-challenge.git
 cd gm-challenge
 ~~~
 
-Create virtual environment, activate it and install dependencies:
+Create virtual environment, activate it and install package:
 ~~~
 virtualenv venv  # You only need to run this once
 source venv/bin/activate  # You need to run this everytime you with to process the data
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install -e .
 ~~~
 
 Run (you need to have SCT installed):
@@ -69,10 +69,10 @@ includes the following steps:
 ## Analysis on the spine-generic dataset
 
 A similar analysis can also be run on the spine-generic dataset. However, given that only one scan was available, 
-SNR_diff could not be calculated and as a result the processing script is slightly different. Moreover, the location
-of the repository needs to be input into the shell script. The command looks like this:
+SNR_diff could not be calculated. The command is similar to the one earlier, except the <PATH_DATA> should now point 
+to the spine-generic multi-subject dataset:
 ~~~
-sct_run_batch -script <PATH_REPOSITORY>/process_data_spinegeneric.sh -path-data <PATH_DATA> -path-out <PATH_OUTPUT> -script-args <PATH_REPOSITORY>
+sct_run_batch -script <PATH_REPOSITORY>/process_data.sh -path-data <PATH_DATA> -path-out <PATH_OUTPUT>
 ~~~
 
 After running this script, figures can be generated as follows:
