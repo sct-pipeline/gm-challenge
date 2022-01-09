@@ -121,14 +121,17 @@ def main():
                                     '--mask-wm', file_wm,
                                     '--mask-gm', file_gm])
         # append to dataframe
-        results_all = results_all.append({'WM': metadata['WM'],
-                                          'GM': metadata['GM'],
-                                          'Noise': metadata['Noise'],
-                                          'Smooth': metadata['Smooth'],
-                                          'SNR_single': results['SNR_single'],
-                                          'SNR_diff': results['SNR_diff'],
-                                          'Contrast': results['Contrast'],
-                                          'CNR': results['CNR']},ignore_index=True)
+        results = compute_metrics(fname1, fname2, file_wm, file_gm, path_output)
+        # TODO: replace code above by code below.
+        # https://github.com/sct-pipeline/gm-challenge/issues/70
+        # results_all = results_all.append({'WM': metadata['WM'],
+        #                                   'GM': metadata['GM'],
+        #                                   'Noise': metadata['Noise'],
+        #                                   'Smooth': metadata['Smooth'],
+        #                                   'SNR_single': results['SNR_single'],
+        #                                   'SNR_diff': results['SNR_diff'],
+        #                                   'Contrast': results['Contrast'],
+        #                                   'CNR': results['CNR']},ignore_index=True)
         pbar.update(1)
     pbar.close()
     results_all.to_csv(file_output)
