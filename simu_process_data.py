@@ -20,7 +20,7 @@ from subprocess import call
 import pandas
 import tqdm
 
-import gmchallenge.compute_cnr
+from gmchallenge import compute_cnr
 
 
 def get_parameters():
@@ -89,9 +89,6 @@ def main():
     file_output = os.path.join(path_output, "results_all.csv")
 
     # Get list of files in folder1
-    from gmchallenge import compute_cnr
-    compute_cnr.main(['--data1', 'bla'])
-
     folder1, folder2 = folder_data
     fname_csv_list = sorted(glob.glob(os.path.join(folder1, "*.csv")))
 
@@ -118,7 +115,11 @@ def main():
         fname1 = os.path.join(folder1, file_data)
         fname2 = os.path.join(folder2, file_data)
         # process pair of data
-        results = compute_metrics(fname1, fname2, file_wm, file_gm, path_output)
+        results = compute_cnr.main(['--data1', fname1,
+                                    '--data2', fname2,
+                                    '--mask-noise', file_wm,
+                                    '--mask-wm', file_wm,
+                                    '--mask-gm', file_gm])
         # append to dataframe
         results_all = results_all.append({'WM': metadata['WM'],
                                           'GM': metadata['GM'],
