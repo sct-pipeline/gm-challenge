@@ -7,9 +7,9 @@
 import argparse
 import json
 import os.path
-
 import nibabel
 import numpy as np
+import sys
 
 
 def get_parameters():
@@ -26,8 +26,7 @@ def get_parameters():
     parser.add_argument('--json', help='JSON sidecar to fetch acquisition duration.')
     parser.add_argument('--subject', help='Subject ID', default='sub')
     parser.add_argument('--output', help='CSV output file.', default='results.csv')
-    args = parser.parse_args()
-    return args
+    return parser
 
 
 def compute_cnr_time(data, mask_wm, mask_gm, noise_slice, fname_json):
@@ -92,11 +91,12 @@ def weighted_std(values, weights):
     return np.sqrt(variance)
 
 
-def main():
-    # initializations
-    cnr_diff_time = np.nan
-    rayleigh_correction = False  # No correction for Rician noise because the noise mask is in a region of high SNR regime (not in the background)
+def main(args=None):
+    # No correction for Rician noise because the noise mask is in a region of high SNR regime (not in the background)
+    rayleigh_correction = False
     # get arguments
+    parser = get_parameters()
+    args = parser.parse_args(args)
     data1 = nibabel.load(args.data1).get_fdata()
     nx, ny, nz = data1.shape
     mask = nibabel.load(args.mask_noise).get_fdata()
@@ -155,5 +155,4 @@ def main():
 
 
 if __name__ == "__main__":
-    args = get_parameters()
     main()

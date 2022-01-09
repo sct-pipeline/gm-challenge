@@ -20,6 +20,8 @@ from subprocess import call
 import pandas
 import tqdm
 
+import gmchallenge.compute_cnr
+
 
 def get_parameters():
     parser = argparse.ArgumentParser(description='Compute metrics to assess the quality of spinal cord images. This '
@@ -87,6 +89,9 @@ def main():
     file_output = os.path.join(path_output, "results_all.csv")
 
     # Get list of files in folder1
+    from gmchallenge import compute_cnr
+    compute_cnr.main(['--data1', 'bla'])
+
     folder1, folder2 = folder_data
     fname_csv_list = sorted(glob.glob(os.path.join(folder1, "*.csv")))
 
