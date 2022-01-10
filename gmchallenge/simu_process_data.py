@@ -32,22 +32,6 @@ def get_parser():
                         help="List here the two folders to process. They should contain the exact same file names.",
                         nargs='+',
                         required=True)
-    parser.add_argument("-s", "--seg",
-                        help="Spinal cord segmentation for the first dataset.",
-                        required=False)
-    parser.add_argument("-g", "--gmseg",
-                        help="Gray matter segmentation for the first dataset.",
-                        required=False)
-    parser.add_argument("-r", "--register",
-                        help="Perform registration between scan #1 and scan #2. Default=0 (data already registered).",
-                        type=int,
-                        default=0,
-                        required=False)
-    parser.add_argument("-v", "--verbose",
-                        help="Verbose {0,1}. Default=1",
-                        type=int,
-                        default=1,
-                        required=False)
     return parser
 
 
