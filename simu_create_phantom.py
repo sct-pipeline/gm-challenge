@@ -16,7 +16,7 @@
 # Authors: Stephanie Alley, Julien Cohen-Adad
 
 
-import os, sys
+import os
 import argparse
 import numpy as np
 import nibabel as nib
