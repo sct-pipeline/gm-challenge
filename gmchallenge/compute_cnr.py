@@ -9,10 +9,9 @@ import json
 import os.path
 import nibabel
 import numpy as np
-import sys
 
 
-def get_parameters():
+def get_parser():
     parser = argparse.ArgumentParser(description='Compute SNR, contrast, CNR using two different methods. These '
                                                  'metrics are computed slice-by-slice and then averaged across slices. '
                                                  'If a JSON sidecar is present and includes the field '
@@ -91,12 +90,12 @@ def weighted_std(values, weights):
     return np.sqrt(variance)
 
 
-def main(args=None):
+def main(argv=None):
     # No correction for Rician noise because the noise mask is in a region of high SNR regime (not in the background)
     rayleigh_correction = False
     # get arguments
-    parser = get_parameters()
-    args = parser.parse_args(args)
+    parser = get_parser()
+    args = parser.parse_args(argv)
     data1 = nibabel.load(args.data1).get_fdata()
     nx, ny, nz = data1.shape
     mask = nibabel.load(args.mask_noise).get_fdata()
