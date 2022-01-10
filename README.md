@@ -98,7 +98,7 @@ simu_process_data -i simu_phantom1/ simu_phantom2/
 
 Finally, make figures to assess metrics sensitivity to image quality:
 ````bash
-simu_make_figures -i <PATH_TO_CSV>
+simu_make_figures -i simu_results/results_all.csv
 ````
   
 ## Configuration of Niftyweb server
