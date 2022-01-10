@@ -102,14 +102,6 @@ def main(argv=None):
     mask_wm = nibabel.load(args.mask_wm).get_fdata()
     mask_gm = nibabel.load(args.mask_gm).get_fdata()
 
-    # Try opening data2. If it fails, inform the user and do not compute *_diff metrics
-    try:
-        data2 = nibabel.load(args.data2).get_fdata()
-        compute_diff = True
-    except FileNotFoundError:
-        print("'--data2' does not exist. Will not compute *_diff metrics.")
-        compute_diff = False
-
     # Compute mean in ROI for each z-slice, if the slice in the mask is not null
     mean_in_roi = \
         [np.average(data1[..., iz], weights=mask[..., iz]) for iz in range(nz) if np.any(mask[..., iz])]
@@ -122,7 +114,9 @@ def main(argv=None):
     snr_single = sum(snr_single_slice) / len(snr_single_slice)
     cnr_single, cnr_single_time = compute_cnr_time(data1, mask_wm, mask_gm, noise_single_slice, args.json)
 
-    if compute_diff:
+    # Try opening data2. If it fails, inform the user and do not compute *_diff metrics
+    try:
+        data2 = nibabel.load(args.data2).get_fdata()
         # Compute mean across the two volumes
         data_mean = (data1 + data2) / 2
         # Compute mean in ROI for each z-slice, if the slice in the mask is not null
@@ -140,9 +134,11 @@ def main(argv=None):
 
         # Compute CNR
         cnr_diff, cnr_diff_time = compute_cnr_time(data_mean, mask_wm, mask_gm, noise_diff_slice, args.json)
-    else:
+    except FileNotFoundError:
+        print("'--data2' does not exist. Will not compute *_diff metrics.")
         # need to assign empty strings variables
         snr_diff, cnr_diff, cnr_diff_time = '', '', ''
+
     # If user asked for output in a CSV file, aggregate results and write file
     if args.output is not None:
         fname_out = args.output
