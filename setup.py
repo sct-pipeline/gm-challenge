@@ -39,6 +39,9 @@ setup(
     python_requires="==3.8.*",
     entry_points=dict(
         console_scripts=[
-            'compute_cnr=gmchallenge.compute_cnr:main'],
+            'compute_cnr=gmchallenge.compute_cnr:main',
+            'simu_create_phantom=gmchallenge.simu_create_phantom:main',
+            'simu_process_data=gmchallenge.simu_process_data:main',
+            'simu_make_figures=gmchallenge.simu_make_figures:main'],
     ),
 )
