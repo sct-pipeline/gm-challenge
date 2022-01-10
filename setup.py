@@ -42,6 +42,7 @@ setup(
             'compute_cnr=gmchallenge.compute_cnr:main',
             'simu_create_phantom=gmchallenge.simu_create_phantom:main',
             'simu_process_data=gmchallenge.simu_process_data:main',
-            'simu_make_figures=gmchallenge.simu_make_figures:main'],
+            'simu_make_figures=gmchallenge.simu_make_figures:main',
+            'generate_figure_spinegeneric=gmchallenge.generate_figure_spinegeneric:main'],
     ),
 )
