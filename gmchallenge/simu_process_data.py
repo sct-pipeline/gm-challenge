@@ -55,11 +55,11 @@ def main(argv=None):
                                             'GM',
                                             'Noise',
                                             'Smooth',
-                                            'snr_single',
-                                            'snr_diff',
-                                            'contrast',
-                                            'cnr_single',
-                                            'cnr_diff'})
+                                            'SNR_single',
+                                            'SNR_diff',
+                                            'Contrast',
+                                            'CNR_single',
+                                            'CNR_diff'})
 
     file_wm = os.path.join(folder1, 'mask_wm.nii.gz')
     file_gm = os.path.join(folder1, 'mask_gm.nii.gz')
@@ -85,11 +85,11 @@ def main(argv=None):
                                           'GM': metadata['GM'],
                                           'Noise': metadata['Noise'],
                                           'Smooth': metadata['Smooth'],
-                                          'snr_single': results['snr_single'],
-                                          'snr_diff': results['snr_diff'],
-                                          'contrast': results['contrast'],
-                                          'cnr_single': results['cnr_single'],
-                                          'cnr_diff': results['cnr_diff']},
+                                          'SNR_single': results['SNR_single'],
+                                          'SNR_diff': results['SNR_diff'],
+                                          'Contrast': results['Contrast'],
+                                          'CNR_single': results['CNR_single'],
+                                          'CNR_diff': results['CNR_diff']},
                                          ignore_index=True)
         pbar.update(1)
     pbar.close()

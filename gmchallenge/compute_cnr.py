@@ -158,13 +158,13 @@ def main(argv=None):
     else:
         # Aggregate results into a clean dictionary
         results = {
-            'snr_single': snr_single,
-            'snr_diff': snr_diff,
-            'contrast': contrast,
-            'cnr_single': cnr_single,
-            'cnr_diff': cnr_diff,
-            'cnr_single_time': cnr_single_time,
-            'cnr_diff_time': cnr_diff_time
+            'SNR_single': snr_single,
+            'SNR_diff': snr_diff,
+            'Contrast': contrast,
+            'CNR_single': cnr_single,
+            'CNR_diff': cnr_diff,
+            'CNR_single_time': cnr_single_time,
+            'CNR_diff_time': cnr_diff_time
             }
         return results
 
