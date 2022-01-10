@@ -3,15 +3,12 @@
 # Process data.
 #
 # Usage:
-#  process_data_spinegeneric.sh <SUBJECT> <PATH_TO_SCRIPT>
-#
-# Where <PATH_TO_SCRIPT> is the path to the folder that contains the script compute_contrast.py
+#  process_data.sh <SUBJECT>
 #
 # Example when called via sct_run_batch:
 #  sct_run_batch -path-data /Users/julien/code/spine-generic/data-multi-subject \
 #                -path-output gmchallenge_spinegeneric_20211110_162254 \
-#                -script /Users/julien/code/gm-challenge/process_data_spinegeneric.sh \
-#                -script-args "/Users/julien/code/gm-challenge"
+#                -script process_data.sh \
 #
 # Author: Julien Cohen-Adad
 
@@ -33,7 +30,6 @@ trap "echo Caught Keyboard Interrupt within script. Exiting now.; exit" INT
 
 # Retrieve input params
 SUBJECT=$1
-PATH_TO_SCRIPT=$2
 
 # get starting time:
 start=`date +%s`
@@ -143,7 +139,7 @@ else
   file_2=""
 fi
 # Compute SNR and CNR
-python ${PATH_TO_SCRIPT}/compute_cnr.py \
+compute_cnr \
   --data1 ${file_1}${ext} \
   --data2 ${file_2}${ext} \
   --mask-noise ${file_1_wmseg}_erode.nii.gz \

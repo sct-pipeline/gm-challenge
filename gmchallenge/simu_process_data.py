@@ -20,8 +20,10 @@ from subprocess import call
 import pandas
 import tqdm
 
+from gmchallenge import compute_cnr
 
-def get_parameters():
+
+def get_parser():
     parser = argparse.ArgumentParser(description='Compute metrics to assess the quality of spinal cord images. This '
                                                  'script requires two input files of scan-rescan acquisitions, which '
                                                  'will be used to compute the SNR. Other metrics (contrast, sharpness) '
@@ -46,8 +48,7 @@ def get_parameters():
                         type=int,
                         default=1,
                         required=False)
-    args = parser.parse_args()
-    return args
+    return parser
 
 
 def run(cmd):
@@ -82,12 +83,14 @@ def compute_metrics(file_1, file_2, file_wm, file_gm, path_out):
     return dict_out
 
 
-def main():
+def main(argv=None):
+    parser = get_parser()
+    args = parser.parse_args(argv)
     path_output = 'simu_results/'
     file_output = os.path.join(path_output, "results_all.csv")
 
     # Get list of files in folder1
-    folder1, folder2 = folder_data
+    folder1, folder2 = args.input
     fname_csv_list = sorted(glob.glob(os.path.join(folder1, "*.csv")))
 
     # initialize dataframe
@@ -114,6 +117,13 @@ def main():
         fname2 = os.path.join(folder2, file_data)
         # process pair of data
         results = compute_metrics(fname1, fname2, file_wm, file_gm, path_output)
+        # TODO: replace code above by code below.
+        # https://github.com/sct-pipeline/gm-challenge/issues/70
+        # results = compute_cnr.main(['--data1', fname1,
+        #                             '--data2', fname2,
+        #                             '--mask-noise', file_wm,
+        #                             '--mask-wm', file_wm,
+        #                             '--mask-gm', file_gm])
         # append to dataframe
         results_all = results_all.append({'WM': metadata['WM'],
                                           'GM': metadata['GM'],
@@ -129,10 +139,4 @@ def main():
 
 
 if __name__ == "__main__":
-    args = get_parameters()
-    folder_data = args.input
-    file_seg = args.seg
-    file_gmseg = args.gmseg
-    register = args.register
-    verbose = args.verbose
     main()

@@ -7,12 +7,11 @@
 import argparse
 import json
 import os.path
-
 import nibabel
 import numpy as np
 
 
-def get_parameters():
+def get_parser():
     parser = argparse.ArgumentParser(description='Compute SNR, contrast, CNR using two different methods. These '
                                                  'metrics are computed slice-by-slice and then averaged across slices. '
                                                  'If a JSON sidecar is present and includes the field '
@@ -25,9 +24,8 @@ def get_parameters():
     parser.add_argument('--mask-gm', help='Mask of the gray matter.')
     parser.add_argument('--json', help='JSON sidecar to fetch acquisition duration.')
     parser.add_argument('--subject', help='Subject ID', default='sub')
-    parser.add_argument('--output', help='CSV output file.', default='results.csv')
-    args = parser.parse_args()
-    return args
+    parser.add_argument('--output', help='CSV output file.')
+    return parser
 
 
 def compute_cnr_time(data, mask_wm, mask_gm, noise_slice, fname_json):
@@ -92,11 +90,12 @@ def weighted_std(values, weights):
     return np.sqrt(variance)
 
 
-def main():
-    # initializations
-    cnr_diff_time = np.nan
-    rayleigh_correction = False  # No correction for Rician noise because the noise mask is in a region of high SNR regime (not in the background)
+def main(argv=None):
+    # No correction for Rician noise because the noise mask is in a region of high SNR regime (not in the background)
+    rayleigh_correction = False
     # get arguments
+    parser = get_parser()
+    args = parser.parse_args(argv)
     data1 = nibabel.load(args.data1).get_fdata()
     nx, ny, nz = data1.shape
     mask = nibabel.load(args.mask_noise).get_fdata()
@@ -144,16 +143,28 @@ def main():
     else:
         # need to assign empty strings variables
         snr_diff, cnr_diff, cnr_diff_time = '', '', ''
-    # Aggregate results in single CSV file
-    fname_out = args.output
-    if not os.path.isfile(fname_out):
-        # Add a header in case the file does not exist yet
-        with open(fname_out, 'w') as f:
-            f.write(f"Subject,SNR_single,SNR_diff,CNR_single,CNR_diff,CNR_single/t,CNR_diff/t\n")
-    with open(fname_out, 'a') as f:
-        f.write(f"{args.subject},{snr_single},{snr_diff},{cnr_single},{cnr_diff},{cnr_single_time},{cnr_diff_time}\n")
+    # If user asked for output in a CSV file, aggregate results and write file
+    if args.output is not None:
+        fname_out = args.output
+        if not os.path.isfile(fname_out):
+            # Add a header in case the file does not exist yet
+            with open(fname_out, 'w') as f:
+                f.write(f"Subject,SNR_single,SNR_diff,CNR_single,CNR_diff,CNR_single/t,CNR_diff/t\n")
+        with open(fname_out, 'a') as f:
+            f.write(f"{args.subject},{snr_single},{snr_diff},{cnr_single},{cnr_diff},{cnr_single_time},{cnr_diff_time}\n")
+    # Otherwise, return to caller function
+    else:
+        # Aggregate results into a clean dictionary
+        results = {
+            'snr_single': snr_single,
+            'snr_diff': snr_diff,
+            'cnr_single': cnr_single,
+            'cnr_diff': cnr_diff,
+            'cnr_single_time': cnr_single_time,
+            'cnr_diff_time': cnr_diff_time
+            }
+        return results
 
 
 if __name__ == "__main__":
-    args = get_parameters()
     main()

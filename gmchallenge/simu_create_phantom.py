@@ -16,7 +16,7 @@
 # Authors: Stephanie Alley, Julien Cohen-Adad
 
 
-import os, sys
+import os
 import argparse
 import numpy as np
 import nibabel as nib
@@ -120,4 +120,4 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()

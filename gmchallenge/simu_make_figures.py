@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
 
-def get_parameters():
+def get_parser():
     parser = argparse.ArgumentParser(description='Make figures to assess metrics sensitivity to image quality. Run '
                                                  'after simu_process_data.py')
     parser.add_argument("-i", "--input",
@@ -31,11 +31,17 @@ def get_parameters():
                         type=float,
                         default=0,
                         required=False)
-    args = parser.parse_args()
-    return args
+    return parser
 
-def main():
+
+def main(argv=None):
     path_output = 'simu_results/'
+    # Get input args
+    parser = get_parser()
+    args = parser.parse_args(argv)
+    file_csv = args.input
+    smooth = args.smooth
+
     results_all = pd.read_csv(file_csv)
 
     # build index
@@ -87,7 +93,4 @@ def main():
 
 
 if __name__ == "__main__":
-    args = get_parameters()
-    file_csv = args.input
-    smooth = args.smooth
     main()
