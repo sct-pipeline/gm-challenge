@@ -77,7 +77,7 @@ sct_run_batch -script <PATH_REPOSITORY>/process_data.sh -path-data <PATH_DATA> -
 
 After running this script, figures can be generated as follows:
 ~~~
-python generate_figure_spinegeneric.py -ip <PATH_DATA>/participants.tsv -ir cd <PATH_OUT>/results/results.csv -o fig
+generate_figure_spinegeneric -ip <PATH_DATA>/participants.tsv -ir cd <PATH_OUT>/results/results.csv -o fig
 ~~~
 
 ## Simulations
