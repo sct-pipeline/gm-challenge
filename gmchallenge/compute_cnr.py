@@ -40,7 +40,7 @@ def compute_cnr_time(data, mask_wm, mask_gm, noise_slice, fname_json):
                     compute cnr_time and output 'None' instead
 
     Returns:
-        contrast
+        contrast: in percent
         cnr
         cnr_time
     """
@@ -50,20 +50,21 @@ def compute_cnr_time(data, mask_wm, mask_gm, noise_slice, fname_json):
     mean_gm_slice = \
         [np.average(data[..., iz], weights=mask_gm[..., iz]) for iz in range(nz) if np.any(mask_gm[..., iz])]
     contrast_slice = [abs(mean_wm_slice[iz] - mean_gm_slice[iz]) / mean_wm_slice[iz] for iz in range(nz)]
-    contrast = sum(contrast_slice) / len(contrast_slice)
+    contrast = 100 * sum(contrast_slice) / len(contrast_slice)
     cnr_slice = [abs(mean_wm_slice[iz] - mean_gm_slice[iz]) / noise_slice[iz] for iz in range(nz)]
     cnr = sum(cnr_slice) / len(cnr_slice)
     # If no JSON file is provided, only return 'cnr'
     if fname_json is None:
-        return cnr, None
-    # Try fetching acquisition duration. If the field is not present in the JSON file, 'ReferenceError' is raised
-    try:
-        acq_duration = fetch_acquisition_duration(fname_json)
-        cnr_time = cnr / acq_duration
-    except ReferenceError:
-        print("Field 'AcquisitionDuration' was not found in the JSON sidecar. Cannot compute CNR per unit time and will"
-              "leave an empty string instead.")
-        cnr_time = ''
+        cnr_time = None
+    else:
+        # Try fetching acquisition duration. If the field is not present in the JSON file, 'ReferenceError' is raised
+        try:
+            acq_duration = fetch_acquisition_duration(fname_json)
+            cnr_time = cnr / acq_duration
+        except ReferenceError:
+            print("Field 'AcquisitionDuration' was not found in the JSON sidecar. Cannot compute CNR per unit time and will"
+                  "leave an empty string instead.")
+            cnr_time = ''
     return contrast, cnr, cnr_time
 
 

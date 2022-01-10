@@ -57,6 +57,7 @@ def main(argv=None):
                                             'Smooth',
                                             'snr_single',
                                             'snr_diff',
+                                            'contrast',
                                             'cnr_single',
                                             'cnr_diff'})
 
@@ -86,6 +87,7 @@ def main(argv=None):
                                           'Smooth': metadata['Smooth'],
                                           'snr_single': results['snr_single'],
                                           'snr_diff': results['snr_diff'],
+                                          'contrast': results['contrast'],
                                           'cnr_single': results['cnr_single'],
                                           'cnr_diff': results['cnr_diff']},
                                          ignore_index=True)
