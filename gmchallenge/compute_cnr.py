@@ -30,7 +30,7 @@ def get_parser():
 
 def compute_cnr_time(data, mask_wm, mask_gm, noise_slice, fname_json):
     """
-    Compute CNR and CNR per unit time
+    Compute contrast, CNR and CNR per unit time
     Args:
         data: 3d array to compute CNR from
         mask_wm: mask of white matter
@@ -40,6 +40,7 @@ def compute_cnr_time(data, mask_wm, mask_gm, noise_slice, fname_json):
                     compute cnr_time and output 'None' instead
 
     Returns:
+        contrast: in percent
         cnr
         cnr_time
     """
@@ -48,20 +49,23 @@ def compute_cnr_time(data, mask_wm, mask_gm, noise_slice, fname_json):
         [np.average(data[..., iz], weights=mask_wm[..., iz]) for iz in range(nz) if np.any(mask_wm[..., iz])]
     mean_gm_slice = \
         [np.average(data[..., iz], weights=mask_gm[..., iz]) for iz in range(nz) if np.any(mask_gm[..., iz])]
+    contrast_slice = [abs(mean_wm_slice[iz] - mean_gm_slice[iz]) / mean_wm_slice[iz] for iz in range(nz)]
+    contrast = 100 * sum(contrast_slice) / len(contrast_slice)
     cnr_slice = [abs(mean_wm_slice[iz] - mean_gm_slice[iz]) / noise_slice[iz] for iz in range(nz)]
     cnr = sum(cnr_slice) / len(cnr_slice)
     # If no JSON file is provided, only return 'cnr'
     if fname_json is None:
-        return cnr, None
-    # Try fetching acquisition duration. If the field is not present in the JSON file, 'ReferenceError' is raised
-    try:
-        acq_duration = fetch_acquisition_duration(fname_json)
-        cnr_time = cnr / acq_duration
-    except ReferenceError:
-        print("Field 'AcquisitionDuration' was not found in the JSON sidecar. Cannot compute CNR per unit time and will"
-              "leave an empty string instead.")
-        cnr_time = ''
-    return cnr, cnr_time
+        cnr_time = None
+    else:
+        # Try fetching acquisition duration. If the field is not present in the JSON file, 'ReferenceError' is raised
+        try:
+            acq_duration = fetch_acquisition_duration(fname_json)
+            cnr_time = cnr / acq_duration
+        except ReferenceError:
+            print("Field 'AcquisitionDuration' was not found in the JSON sidecar. Cannot compute CNR per unit time and will"
+                  "leave an empty string instead.")
+            cnr_time = ''
+    return contrast, cnr, cnr_time
 
 
 def fetch_acquisition_duration(fname_json):
@@ -102,14 +106,6 @@ def main(argv=None):
     mask_wm = nibabel.load(args.mask_wm).get_fdata()
     mask_gm = nibabel.load(args.mask_gm).get_fdata()
 
-    # Try opening data2. If it fails, inform the user and do not compute *_diff metrics
-    try:
-        data2 = nibabel.load(args.data2).get_fdata()
-        compute_diff = True
-    except FileNotFoundError:
-        print("'--data2' does not exist. Will not compute *_diff metrics.")
-        compute_diff = False
-
     # Compute mean in ROI for each z-slice, if the slice in the mask is not null
     mean_in_roi = \
         [np.average(data1[..., iz], weights=mask[..., iz]) for iz in range(nz) if np.any(mask[..., iz])]
@@ -120,9 +116,11 @@ def main(argv=None):
         # Correcting for Rayleigh noise (see eq. A12 in Dietrich et al.)
         snr_single_slice = [snr_single_slice[iz] * np.sqrt((4 - np.pi) / 2) for iz in range(len(snr_single_slice))]
     snr_single = sum(snr_single_slice) / len(snr_single_slice)
-    cnr_single, cnr_single_time = compute_cnr_time(data1, mask_wm, mask_gm, noise_single_slice, args.json)
+    _, cnr_single, cnr_single_time = compute_cnr_time(data1, mask_wm, mask_gm, noise_single_slice, args.json)
 
-    if compute_diff:
+    # Try opening data2. If it fails, inform the user and do not compute *_diff metrics
+    try:
+        data2 = nibabel.load(args.data2).get_fdata()
         # Compute mean across the two volumes
         data_mean = (data1 + data2) / 2
         # Compute mean in ROI for each z-slice, if the slice in the mask is not null
@@ -137,31 +135,36 @@ def main(argv=None):
         # Compute SNR
         snr_roi_slicewise = [m / s for m, s in zip(mean_in_roi, noise_diff_slice)]
         snr_diff = sum(snr_roi_slicewise) / len(snr_roi_slicewise)
-
         # Compute CNR
-        cnr_diff, cnr_diff_time = compute_cnr_time(data_mean, mask_wm, mask_gm, noise_diff_slice, args.json)
-    else:
+        # Note: we compute the contrast on the 'diff' case because here we are using the mean data across two volumes,
+        # which improves the precision of the contrast estimation.
+        contrast, cnr_diff, cnr_diff_time = compute_cnr_time(data_mean, mask_wm, mask_gm, noise_diff_slice, args.json)
+    except FileNotFoundError:
+        print("'--data2' does not exist. Will not compute *_diff metrics.")
         # need to assign empty strings variables
         snr_diff, cnr_diff, cnr_diff_time = '', '', ''
+
     # If user asked for output in a CSV file, aggregate results and write file
     if args.output is not None:
         fname_out = args.output
         if not os.path.isfile(fname_out):
             # Add a header in case the file does not exist yet
             with open(fname_out, 'w') as f:
-                f.write(f"Subject,SNR_single,SNR_diff,CNR_single,CNR_diff,CNR_single/t,CNR_diff/t\n")
+                f.write(f"Subject,SNR_single,SNR_diff,Contrast,CNR_single,CNR_diff,CNR_single/t,CNR_diff/t\n")
         with open(fname_out, 'a') as f:
-            f.write(f"{args.subject},{snr_single},{snr_diff},{cnr_single},{cnr_diff},{cnr_single_time},{cnr_diff_time}\n")
+            f.write(f"{args.subject},{snr_single},{snr_diff},{contrast},{cnr_single},{cnr_diff},{cnr_single_time},"
+                    f"{cnr_diff_time}\n")
     # Otherwise, return to caller function
     else:
         # Aggregate results into a clean dictionary
         results = {
-            'snr_single': snr_single,
-            'snr_diff': snr_diff,
-            'cnr_single': cnr_single,
-            'cnr_diff': cnr_diff,
-            'cnr_single_time': cnr_single_time,
-            'cnr_diff_time': cnr_diff_time
+            'SNR_single': snr_single,
+            'SNR_diff': snr_diff,
+            'Contrast': contrast,
+            'CNR_single': cnr_single,
+            'CNR_diff': cnr_diff,
+            'CNR_single_time': cnr_single_time,
+            'CNR_diff_time': cnr_diff_time
             }
         return results
 
