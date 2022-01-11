@@ -60,7 +60,7 @@ def compute_cnr_time(data, mask_wm, mask_gm, noise_slice, fname_json):
         # Try fetching acquisition duration. If the field is not present in the JSON file, 'ReferenceError' is raised
         try:
             acq_duration = fetch_acquisition_duration(fname_json)
-            cnr_time = cnr / acq_duration
+            cnr_time = cnr / np.sqrt(acq_duration)
         except ReferenceError:
             print("Field 'AcquisitionDuration' was not found in the JSON sidecar. Cannot compute CNR per unit time and will"
                   "leave an empty string instead.")
