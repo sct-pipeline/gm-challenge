@@ -106,8 +106,7 @@ file_json="${file_1}.json"
 # Compute root-mean square across 4th dimension (if it exists), corresponding to all echoes in Philips scans. Note: we
 # only need to do this for the first file, because this only concerns the spine-generic dataset (which does not have a
 # second scan).
-sct_maths -i ${file_1}${ext} -rms t -o ${file_1}_rms${ext}
-file_1="${file_1}_rms"
+sct_maths -i ${file_1}${ext} -rms t -o ${file_1}${ext}
 # Segment spinal cord
 segment_if_does_not_exist $file_1 "t2s"
 file_1_seg=$FILESEG
