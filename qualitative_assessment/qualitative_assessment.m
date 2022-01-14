@@ -13,6 +13,9 @@ function qualitative_assessment(xlsx_file)
 %
 % Authors: Rene Labounek, Marcella Lagana, Julien Cohen-Adad
 
+point_xpos = 0.18;
+point_xpos = [-point_xpos point_xpos];
+
 [~, ~, raw] = xlsread(xlsx_file);
 
 center = raw(2:end,16);
@@ -98,6 +101,9 @@ clear score1t score3t score7t subid1t subid3t subid7t scorerid1t scorerid3t scor
 clear scorerid fieldid subid_unique
 clear center1t center3t center7t
 
+scanorder = [1; 2];
+scanorder = repmat(scanorder,size(scorer,1)/2,size(scorer,2));
+
 grp = 1:size(score,3);
 grp = repmat(grp,size(score,1),1);
 
@@ -121,8 +127,10 @@ for ind = 1:size(score,2)
     hold on
     plot([pos7T-0.5 pos7T-0.5],[0.5 5.5],'k:','LineWidth',3)
     plot([unique(grp)-0.45 unique(grp)+0.45]', repmat(median(data)',1,2)','c-','LineWidth',6)
-    scatter(grp(scorer==1), data(scorer==1),60, 'kx', 'jitter','on', 'jitterAmount', 0.24,'MarkerEdgeAlpha',0.5,'Linewidth',3);
-    scatter(grp(scorer==2), data(scorer==2),60, 'rd', 'jitter','on', 'jitterAmount', 0.24,'MarkerEdgeAlpha',0.5,'Linewidth',3);
+    for ord = 1:max(scanorder(:))
+        scatter(grp(scorer==1 & scanorder==ord)+point_xpos(ord), data(scorer==1 & scanorder==ord),60, 'kx','MarkerEdgeAlpha',0.5,'Linewidth',3);
+        scatter(grp(scorer==2 & scanorder==ord)+point_xpos(ord), data(scorer==2 & scanorder==ord),60, 'rd','MarkerEdgeAlpha',0.5,'Linewidth',3);
+    end
     hold off
     text(1.5,4.5,'1.5T','FontSize',14,'HorizontalAlignment', 'center')
     text(5.5,4.5,'3.0T','FontSize',14,'HorizontalAlignment', 'center')
