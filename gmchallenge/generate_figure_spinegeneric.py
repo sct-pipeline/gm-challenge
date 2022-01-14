@@ -94,7 +94,7 @@ def generate_figure(data_in, column, path_output):
         top=False,
         labelbottom=False)
     # plt.legend(title="Line", loc='upper left', handles=handles[::-1])
-    plt.savefig(os.path.join(path_output, 'figure_' + column), bbox_inches='tight')
+    plt.savefig(os.path.join(path_output, 'figure_' + column), bbox_inches='tight', dpi=300)
 
 
 def main(path_input_results, path_input_participants, path_output):
