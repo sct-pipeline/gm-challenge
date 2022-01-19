@@ -28,6 +28,7 @@ Create virtual environment, activate it and install package:
 virtualenv venv  # You only need to run this once
 source venv/bin/activate  # You need to run this everytime you with to process the data
 python -m pip install --upgrade pip
+pip install -r requirements.txt
 pip install -e .
 ~~~
 
