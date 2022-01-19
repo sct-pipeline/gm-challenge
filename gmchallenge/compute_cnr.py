@@ -116,7 +116,7 @@ def main(argv=None):
         # Correcting for Rayleigh noise (see eq. A12 in Dietrich et al.)
         snr_single_slice = [snr_single_slice[iz] * np.sqrt((4 - np.pi) / 2) for iz in range(len(snr_single_slice))]
     snr_single = sum(snr_single_slice) / len(snr_single_slice)
-    _, cnr_single, cnr_single_time = compute_cnr_time(data1, mask_wm, mask_gm, noise_single_slice, args.json)
+    contrast, cnr_single, cnr_single_time = compute_cnr_time(data1, mask_wm, mask_gm, noise_single_slice, args.json)
 
     # Try opening data2. If it fails, inform the user and do not compute *_diff metrics
     try:
@@ -136,8 +136,8 @@ def main(argv=None):
         snr_roi_slicewise = [m / s for m, s in zip(mean_in_roi, noise_diff_slice)]
         snr_diff = sum(snr_roi_slicewise) / len(snr_roi_slicewise)
         # Compute CNR
-        # Note: we compute the contrast on the 'diff' case because here we are using the mean data across two volumes,
-        # which improves the precision of the contrast estimation.
+        # Note: we compute (and overwrite) the contrast on the 'diff' case because here we are using the mean data 
+        # across two volumes, which improves the precision of the contrast estimation.
         contrast, cnr_diff, cnr_diff_time = compute_cnr_time(data_mean, mask_wm, mask_gm, noise_diff_slice, args.json)
     except FileNotFoundError:
         print("'--data2' does not exist. Will not compute *_diff metrics.")
