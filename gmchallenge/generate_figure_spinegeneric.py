@@ -1,9 +1,14 @@
+#!/usr/bin/env python
+#
+# Generate figures for the spine-generic results
+
 import pandas as pd
 import numpy as np
 import argparse
 import os
 import matplotlib.pyplot as plt
 import ptitprince as pt
+import seaborn as sns
 from matplotlib.patches import PathPatch
 
 
@@ -51,31 +56,32 @@ def adjust_box_widths(g, fac):
 
                 # setting new width of median line
                 for l in ax.lines:
-                    if not l.get_xdata().size == 0:
-                        if np.all(np.equal(l.get_xdata(), [xmin, xmax])):
+                    if not len(l.get_xdata()) == 0:
+                        if np.all(np.equal(l.get_xdata()[0:2], [xmin, xmax])):
                             l.set_xdata([xmin_new, xmax_new])
 
 
 def generate_figure(data_in, column, path_output):
-    # Hue Input for Subgroups
     dx = np.ones(len(data_in[column]))
     dy = column
-    dhue = "Manufacturer"
-    ort = "v"
-    #  dodge blue, limegreen, red
-    colors = [  "#1E90FF", "#32CD32","#FF0000"  ]
-    pal = colors
-    sigma = .2
+    hue = "Manufacturer"
+    pal = ["#1E90FF", "#32CD32", "#FF0000"]
     f, ax = plt.subplots(figsize=(4, 6))
-
-    ax = pt.RainCloud(x=dx, y=dy, hue=dhue, data=data_in, palette=pal, bw=sigma,
-                      width_viol=.5, ax=ax, orient=ort, alpha=.4, dodge=True, width_box=.35,
-                      box_showmeans=True,
-                      box_meanprops={"marker":"^", "markerfacecolor":"black", "markeredgecolor":"black", "markersize":"10"},
-                      box_notch=True)
+    ax = pt.half_violinplot(x=dx, y=dy, data=data_in, hue=hue, palette=pal, bw=.2, cut=0.,
+                            scale="area", width=.8, inner=None, orient="v", dodge=False, alpha=.4, offset=0.5)
+    ax = sns.boxplot(x=dx, y=dy, data=data_in, hue=hue, color="black", palette=pal,
+                     showcaps=True, boxprops={'facecolor': 'none', "zorder": 10},
+                     showfliers=True, whiskerprops={'linewidth': 2, "zorder": 10},
+                     saturation=1, orient="v", dodge=True)
+    ax = sns.stripplot(x=dx, y=dy, data=data_in, hue=hue, palette=pal, edgecolor="white",
+                       size=3, jitter=1, zorder=0, orient="v", dodge=True)
+    plt.xlim([-1, 0.5])
+    handles, labels = ax.get_legend_handles_labels()
+    _ = plt.legend(handles[0:len(labels) // 3], labels[0:len(labels) // 3],
+                   bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.,
+                   title=str(hue))
     f.gca().invert_xaxis()
-    #adjust boxplot width
-    adjust_box_widths(f, 0.4)
+    adjust_box_widths(f, 0.6)
     plt.xlabel(column)
     # remove ylabel
     plt.ylabel('')
@@ -86,7 +92,6 @@ def generate_figure(data_in, column, path_output):
         bottom=False,
         top=False,
         labelbottom=False)
-    # plt.legend(title="Line", loc='upper left', handles=handles[::-1])
     plt.savefig(os.path.join(path_output, 'figure_' + column), bbox_inches='tight', dpi=300)
 
 
