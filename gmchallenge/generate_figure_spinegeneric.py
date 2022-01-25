@@ -67,13 +67,17 @@ def generate_figure(data_in, column, path_output):
     hue = "Manufacturer"
     pal = ["#1E90FF", "#32CD32", "#FF0000"]
     f, ax = plt.subplots(figsize=(4, 6))
-    ax = pt.half_violinplot(x=dx, y=dy, data=data_in, hue=hue, palette=pal, bw=.4, cut=0.,
+    if column == 'CNR_single/t':
+        coeff = 100
+    else:
+        coeff = 1
+    ax = pt.half_violinplot(x=dx, y=dy, data=data_in*coeff, hue=hue, palette=pal, bw=.4, cut=0.,
                             scale="area", width=.8, inner=None, orient="v", dodge=False, alpha=.4, offset=0.5)
-    ax = sns.boxplot(x=dx, y=dy, data=data_in, hue=hue, color="black", palette=pal,
+    ax = sns.boxplot(x=dx, y=dy, data=data_in*coeff, hue=hue, color="black", palette=pal,
                      showcaps=True, boxprops={'facecolor': 'none', "zorder": 10},
                      showfliers=True, whiskerprops={'linewidth': 2, "zorder": 10},
                      saturation=1, orient="v", dodge=True)
-    ax = sns.stripplot(x=dx, y=dy, data=data_in, hue=hue, palette=pal, edgecolor="white",
+    ax = sns.stripplot(x=dx, y=dy, data=data_in*coeff, hue=hue, palette=pal, edgecolor="white",
                        size=3, jitter=1, zorder=0, orient="v", dodge=True)
     plt.xlim([-1, 0.5])
     handles, labels = ax.get_legend_handles_labels()
@@ -82,6 +86,7 @@ def generate_figure(data_in, column, path_output):
                    title=str(hue))
     f.gca().invert_xaxis()
     adjust_box_widths(f, 0.6)
+    ax.grid(axis='y')
     # special hack
     if column == 'CNR_single/t':
         plt.xlabel('CNR_single/√t')
@@ -98,8 +103,6 @@ def generate_figure(data_in, column, path_output):
         bottom=False,
         top=False,
         labelbottom=False)
-    # special hack
-
     plt.savefig(fname_out, bbox_inches='tight', dpi=300)
 
 
