@@ -67,7 +67,7 @@ def generate_figure(data_in, column, path_output):
     hue = "Manufacturer"
     pal = ["#1E90FF", "#32CD32", "#FF0000"]
     f, ax = plt.subplots(figsize=(4, 6))
-    ax = pt.half_violinplot(x=dx, y=dy, data=data_in, hue=hue, palette=pal, bw=.2, cut=0.,
+    ax = pt.half_violinplot(x=dx, y=dy, data=data_in, hue=hue, palette=pal, bw=.4, cut=0.,
                             scale="area", width=.8, inner=None, orient="v", dodge=False, alpha=.4, offset=0.5)
     ax = sns.boxplot(x=dx, y=dy, data=data_in, hue=hue, color="black", palette=pal,
                      showcaps=True, boxprops={'facecolor': 'none', "zorder": 10},
