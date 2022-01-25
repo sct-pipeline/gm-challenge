@@ -82,7 +82,13 @@ def generate_figure(data_in, column, path_output):
                    title=str(hue))
     f.gca().invert_xaxis()
     adjust_box_widths(f, 0.6)
-    plt.xlabel(column)
+    # special hack
+    if column == 'CNR_single/t':
+        plt.xlabel('CNR_single/√t')
+        fname_out = os.path.join(path_output, 'figure_CNR_single_t')
+    else:
+        plt.xlabel(column)
+        fname_out = os.path.join(path_output, 'figure_' + column)
     # remove ylabel
     plt.ylabel('')
     # hide xtick
@@ -92,7 +98,9 @@ def generate_figure(data_in, column, path_output):
         bottom=False,
         top=False,
         labelbottom=False)
-    plt.savefig(os.path.join(path_output, 'figure_' + column), bbox_inches='tight', dpi=300)
+    # special hack
+
+    plt.savefig(fname_out, bbox_inches='tight', dpi=300)
 
 
 def main(argv=None):
