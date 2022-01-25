@@ -1,13 +1,10 @@
 import pandas as pd
 import numpy as np
 import argparse
-import seaborn as sns
 import os
 import matplotlib.pyplot as plt
 import ptitprince as pt
 from matplotlib.patches import PathPatch
-
-sns.set(style="whitegrid", font_scale=1)
 
 
 def get_parser():
@@ -116,8 +113,8 @@ def main(argv=None):
         content_results_csv.loc[rowIndexResults, 'Manufacturer'] = content_participants_tsv.loc[rowIndex]['manufacturer'].values[0]
 
     generate_figure(content_results_csv, 'SNR_single', path_output)
-    generate_figure(content_results_csv, 'Contrast', path_output)
-    generate_figure(content_results_csv, 'CNR', path_output)
+    # generate_figure(content_results_csv, 'Contrast', path_output)
+    generate_figure(content_results_csv, 'CNR_single/t', path_output)
 
 
 if __name__ == "__main__":
