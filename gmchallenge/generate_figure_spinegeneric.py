@@ -10,7 +10,7 @@ from matplotlib.patches import PathPatch
 sns.set(style="whitegrid", font_scale=1)
 
 
-def get_parameters():
+def get_parser():
     parser = argparse.ArgumentParser(description='Generate figure for spine generic dataset')
     parser.add_argument("-ir", "--path-input-results",
                         help="Path to results.csv",
@@ -20,19 +20,15 @@ def get_parameters():
                         required=True)
     parser.add_argument("-o", "--path-output",
                         help="Path to save images",
-                        required=True,
-                        )
-    arguments = parser.parse_args()
-    return arguments
+                        required=True)
+    return parser
 
 
 def adjust_box_widths(g, fac):
-    # From https://github.com/mwaskom/seaborn/issues/1076#issuecomment-634541579
-
     """
     Adjust the widths of a seaborn-generated boxplot.
+    Source: From https://github.com/mwaskom/seaborn/issues/1076#issuecomment-634541579
     """
-
     # iterating through Axes instances
     for ax in g.axes:
 
@@ -97,7 +93,14 @@ def generate_figure(data_in, column, path_output):
     plt.savefig(os.path.join(path_output, 'figure_' + column), bbox_inches='tight', dpi=300)
 
 
-def main(path_input_results, path_input_participants, path_output):
+def main(argv=None):
+    # user params
+    parser = get_parser()
+    args = parser.parse_args(argv)
+    path_input_results = args.path_input_results
+    path_input_participants = args.path_input_participants
+    path_output = args.path_output
+
     if not os.path.isdir(path_output):
         os.makedirs(path_output)
 
@@ -118,5 +121,4 @@ def main(path_input_results, path_input_participants, path_output):
 
 
 if __name__ == "__main__":
-    args = get_parameters()
-    main(args.path_input_results, args.path_input_participants, args.path_output)
+    main()
