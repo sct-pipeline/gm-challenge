@@ -137,7 +137,7 @@ def main(argv=None):
         content_results_csv.loc[rowIndexResults, 'Manufacturer'] = content_participants_tsv.loc[rowIndex]['manufacturer'].values[0]
 
     generate_figure(content_results_csv, 'SNR_single', path_output)
-    # generate_figure(content_results_csv, 'Contrast', path_output)
+    generate_figure(content_results_csv, 'Contrast', path_output)
     generate_figure(content_results_csv, 'CNR_single/t', path_output)
 
 
